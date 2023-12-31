@@ -1,6 +1,6 @@
-# grammY-bot-template
+# Telegram-bot-auto-forward-acgn
 
-A boilerplate template that applies the GrammY framework to help you get started with the Telegram bot.
+Automatically forward <https://search.acgn.es/> messages to your telegram channel.
 
 ## Commands Preset
 
@@ -8,9 +8,21 @@ A boilerplate template that applies the GrammY framework to help you get started
 * `/about` Show information about the bot
 * `/help` Show help text
 * `/settings` Open settings
-* `/wallpaper` Get a new wallpaper from Unsplash
+* `/update` Manually update all animes
+
+## To-dos
+
+* [x] Search desired animes from NEP Anime Warehouse repetitively(1 hour a time by default)
+* [ ] Format bot messages, work with Bangumi, Anilist... etc.
+* [ ] Support local dabase storage to deduplicate messages
+* [ ] Refactor http request: <https://github.com/infinitered/apisauce>
 
 ## Thanks to
 
 <https://github.com/grammyjs/grammY>
 <https://github.com/ShoroukAziz/notion-potion>
+
+## Textual References
+
+<https://hiro-game.sakura.ne.jp/?p=33394>
+<https://hiro-game.sakura.ne.jp/?p=125130>

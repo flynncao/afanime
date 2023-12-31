@@ -7,7 +7,6 @@ function parse(str: string, ...args: any) {
 
 export default class Logger {
   static logSuccess = (message: string, ...args: any[]): void => {
-    console.log('success')
     console.log(chalk.green.italic(`✅ ${parse(message, ...args)}`))
   }
 
