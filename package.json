@@ -1,0 +1,45 @@
+{
+  "name": "telegram-bot-template",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GrammY bot starter template",
+  "author": "Flynn Cao",
+  "license": "MIT",
+  "main": "./dist/start.js",
+  "imports": {
+    "#root/*": "./build/src/*"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "node dist/start.js",
+    "dev": "tsup --watch --onSuccess \"node dist/start.js\"",
+    "dev:tsc": "tsc-watch --onSuccess \"tsx ./build/start.ts\"",
+    "build": "tsup",
+    "build:tsc": "tsc"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.3.1",
+    "grammy": "^1.19.2",
+    "node-fetch": "^3.3.2",
+    "tsx": "3.14.0",
+    "unsplash-js": "^7.0.18"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^1.2.1",
+    "@types/node": "^20.10.5",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "husky": "8.0.3",
+    "lint-staged": "14.0.1",
+    "nodemon": "^3.0.2",
+    "tsc-watch": "^6.0.4",
+    "tsup": "^8.0.1",
+    "typescript": "^5.2.2"
+  }
+}
