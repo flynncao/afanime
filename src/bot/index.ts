@@ -1,17 +1,15 @@
-import type { CommandContext } from 'grammy'
 import { GrammyError, HttpError } from 'grammy'
 import 'dotenv/config'
 import { Timer } from 'easytimer.js'
 import type { Timer as ITimer } from 'easytimer.js'
-import { AxiosError } from 'axios'
-import Logger from '../utils/logger.js'
 import db from '../databases/db.js'
 import { responseTime } from '../middlewares/timestamp.js'
 import { TIMER_INTERVAL_IN_SECONDS, commandList, welcomeMessages } from '../constants/index.js'
-import { useFetchNEP } from '../modules/acgn.js'
+import { updateAnimePerThread } from './thread.js'
+import Logger from '#root/utils/logger.js'
 import { threadQueries } from '#root/constants/index.js'
-import type { TelegramMessageResponse } from '#root/modules/response.js'
-import type { AnimeThread } from '#root/types/commands.js'
+import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import type { AnimeData } from '#root/types/index.js'
 
 const userChatID = process.env.USER_CHAT_ID!
 
@@ -47,23 +45,19 @@ export async function init() {
     ctx.reply(`<b>Hi!</b> <i>Welcome</i> to <a href="https://t.me/${me.username}">${me.first_name}</a><span class="tg-spoiler"> id:${me.id}</span>`, { parse_mode: 'HTML' })
   })
 
+  bot.command('settings', async (ctx) => {
+    ctx.reply('Settings')
+  })
+
+  bot.command('dashboard', async (ctx) => {
+    console.log('ctx.session :>> ', ctx.session)
+    ctx.reply(JSON.stringify(ctx.session.animes))
+  })
+
   bot.command('update', async (ctx) => {
     if (ctx.message?.is_topic_message) {
       const theadID = ctx.message?.message_thread_id
-      const thread = threadQueries.find((thread: AnimeThread) => thread.threadID === theadID)
-      if (!thread) {
-        ctx.reply('No such thread found')
-        return
-      }
-      const data = await useFetchNEP(thread.query)
-      if ('data' in data) {
-        bot.api.sendMessage(userChatID, String(data.data[0].link), {
-          message_thread_id: theadID,
-        })
-      }
-      else {
-        bot.api.sendMessage(userChatID, 'Error while requesting data from NEP')
-      }
+      updateAnimePerThread(ctx, theadID!)
     }
     else {
       ctx.reply('Please reply to the thread message')
@@ -73,18 +67,50 @@ export async function init() {
   bot.command('all', async (ctx) => {
     ctx.reply(`更新全部動畫中..`)
     threadQueries.forEach(async (thread) => {
-      setTimeout(async () => {
-        const data = await useFetchNEP(thread.query)
-        if ('data' in data) {
-          bot.api.sendMessage(userChatID, String(data.data[0].link), {
-            message_thread_id: thread.threadID,
-          })
-        }
-        else {
-          bot.api.sendMessage(userChatID, 'Error while requesting data from NEP')
-        }
-      }, 5000)
+      updateAnimePerThread(ctx, thread.threadID, false)
     })
+  })
+
+  bot.command('metainfo', async (ctx) => {
+    if (ctx.session.animes === undefined) {
+      ctx.reply('沒有動畫資料')
+      return
+    }
+    const length = ctx.session.animes.length
+    ctx.reply(`正在更新動畫元信息，共${length}個`)
+    for (let i = 0; i < length; i++) {
+      const anime: AnimeData = ctx.session.animes[i]!
+      if (anime && anime.metaInfo === null) {
+        // TODO: https://github.com/flynncao/telegram-bot-auto-forward-acgn/issues/2
+        await useFetchBangumiSubjectInfo(anime.bangumiID).then((data) => {
+          anime.totalEpisodes = data.total_episodes
+          anime.imageURL = data.images.small
+        })
+      }
+    }
+    ctx.reply(`更新動畫元信息完成。`)
+  })
+
+  bot.command('meta', async (ctx) => {
+    let threadID = 8
+    if (ctx.message?.is_topic_message)
+      threadID = ctx.message.message_thread_id!
+
+    if (ctx.session.animes === undefined) {
+      ctx.reply('沒找到這個動畫！')
+      return
+    }
+    const anime = ctx.session.animes.find((anime: AnimeData) => anime.threadID === threadID)
+    console.log('anime :>> ', anime)
+    if (anime && typeof anime.imageURL !== 'undefined') {
+      ctx.replyWithPhoto(anime.imageURL, {
+        caption: `動畫名稱: ${anime?.title}\nBangumiID: ${anime?.bangumiID}\n總集數: ${anime?.totalEpisodes}\n動畫信息： https://bgm.tv/subject/${anime?.bangumiID}`,
+        message_thread_id: threadID,
+      })
+    }
+    else {
+      ctx.reply('動畫元信息不全！請使用`/metainfo`更新！')
+    }
   })
 
   /**
@@ -96,7 +122,10 @@ export async function init() {
   }
   db.timer?.start({ callback(timer: ITimer) {
     if (timer.getTotalTimeValues().seconds === TIMER_INTERVAL_IN_SECONDS) {
-      bot.api.sendMessage(userChatID, `Timer ${TIMER_INTERVAL_IN_SECONDS} seconds passed!`)
+      bot.api.sendMessage(userChatID, `地球已經過去了24小時，爲什麽不使用/all來看看有沒有新的動畫呢！`)
+      // threadQueries.forEach(async (thread) => {
+      // updateAnimePerThread(ctx, thread.threadID, false)
+      // })
       timer.reset()
     }
   }, countdown: false, startValues: { seconds: 0 }, target: { seconds: TIMER_INTERVAL_IN_SECONDS } })

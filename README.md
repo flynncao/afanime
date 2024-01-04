@@ -13,6 +13,8 @@ Automatically forward <https://search.acgn.es/> messages to your telegram channe
 ## To-dos
 
 * [x] Search desired animes from NEP Anime Warehouse repetitively(1 hour a time by default)
+* [ ] Grab anime info from Bangumi <https://bangumi.github.io/ap>
+* [ ] Allow update&create new Anime via excel/bot menu  
 * [ ] Format bot messages, work with Bangumi, Anilist... etc.
 * [ ] Support local dabase storage to deduplicate messages
 * [ ] Refactor http request: <https://github.com/infinitered/apisauce>

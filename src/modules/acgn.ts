@@ -1,8 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios'
 import axios from 'axios'
-import type { TelegramMessageResponse } from './response.js'
-import Logger from '#root/utils/logger.js'
-import db from '#root/databases/db.js'
+import type { TelegramMessageResponse } from '../types/response.js'
 
 const NEP_BASE_URL = 'https://search.acgn.es/api/'
 

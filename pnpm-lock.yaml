@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@grammyjs/storage-free':
+    specifier: ^2.4.1
+    version: 2.4.1
   axios:
     specifier: ^1.6.2
     version: 1.6.2
@@ -615,6 +618,14 @@ packages:
     resolution: {integrity: sha512-ut5V+D+fOoWPgGGNj83GGjnntO39xDy6DWxO0wb7Jp3DcMX0TfIqdzHF85VTQkerdyGmuuMD9AKAo5KiNlf/AQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@grammyjs/storage-free@2.4.1:
+    resolution: {integrity: sha512-0P485meISWnNWsDCQM0zLXMg9Y5BPLXgZsdDd1W++lbgqMoXc4r/k9HLK+bG/sE8hyJGl3LIDru9W1lpriixMw==}
+    dependencies:
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /@grammyjs/types@3.3.0:
     resolution: {integrity: sha512-18Qb12jXiIptqZAlboJMvFxNxydLskUjvE5PbU8ergKQlNIr8jRvYoHDm4t/x3qEfpf+FNhGw23lyZfgEE6e/g==}
