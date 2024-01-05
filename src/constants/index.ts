@@ -61,5 +61,12 @@ export const threadQueries: AnimeThread[] = [
     debut: '2023-10',
     query: 'orion origin | Undead Unluck CHS＆JPN',
   },
+  {
+    bangumiID: 404115,
+    title: '星灵感应',
+    threadID: 3,
+    debut: '2023-10',
+    query: 'Nekomoe kissaten | Hoshikuzu Telepath  1080p | JPSC',
+  },
 
 ]

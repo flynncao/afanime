@@ -10,6 +10,7 @@ import Logger from '#root/utils/logger.js'
 import { threadQueries } from '#root/constants/index.js'
 import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import type { AnimeData } from '#root/types/index.js'
+import { log } from 'node:console'
 
 const userChatID = process.env.USER_CHAT_ID!
 
@@ -83,6 +84,7 @@ export async function init() {
       if (anime && anime.metaInfo === null) {
         // TODO: https://github.com/flynncao/telegram-bot-auto-forward-acgn/issues/2
         await useFetchBangumiSubjectInfo(anime.bangumiID).then((data) => {
+          console.log('updatingd meta data :>> ', data)
           anime.totalEpisodes = data.total_episodes
           anime.imageURL = data.images.small
         })
@@ -104,7 +106,7 @@ export async function init() {
     console.log('anime :>> ', anime)
     if (anime && typeof anime.imageURL !== 'undefined') {
       ctx.replyWithPhoto(anime.imageURL, {
-        caption: `動畫名稱: ${anime?.title}\nBangumiID: ${anime?.bangumiID}\n總集數: ${anime?.totalEpisodes}\n動畫信息： https://bgm.tv/subject/${anime?.bangumiID}`,
+        caption: `動畫名稱: ${anime?.title}\nBangumiID: ${anime?.bangumiID}\n總集數: ${anime?.totalEpisodes}\n當前集數：${anime.lastEpisode}\n動畫信息： https://bgm.tv/subject/${anime?.bangumiID}`,
         message_thread_id: threadID,
       })
     }

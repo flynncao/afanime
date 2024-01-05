@@ -13,6 +13,7 @@ const fixedAnimeExtraData = [
   { bangumiID: 420628, lastEpisode: 12, metaInfo: null },
   { bangumiID: 348220, lastEpisode: 11, metaInfo: null },
   { bangumiID: 397808, lastEpisode: 12, metaInfo: null },
+  { bangumiID: 404115, lastEpisode: 7, metaInfo: null },
 ]
 
 function getFixedAnimeData(rawAnimes: AnimeThread[]): AnimeData[] {
@@ -38,14 +39,9 @@ export async function initDB() {
     return
   }
   function initSession(): SessionData {
-    return { activeAnimeCount: 0 }
+    return addAnimesToSession()
   }
-  const storageAdapter = freeStorage<Enhance<SessionData>>(botToken)
-  const sessionMiddleware = session({ initial: initSession, storage: enhanceStorage <SessionData > ({
-    storage: storageAdapter,
-    migrations: {
-      3: addAnimesToSession,
-    },
-  }) })
+  // const storageAdapter = freeStorage<SessionData>(botToken)
+  const sessionMiddleware = session({ initial: initSession })
   db.bot?.use(sessionMiddleware)
 }
