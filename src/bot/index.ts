@@ -10,7 +10,6 @@ import Logger from '#root/utils/logger.js'
 import { threadQueries } from '#root/constants/index.js'
 import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import type { AnimeData } from '#root/types/index.js'
-import { log } from 'node:console'
 
 const userChatID = process.env.USER_CHAT_ID!
 

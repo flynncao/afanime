@@ -1,6 +1,8 @@
 import { freeStorage } from '@grammyjs/storage-free'
 import type { Enhance } from 'grammy'
 import { enhanceStorage, session } from 'grammy'
+import { ISession, MongoDBAdapter } from '@grammyjs/storage-mongodb'
+import { MongoClient } from 'mongodb'
 import Logger from '#root/utils/logger.js'
 import db from '#root/databases/db.js'
 import type { AnimeData, AnimeThread, SessionData } from '#root/types/index.js'
@@ -8,7 +10,7 @@ import { threadQueries } from '#root/constants/index.js'
 
 const botToken = process.env.BOT_TOKEN!
 const fixedAnimeExtraData = [
-  { bangumiID: 400602, lastEpisode: 16, metaInfo: null },
+  { bangumiID: 400602, lastEpisode: 17, metaInfo: null },
   { bangumiID: 413741, lastEpisode: 13, metaInfo: null },
   { bangumiID: 420628, lastEpisode: 12, metaInfo: null },
   { bangumiID: 348220, lastEpisode: 11, metaInfo: null },
@@ -32,6 +34,8 @@ function addAnimesToSession(): SessionData {
 }
 
 export async function initDB() {
+  // const client = new MongoClient('mongodb://localhost:27017')
+  // await client.connect()
   Logger.logProgress('Initializing database')
   const bot = db.bot
   if (!bot) {
