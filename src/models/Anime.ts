@@ -1,13 +1,20 @@
-import type { Ref } from '@typegoose/typegoose'
-import { PropType, getModelForClass, prop } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 import type { Image } from './Image.js'
 import type { Rating } from './Rating.js'
 import type { Episode } from './Episode.js'
+import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+
+export enum STATUS {
+  UNAIRED = 0,
+  AIRED = 1,
+  COMPLETED = 2,
+  ARCHIVED = 3,
+}
 
 export class Anime {
   /** Critical Information */
   @prop({ required: true, unique: true, index: true })
-  public id!: string
+  public id!: number
 
   @prop({ required: true })
   public name_cn!: string
@@ -41,6 +48,9 @@ export class Anime {
   @prop({ required: false, default: 0 })
   public last_episode!: number
 
+  @prop({ required: false, enum: STATUS, default: STATUS.ARCHIVED })
+
+  public status!: STATUS
   /** Additional Information */
 
   @prop({ required: false, default: null })
@@ -71,22 +81,28 @@ export class Anime {
 
 const AnimeModel = getModelForClass(Anime)
 
-export async function createNewAnime() {
-  const anime = {
-    id: 400602,
-    threadID: 3,
-    name_cn: '葬送的芙莉莲',
-    query: 'KitaujiSub+北宇治字幕組+%7C+Sousou+no+Frieren+CHS_JP&sort=time&file_suffix=',
-  }
-  const anime2 = {
-    id: 303186,
-    threadID: 31,
-    name_cn: '我推的孩子',
-    query: 'KitaujiSub+北宇治字幕組+%7C+Sousou+no+Frieren+CHS_JP&sort=time&file_suffix=',
-  }
-  new AnimeModel(anime2).save().then((doc) => {
-    console.log(doc)
+export interface IAnimeCritical {
+  id: number
+  name_cn: string
+  query: string
+  threadID: number
+  status?: STATUS
+}
+export async function createNewAnime(anime: IAnimeCritical): Promise<any> {
+  anime.status = STATUS.ARCHIVED
+  return new AnimeModel(anime).save()
+}
+
+export async function updateAnime(anime: Anime): Promise<any> {
+  // TODO: Error handling optimization
+  await useFetchBangumiSubjectInfo(anime.id).then((res) => {
+    console.log('res :>> ', res)
+    // AnimeModel.findOneAndUpdate({ id: anime.id }, anime)
   }).catch((err) => {
     console.log('err :>> ', err)
   })
+}
+
+export async function readAnimes(): Promise<Anime[]> {
+  return AnimeModel.find({})
 }

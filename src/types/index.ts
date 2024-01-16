@@ -1,11 +1,17 @@
 import type { Context, SessionFlavor } from 'grammy'
+import type {
+  Conversation,
+  ConversationFlavor,
+} from '@grammyjs/conversations'
 import type { BangumiSubjectInfoResponseData } from './response.js'
 
 export interface SessionData {
   activeAnimeCount: number
   animes?: AnimeData[]
 }
-export type AnimeContext = Context & SessionFlavor<SessionData>
+export type AnimeContext = Context & SessionFlavor<SessionData> & ConversationFlavor
+
+export type AnimeConversation = Conversation<AnimeContext>
 
 export interface Command {
   command: string

@@ -1,7 +1,7 @@
 import { threadQueries } from '#root/constants/index.js'
 import type { AnimeContext, AnimeData, AnimeThread } from '#root/types/index.js'
 import { useFetchNEP } from '#root/modules/acgn.js'
-import db from '#root/databases/db.js'
+import db from '#root/databases/store.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
 
 // TODO: (feat) Periodically update anime without context?

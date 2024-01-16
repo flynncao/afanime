@@ -4,7 +4,7 @@ import { enhanceStorage, session } from 'grammy'
 import { ISession, MongoDBAdapter } from '@grammyjs/storage-mongodb'
 import { MongoClient } from 'mongodb'
 import Logger from '#root/utils/logger.js'
-import db from '#root/databases/db.js'
+import db from '#root/databases/store.js'
 import type { AnimeData, AnimeThread, SessionData } from '#root/types/index.js'
 import { threadQueries } from '#root/constants/index.js'
 

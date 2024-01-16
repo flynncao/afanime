@@ -1,7 +1,7 @@
 import { Bot, session } from 'grammy'
 import 'dotenv/config'
 import Logger from './utils/logger.js'
-import db from './databases/db.js'
+import db from './databases/store.js'
 import { init } from './bot/index.js'
 import type { AnimeContext } from './types/index.js'
 import { initDB } from './bot/storage.js'

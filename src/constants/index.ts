@@ -1,18 +1,19 @@
 import type { AnimeThread, Command } from '#root/types/index.js'
+import 'dotenv/config'
 
 export const TIMER_INTERVAL_IN_SECONDS = 60 * 60 * 24
 
 export const commandList: Command[] = [
-  { command: 'start', description: 'Welcome! Up and running.' },
-  { command: 'help', description: 'Show help text' },
-  { command: 'settings', description: 'Open settings' },
-  { command: 'about', description: 'Show information about the bot' },
-  { command: 'wallpaper', description: 'Show random wallpaper' },
-  { command: 'update', description: 'Update latest anime of this thread' },
-  { command: 'all', description: 'Update latest anime of all active threads' },
-  { command: 'dashboard', description: 'Show all active animes and its status' },
-  { command: 'metainfo', description: 'Show raw meta info all anime' },
-  { command: 'meta', description: 'Show meta info of this anime' },
+  { command: 'start', description: '欢迎信息.' },
+  { command: 'help', description: '显示所有命令' },
+  { command: 'settings', description: '打开机器人设置' },
+  { command: 'about', description: `关于${process.env.BOT_NAME ? process.env.BOT_NAME : '这个机器人'}` },
+  { command: 'update', description: '更新当前频道的动画' },
+  { command: 'update_all', description: '更新所有频道的动画，默认每天更新' },
+  { command: 'dashboard', description: '显示数据库中所有动画的统计信息' },
+  { command: 'info', description: '显示当前动画的元信息' },
+  { command: 'get_info', description: '抓取当前动画的原信息，请先使用/create命令在数据库中添加这个动画！' },
+  { command: 'get_info_all', description: '抓取所有动画的元信息，请先使用/create命令在数据库中添加这个动画！' },
 ]
 
 // TODO: Consider mobilizing OpenAI to generate anime girl messages
