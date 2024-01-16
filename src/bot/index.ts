@@ -10,6 +10,7 @@ import Logger from '#root/utils/logger.js'
 import { threadQueries } from '#root/constants/index.js'
 import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import type { AnimeData } from '#root/types/index.js'
+import { createNewAnime } from '#root/models/Anime.js'
 
 const userChatID = process.env.USER_CHAT_ID!
 
@@ -69,6 +70,11 @@ export async function init() {
     threadQueries.forEach(async (thread) => {
       updateAnimePerThread(ctx, thread.threadID, false)
     })
+  })
+
+  bot.command('test', async (ctx) => {
+    await createNewAnime()
+    return ctx.reply('added!?...')
   })
 
   bot.command('metainfo', async (ctx) => {

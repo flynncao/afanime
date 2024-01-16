@@ -23,7 +23,6 @@ function getFixedAnimeData(rawAnimes: AnimeThread[]): AnimeData[] {
     const index = rawAnimes.findIndex((anime: AnimeThread) => anime.bangumiID === fixedAnime.bangumiID)
     rawAnimes[index] = { ...rawAnimes[index], ...fixedAnime }
   })
-  console.log('rawAnimes :>> ', rawAnimes)
   return rawAnimes
 }
 

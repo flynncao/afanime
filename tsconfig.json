@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "rootDir": ".",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",

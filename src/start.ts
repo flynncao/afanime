@@ -5,6 +5,7 @@ import db from './databases/db.js'
 import { init } from './bot/index.js'
 import type { AnimeContext } from './types/index.js'
 import { initDB } from './bot/storage.js'
+import { connectMongodb } from './utils/mongodb.js'
 
 const botToken = process.env.BOT_TOKEN!
 
@@ -12,6 +13,7 @@ try {
   if (!db.bot)
     db.bot = new Bot<AnimeContext>(botToken)
   await initDB()
+  await connectMongodb()
   await init()
   db.bot.start()
 }
