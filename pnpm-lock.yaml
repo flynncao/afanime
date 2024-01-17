@@ -14,6 +14,12 @@ dependencies:
   '@grammyjs/storage-mongodb':
     specifier: ^2.4.1
     version: 2.4.1
+  '@js-joda/core':
+    specifier: ^5.6.1
+    version: 5.6.1
+  '@js-joda/timezone':
+    specifier: ^2.18.2
+    version: 2.18.2(@js-joda/core@5.6.1)
   '@typegoose/typegoose':
     specifier: ^12.0.0
     version: 12.0.0(mongoose@8.0.4)
@@ -739,6 +745,18 @@ packages:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
+
+  /@js-joda/core@5.6.1:
+    resolution: {integrity: sha512-Xla/d7ZMMR6+zRd6lTio0wRZECfcfFJP7GGe9A9L4tDOlD5CX4YcZ4YZle9w58bBYzssojVapI84RraKWDQZRg==}
+    dev: false
+
+  /@js-joda/timezone@2.18.2(@js-joda/core@5.6.1):
+    resolution: {integrity: sha512-4binOw4XBO4H6nbw0tPg1IOIrf3MF7gPeXkNiPuK1QAHPaBC0YsvtRt8BiJTqhEaBqh/Kbqp6MChlnbJ8dxQ5Q==}
+    peerDependencies:
+      '@js-joda/core': '>=1.11.0'
+    dependencies:
+      '@js-joda/core': 5.6.1
+    dev: false
 
   /@mongodb-js/saslprep@1.1.1:
     resolution: {integrity: sha512-t7c5K033joZZMspnHg/gWPE4kandgc2OxE74aYOtGKfgB9VPuVJPix0H6fhmm2erj5PBJ21mqcx34lpIGtUCsQ==}

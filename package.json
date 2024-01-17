@@ -25,6 +25,8 @@
     "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/menu": "^1.2.1",
     "@grammyjs/storage-mongodb": "^2.4.1",
+    "@js-joda/core": "^5.6.1",
+    "@js-joda/timezone": "^2.18.2",
     "@typegoose/typegoose": "^12.0.0",
     "axios": "^1.6.2",
     "chalk": "^5.3.0",

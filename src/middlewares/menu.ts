@@ -1,14 +1,18 @@
 import type { Context } from 'grammy'
+import type { MenuRange } from '@grammyjs/menu'
 import { Menu } from '@grammyjs/menu'
+import { STATES } from 'mongoose'
 import type { AnimeContext } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { readAnimes } from '#root/models/Anime.js'
+import { Anime, STATUS, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
 import BotLogger from '#root/bot/logger.js'
+import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 
 interface MenuButton {
   text: string
-  callback: (ctx: AnimeContext) => Promise<any>
+  callback: (ctx: AnimeContext) => Promise<any> | void
+  newLine?: boolean
 }
 
 export interface MenuList {
@@ -17,7 +21,7 @@ export interface MenuList {
 }
 
 export interface IMyMenu {
-  insertButtons(buttons: MenuButton[]): void
+  insertButtons(buttons: MenuButton[]): void | Promise<any>
   registerInBot(): void
 }
 
@@ -41,8 +45,11 @@ class ClassicMenuBuilder implements IMyMenu {
   }
 
   public insertButtons(buttons: MenuButton[]): void {
-    for (const button of buttons)
+    for (const button of buttons) {
       this.menu.text(button.text, (ctx: AnimeContext) => button.callback(ctx))
+      if (button.newLine)
+        this.menu.row()
+    }
   }
 
   public getIdentifier() {
@@ -64,40 +71,63 @@ class ClassicMenuBuilder implements IMyMenu {
 
 const menuList: MenuList[] = [
   {
-    identifier: 'simple-menu',
+    identifier: 'anime-action',
     buttons: [
-      { text: 'Female', callback: (ctx: AnimeContext) => ctx.reply('You pressed female!') },
-      { text: 'Male', callback: (ctx: AnimeContext) => ctx.reply('You pressed male!') },
-    ],
-  },
-  {
-    identifier: 'edit-post',
-    buttons: [
-      { text: 'Edit', callback: async (ctx: AnimeContext) => await ctx.conversation.enter('editPostConversation') },
-      { text: 'Create', callback: async (ctx: AnimeContext) => await ctx.conversation.enter('createPostConversation') },
+      { text: '拉取bangumi信息', callback: async (ctx: AnimeContext) => {
+        if (!store.operatingAnimeID)
+          return ctx.reply('找不到操作中的动画ID，请重试！')
+        await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID).then((res) => {
+          ctx.reply(res)
+        }).catch((err) => {
+          console.log('err :>> ', err)
+          ctx.reply(err)
+        })
+      }, newLine: true },
+      {
+        text: '从NEP仓库拉取动画',
+        callback: async (ctx: AnimeContext) => {
+          if (!store.operatingAnimeID)
+            return ctx.reply('找不到操作中的动画ID，请重试！')
+          else
+            return ctx.reply('TODO')
+        },
+        newLine: true,
+      },
+      { text: '调整数据库中最新集(初始用)', callback: async (ctx: AnimeContext) => {
+        if (!store.operatingAnimeID)
+          return ctx.reply('找不到操作中的动画ID，请重试！')
+        await ctx.conversation.enter('updateCurrentEpisodeConversation')
+      }, newLine: true },
     ],
   },
 ]
 
+function sharedIdent(): string {
+  return store.dashboardFingerprint
+}
+
 export async function createAllMenus(): Promise<string | Error> {
   const init = async (resolve: any) => {
-    console.log('begin init menus')
     const builder = new ClassicMenuBuilder('my-menu-identifier')
-    const presetMenuList: Record<string, ProducedMenu<AnimeContext>> = {}
+    const globalMenuObj: Record<string, ProducedMenu<AnimeContext>> = {}
     const dashboardMenu = await initAnimeDashboardMenu()
-    if (!(dashboardMenu instanceof Error))
-      menuList.push(dashboardMenu)
-
+    // Auto-register
     // TODO: refactor: add composer for builder
     for (const item of menuList) {
       builder.reset(item.identifier)
       builder.insertButtons(item.buttons)
       builder.registerInBot()
-      presetMenuList[item.identifier] = builder.getMenu()
+      globalMenuObj[item.identifier] = builder.getMenu()
     }
-    store.menus = presetMenuList
+
+    // Self-register
+    if (!(dashboardMenu instanceof Error)) {
+      globalMenuObj['anime-dashboard'] = dashboardMenu
+      store.bot?.use(dashboardMenu)
+    }
+
+    store.menus = globalMenuObj
     Logger.logSuccess('All menus initialized')
-    console.log('end init menus')
     resolve('success')
   }
   return new Promise((resolve, reject) => {
@@ -110,13 +140,27 @@ export async function createAllMenus(): Promise<string | Error> {
   })
 }
 
-export async function initAnimeDashboardMenu(): Promise<MenuList> {
+const statusLabelArr: string[] = [
+  '未放送',
+  '已放送',
+  '已完结',
+  '已归档',
+]
+
+export async function initAnimeDashboardMenu(): Promise<Menu<AnimeContext>> {
   return new Promise ((resolve, reject) => {
     readAnimes().then((res) => {
-      const buttons = []
-      for (const item of res)
-        buttons.push({ text: `${item.name_cn}:${item.status}`, callback: (ctx: AnimeContext) => ctx.reply(item.name_cn) })
-      resolve({ identifier: 'anime-dashboard', buttons })
+      const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true, fingerprint: (ctx: AnimeContext) => sharedIdent() }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
+        for (const item of res) {
+          range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
+            store.dashboardFingerprint = store.clock ? store.clock?.now().toString() : new Date().toISOString()
+            // TODO: refactor: use conversation & payload to pass value
+            store.operatingAnimeID = item.id
+            return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
+          }).row()
+        }
+      })
+      resolve(rangedMenu)
     }).catch((err) => {
       reject(err)
       BotLogger.sendServerMessage('createDashboardMenu: readAnimes failed')

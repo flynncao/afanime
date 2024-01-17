@@ -1,12 +1,19 @@
 import type { Context, NextFunction } from 'grammy'
+import { Instant } from '@js-joda/core'
+import store from '#root/databases/store.js'
+import Logger from '#root/utils/logger.js'
 
 /** Measures the response time of the bot, and logs it to `console` */
 export default async function responseTime(
   ctx: Context,
   next: NextFunction,
 ): Promise<void> {
-  const before = Date.now()
+  if (!store.clock)
+    Logger.logError('Clock is not initialized')
+
+  const before = Instant.now().toEpochMilli()
   await next()
-  const after = Date.now()
+  const after = Instant.now().toEpochMilli()
   console.log(`Response time: ${after - before} ms`)
+  console.log(`Dashboard updated at: ${store.dashboardFingerprint}`)
 }
