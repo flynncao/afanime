@@ -38,12 +38,6 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
       message_thread_id: threadID,
     })
   }
-  // data.data.splice(cloudLastEpisode - localLastEpisode)
-  // data.data.forEach((item: any) => {
-  //   ctx.reply(String(item.link), {
-  //     message_thread_id: threadID,
-  //   })
-  // })
   const filteredList: any[] = []
   let max = localLastEpisode
   for (let i = 0; i < data.data.length; i++) {

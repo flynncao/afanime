@@ -11,9 +11,15 @@ dependencies:
   '@grammyjs/menu':
     specifier: ^1.2.1
     version: 1.2.1(grammy@1.19.2)
+  '@grammyjs/runner':
+    specifier: ^2.0.3
+    version: 2.0.3(grammy@1.19.2)
   '@grammyjs/storage-mongodb':
     specifier: ^2.4.1
     version: 2.4.1
+  '@grammyjs/transformer-throttler':
+    specifier: ^1.2.1
+    version: 1.2.1(grammy@1.19.2)
   '@js-joda/core':
     specifier: ^5.6.1
     version: 5.6.1
@@ -676,8 +682,28 @@ packages:
       grammy: 1.19.2
     dev: false
 
+  /@grammyjs/runner@2.0.3(grammy@1.19.2):
+    resolution: {integrity: sha512-nckmTs1dPWfVQteK9cxqxzE+0m1VRvluLWB8UgFzsjg62w3qthPJt0TYtJBEdG7OedvfQq4vnFAyE6iaMkR42A==}
+    engines: {node: '>=12.20.0 || >=14.13.1'}
+    peerDependencies:
+      grammy: ^1.13.1
+    dependencies:
+      abort-controller: 3.0.0
+      grammy: 1.19.2
+    dev: false
+
   /@grammyjs/storage-mongodb@2.4.1:
     resolution: {integrity: sha512-WCTLbktp+bYGbnJypjxWkMtSAvWY0TSU9caBYjLKLaKmCB2S/WQMDaOjMzL7BeDtIFJwint3f7mnKtj93bzw6Q==}
+    dev: false
+
+  /@grammyjs/transformer-throttler@1.2.1(grammy@1.19.2):
+    resolution: {integrity: sha512-CpWB0F3rJdUiKsq7826QhQsxbZi4wqfz1ccKX+fr+AOC+o8K7ZvS+wqX0suSu1QCsyUq2MDpNiKhyL2ZOJUS4w==}
+    engines: {node: ^12.20.0 || >=14.13.1}
+    peerDependencies:
+      grammy: ^1.0.0
+    dependencies:
+      bottleneck: 2.19.5
+      grammy: 1.19.2
     dev: false
 
   /@grammyjs/types@3.3.0:
@@ -1383,6 +1409,10 @@ packages:
   /boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
     dev: true
+
+  /bottleneck@2.19.5:
+    resolution: {integrity: sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==}
+    dev: false
 
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}

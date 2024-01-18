@@ -5,7 +5,7 @@ import { STATES } from 'mongoose'
 import type { AnimeContext } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { Anime, STATUS, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
+import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 
@@ -86,13 +86,23 @@ const menuList: MenuList[] = [
       {
         text: '从NEP仓库拉取动画',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
+          if (!store.operatingAnimeID) {
+            // TODO: fix: consider store animeID and other useful information in context instead of memory.
             return ctx.reply('找不到操作中的动画ID，请重试！')
-          else
-            return ctx.reply('TODO')
+          }
+
+          else {
+            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
+            return ctx.reply(res instanceof Error ? res.message : res)
+          }
         },
         newLine: true,
       },
+      { text: '调整数据库中查询字符串(初始用)', callback: async (ctx: AnimeContext) => {
+        if (!store.operatingAnimeID)
+          return ctx.reply('找不到操作中的动画ID，请重试！')
+        await ctx.conversation.enter('updateAnimeQueryConversation')
+      }, newLine: true },
       { text: '调整数据库中最新集(初始用)', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
@@ -142,7 +152,7 @@ export async function createAllMenus(): Promise<string | Error> {
 
 const statusLabelArr: string[] = [
   '未放送',
-  '已放送',
+  '放送中',
   '已完结',
   '已归档',
 ]
@@ -153,7 +163,9 @@ export async function initAnimeDashboardMenu(): Promise<Menu<AnimeContext>> {
       const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true, fingerprint: (ctx: AnimeContext) => sharedIdent() }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
         for (const item of res) {
           range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
-            store.dashboardFingerprint = store.clock ? store.clock?.now().toString() : new Date().toISOString()
+            // TODO: (fix) fingerprint never changes, why?
+            // store.clock ? store.clock?.now().toString() : new Date().
+            store.dashboardFingerprint = new Date().toISOString()
             // TODO: refactor: use conversation & payload to pass value
             store.operatingAnimeID = item.id
             return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })

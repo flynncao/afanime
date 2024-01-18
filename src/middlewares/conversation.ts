@@ -5,10 +5,52 @@ import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { createNewAnime } from '#root/models/Anime.js'
 
+/**
+ * UTILITIES
+ */
+async function paramsGuard(...params: any[]) {
+  return new Promise((resolve, reject) => {
+    if (params.some(param => param === null || param === undefined)) {
+      console.log('rejected')
+      reject(new Error('paramsGuard check failed'))
+    }
+
+    else {
+      console.log('resolved')
+      resolve(1)
+    }
+  })
+}
+
+/**
+ * CONVERSATIONS
+ */
 async function greeting(conversation: AnimeConversation, ctx: AnimeContext) {
   await ctx.reply('Hello, what do you want to do?')
   const titleCtx = await conversation.waitFor(':text')
   await ctx.reply(`You said: ${titleCtx.update.message?.text}`)
+}
+
+async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx: AnimeContext) {
+  if (!store.operatingAnimeID)
+    return ctx.reply('animeID is null.')
+  // TODO: (fix) conversation only works in the same layer, WHY?
+  let msg: string | undefined = ''
+  do {
+    await ctx.reply('请输入动画仓库的查询串，输入/exit退出')
+    const typedCtx = await conversation.waitFor(':text')
+    msg = typedCtx?.update.message?.text
+    console.log('msg :>> ', msg)
+    if (!msg)
+      await ctx.reply('输入有误，请重新输入')
+    if (msg === '/exit')
+      return ctx.reply('退出成功')
+  } while (!msg)
+  await updateSingleAnime(store.operatingAnimeID, { query: msg }).then(() => {
+    return ctx.reply('更新成功')
+  }).catch((err) => {
+    return ctx.reply('更新失败', err)
+  })
 }
 
 async function updateCurrentEpisodeConversation(conversation: AnimeConversation, ctx: AnimeContext) {
@@ -19,6 +61,7 @@ async function updateCurrentEpisodeConversation(conversation: AnimeConversation,
   function abnormalTypedMessage(typedInfo: any): boolean {
     return !typedInfo || unwrapTypedMessageAsNumber(typedInfo) < 0 || !Number.isInteger(unwrapTypedMessageAsNumber(typedInfo))
   }
+  // TODO: (refactor) Better error handling
   const id = store.operatingAnimeID
   if (!id)
     return ctx.reply('animeID is null.')
@@ -87,37 +130,13 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
 }
 
 // async function editPostConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-//   const id = ctx.session.postID
-//   if (!id) {
-//     Logger.logError('editPostConversation: id is null')
-//     return
-//   }
-//   await ctx.reply('Enter the new post content')
-//   const contentCtx = await conversation.waitFor(':text')
-//   if (contentCtx.msg.text) {
-//     conversation.external(() => {
-//       editPost(id, contentCtx.msg.text).then(() => {
-//         ctx.reply('Post edited successfully')
-//       })
-//     })
-//   }
-// }
 
-// async function createPostConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-//   await ctx.reply('Enter the post id: ')
-//   const id = await conversation.form.number()
-//   if (id) {
-//     conversation.external(() => {
-//       const res = findOrCreateUser(id)
-//       ctx.reply(`Post created successfully: ${res}`)
-//     })
-//   }
-// }
-
-const conversations = [greeting, createNewConversation, updateCurrentEpisodeConversation]
-
-export default conversations
-
+const conversations = [
+  greeting,
+  updateAnimeQueryConversation,
+  updateCurrentEpisodeConversation,
+  createNewConversation,
+]
 export function createAllConversations() {
   const { bot } = store
   if (!bot)
