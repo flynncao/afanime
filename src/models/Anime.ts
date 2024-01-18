@@ -111,12 +111,11 @@ export async function createNewAnime(anime: IAnimeCritical): Promise<any> {
   return new AnimeModel(anime).save()
 }
 
-export async function updateSingleAnime(animeID: number, anime: any, successMessage: string): Promise<any> {
+export async function updateSingleAnime(animeID: number, anime: any, successMessage: string = '更新成功'): Promise<any> {
   return new Promise((resolve, reject) => {
     if (store.clock && anime.date) {
       const timeDistancebyDay = LocalDate.parse(anime.date).until(store.clock.now(), ChronoUnit.DAYS)
-      if (timeDistancebyDay >= 0)
-        anime.status = STATUS.AIRED
+      anime.status = timeDistancebyDay >= 0 ? STATUS.UNAIRED : STATUS.AIRED
     }
 
     AnimeModel.findOneAndUpdate({ id: animeID }, anime).then((res) => {
