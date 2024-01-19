@@ -32,7 +32,7 @@ export default function registerCommandHandler() {
 
   bot.command('about', async (ctx) => {
     const me = await bot.api.getMe()
-    console.log('me :>> ', me)
+    Logger.logInput(String(me))
     return ctx.reply(`<b>Hi!</b> <i>Welcome</i> to <a href="https://t.me/${me.username}">${me.first_name}</a><span class="tg-spoiler"> id:${me.id}</span>`, { parse_mode: 'HTML' })
   })
 

@@ -79,7 +79,6 @@ const menuList: MenuList[] = [
         await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID).then((res) => {
           ctx.reply(res)
         }).catch((err) => {
-          console.log('err :>> ', err)
           ctx.reply(err)
         })
       }, newLine: true },

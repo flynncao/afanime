@@ -10,15 +10,11 @@ import { createNewAnime } from '#root/models/Anime.js'
  */
 async function paramsGuard(...params: any[]) {
   return new Promise((resolve, reject) => {
-    if (params.some(param => param === null || param === undefined)) {
-      console.log('rejected')
+    if (params.some(param => param === null || param === undefined))
       reject(new Error('paramsGuard check failed'))
-    }
 
-    else {
-      console.log('resolved')
+    else
       resolve(1)
-    }
   })
 }
 
@@ -40,7 +36,6 @@ async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx
     await ctx.reply('请输入动画仓库的查询串，输入/exit退出')
     const typedCtx = await conversation.waitFor(':text')
     msg = typedCtx?.update.message?.text
-    console.log('msg :>> ', msg)
     if (!msg)
       await ctx.reply('输入有误，请重新输入')
     if (msg === '/exit')
@@ -119,11 +114,10 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
   conversation.external(async () => {
     if (!query)
       query = ''
-    const res = await createNewAnime({ id, threadID, name_cn, query }).then((res) => {
-      console.log('res :>> ', res)
+    await createNewAnime({ id, threadID, name_cn, query }).then((res) => {
+      Logger.logSuccess(`创建成功: ${res}`)
       return ctx.reply('创建成功')
     }).catch((err) => {
-      console.log('err :>> ', err)
       return ctx.reply('创建失败', err)
     })
   })

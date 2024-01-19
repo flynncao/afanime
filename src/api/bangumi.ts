@@ -22,8 +22,6 @@ const axiosInstanceConfig: CreateAxiosDefaults = {
 }
 
 const axiosInstanceRquestInterceptors = [(config: any) => {
-  console.log('config :>> ', config)
-  console.log('config :>> ', config.url)
   return config
 }, (error: AxiosError) => {
   Logger.logError(`Bangumi API error:${error.message}`)
@@ -139,7 +137,6 @@ export async function useFetchBangumiEpisodesInfo(id: number, ctx?: AnimeContext
   }).catch((resInterceptorError: AxiosError) => {
     if (ctx)
       ctx.session.message = resInterceptorError.message
-    console.log('resInterceptorError :>> ', resInterceptorError)
     return resInterceptorError.message
   })
 }

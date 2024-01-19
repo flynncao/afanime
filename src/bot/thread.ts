@@ -59,8 +59,6 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
     })
   }
   else {
-    console.log('filteredList :>> ', filteredList)
-    console.log('max :>> ', max)
     for (const item of filteredList) {
       ctx.reply(String(item.link), {
         message_thread_id: threadID,

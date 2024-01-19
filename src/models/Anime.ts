@@ -124,10 +124,9 @@ export async function updateSingleAnime(animeID: number, anime: any, successMess
     }
 
     AnimeModel.findOneAndUpdate({ id: animeID }, anime).then((res) => {
-      console.log('res :>> ', res)
+      Logger.logSuccess(`更新成功: ${res}`)
       resolve(successMessage)
     }).catch((err) => {
-      console.log('err :>> ', err)
       reject(err)
     })
   })
@@ -138,10 +137,9 @@ export async function updateSingleAnimeQuick(animeID: number, anime: any, succes
     AnimeModel.updateOne({
       id: animeID,
     }, anime).then((res) => {
-      console.log('res :>> ', res)
+      Logger.logSuccess(`更新成功: ${res}`)
       resolve(successMessage)
     }).catch((err) => {
-      console.log('err :>> ', err)
       reject(err)
     })
   })
@@ -196,7 +194,6 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
       if (query && threadID && last_episode >= 0 && name) {
         useFetchNEP(query).then((res: possibleResult) => {
           // TODO: (refactor) use subDocument (ref) for better performance
-          console.log('res :>> ', res)
           if (!('data' in res) || res.data.length === 0)
             return reject(new Error('讀取動畫倉庫時發生錯誤！'))
 
@@ -209,9 +206,6 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
               episodes[episodeNum - 1].videoLink = item.link
             }
           }
-          console.log('max in NEP :>> ', max)
-          console.log('last_episode :>> ', last_episode)
-          console.log('episodes after loop :>> ', episodes)
           if (last_episode === max) {
             resolve(`${name} 已經更新到最新!`)
           }
@@ -219,13 +213,11 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
             const pushList: string[] = []
             // TODO: (error) avoid sending too many messages
             // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
-            console.log('left edge :>> ', last_episode)
-            console.log('right edge:>> ', max)
             for (let i = last_episode; i <= max; i++)
               pushList.push(episodes[i - 1].videoLink)
 
             updateSingleAnime(animeID, { episodes, last_episode: max, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
-              console.log(' :>> ', res)
+              Logger.logSuccess(`更新成功: ${res}`)
               resolve('进度管理更新成功,推送中...')
               for (const item of pushList) {
                 ctx.reply(item, {
