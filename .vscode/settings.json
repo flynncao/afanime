@@ -7,10 +7,10 @@
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   // Auto fix
   "editor.codeActionsOnSave": {
-		"source.fixAll": "explicit",
-		"source.fixAll.eslint": "explicit",
-		"source.organizeImports": "never"
-	},
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
 
   // The following is optional.
   // It's better to put under project setting `.vscode/settings.json`
@@ -26,5 +26,7 @@
     "json",
     "jsonc",
     "yaml"
-  ]
+	],
+	"todo-tree.tree.showBadges": true,
+	"todo-tree.tree.showCountsInTree": true
 }

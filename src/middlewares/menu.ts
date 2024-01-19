@@ -7,7 +7,7 @@ import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
 import BotLogger from '#root/bot/logger.js'
-import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 
 interface MenuButton {
   text: string
@@ -84,7 +84,17 @@ const menuList: MenuList[] = [
         })
       }, newLine: true },
       {
-        text: '从NEP仓库拉取动画',
+        text: '拉取bangumi剧集信息',
+        callback: async (ctx: AnimeContext) => {
+          if (!store.operatingAnimeID)
+            return ctx.reply('找不到操作中的动画ID，请重试！')
+          await useFetchBangumiEpisodesInfo(store.operatingAnimeID, ctx, true)
+          return await ctx.reply(ctx.session.message!)
+        },
+        newLine: true,
+      },
+      {
+        text: '从NEP仓库拉取动画并推送',
         callback: async (ctx: AnimeContext) => {
           if (!store.operatingAnimeID) {
             // TODO: fix: consider store animeID and other useful information in context instead of memory.

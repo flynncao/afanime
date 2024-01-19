@@ -1,5 +1,4 @@
-import type { Ref } from '@typegoose/typegoose'
-import { PropType, getModelForClass, prop } from '@typegoose/typegoose'
+import { prop } from '@typegoose/typegoose'
 
 export class Episode {
   @prop({ required: true })

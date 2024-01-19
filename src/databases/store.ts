@@ -10,6 +10,7 @@ interface SharedDB {
   clock: typeof ZonedDateTime | null
   operatingAnimeID: number | null
   dashboardFingerprint: string
+  botContextMessage: string | null
 }
 
 const db: SharedDB = {
@@ -19,6 +20,7 @@ const db: SharedDB = {
   clock: null,
   operatingAnimeID: null,
   dashboardFingerprint: 'default',
+  botContextMessage: '',
 }
 
 export default db

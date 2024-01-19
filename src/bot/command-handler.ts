@@ -1,10 +1,10 @@
-import { ChronoUnit, LocalDate, ZoneId } from '@js-joda/core'
+import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
 import { updateAnimePerThread } from './thread.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
 import type { AnimeData } from '#root/types/index.js'
-import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -12,6 +12,10 @@ export default function registerCommandHandler() {
     Logger.logError('registerCommandHandler: env, bot or menus is null')
     return
   }
+
+  bot.command('test', async (ctx) => {
+    return ctx.reply('added!?...')
+  })
 
   bot.command('start', async (ctx) => {
     const index = Math.floor(Math.random() * welcomeMessages.length)
@@ -62,10 +66,6 @@ export default function registerCommandHandler() {
     threadQueries.forEach(async (thread) => {
       updateAnimePerThread(ctx, thread.threadID, false)
     })
-  })
-
-  bot.command('test', async (ctx) => {
-    return ctx.reply('added!?...')
   })
 
   bot.command('metainfo', async (ctx) => {

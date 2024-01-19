@@ -8,6 +8,7 @@ import type { BangumiSubjectInfoResponseData } from './response.js'
 export interface SessionData {
   activeAnimeCount: number
   animes?: AnimeData[]
+  message?: string
 }
 export type AnimeContext = Context & SessionFlavor<SessionData> & ConversationFlavor
 

@@ -18,11 +18,7 @@ export const commandList: Command[] = [
 
 // TODO: Consider mobilizing OpenAI to generate anime girl messages
 export const welcomeMessages: string[] = [
-  'もふもふ気持ちいい・・いけないよだれが（鬆軟的感覺好舒服...不行啊，流口水了）',
-  '笑ってください・・お願いします・・！（請笑一笑...拜託了...!)',
-  'いいね！いいですね！こんなまぶしい笑顔見た事ないよ！（讚！真不錯！從來沒見過這麼耀眼的笑容！）',
-  '苦手を克服しようとがんばってるんだね！えらいえらい！（你正在努力克服自己的弱點啊！了不起了不起！）',
-  'かわいい妹たちのためなら石膏像になる覚悟もあるよ！（為了可愛的妹妹們，我甚至準備成為石膏像呢！）',
+  'おはよう！',
 ]
 
 // TODO: Set as mongodb database initial value

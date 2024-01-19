@@ -3,12 +3,13 @@ import { ChronoUnit, LocalDate } from '@js-joda/core'
 import type { Image } from './Image.js'
 import type { Rating } from './Rating.js'
 import type { Episode } from './Episode.js'
-import { useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import store from '#root/databases/store.js'
 import type { possibleResult } from '#root/api/nep.js'
 import { useFetchNEP } from '#root/api/nep.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
 import type { AnimeContext } from '#root/types/index.js'
+import Logger from '#root/utils/logger.js'
 
 /**
  * EVERYDAY TYPES
@@ -169,6 +170,13 @@ export async function updateCurrentEpisode(id: number, current_episode: number) 
  */
 export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<any> {
   const res = await useFetchBangumiSubjectInfo(animeID)
+  const episodesRes = await useFetchBangumiEpisodesInfo(animeID)
+  if (typeof episodesRes !== 'string')
+    res.episodes = episodesRes
+
+  else
+    Logger.logError(`Fech Bangumi episode info error: ${res}`)
+
   if (res && !(res instanceof Error))
     return updateSingleAnime(animeID, res, '拉取Bangumi信息成功')
   else
@@ -180,45 +188,50 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
     readSingleAnime(animeID).then((anime) => {
       const query: string = anime?.query
       const threadID: number = anime?.threadID
-      const current_episode: number = anime?.current_episode
+      const last_episode: number = anime?.last_episode
       const name = anime?.name_cn
-      if (query && threadID && current_episode >= 0 && name) {
+      const episodes = anime?.episodes
+      if (!episodes || episodes.length === 0)
+        reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
+      if (query && threadID && last_episode >= 0 && name) {
         useFetchNEP(query).then((res: possibleResult) => {
+          // TODO: (refactor) use subDocument (ref) for better performance
           console.log('res :>> ', res)
           if (!('data' in res) || res.data.length === 0)
             return reject(new Error('讀取動畫倉庫時發生錯誤！'))
 
-          const filteredList: any[] = []
-          let max = current_episode
-          for (let i = 0; i < res.data.length; i++) {
+          let max = last_episode
+          for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
-            if (episodeNum && episodeNum > current_episode) {
-              filteredList.unshift(item)
-              if (episodeNum > max)
-                max = episodeNum
-            }
-            else {
-              break
+            if (episodeNum !== null && episodeNum > last_episode) {
+              max = episodeNum // update ready for last episode
+              episodes[episodeNum - 1].videoLink = item.link
             }
           }
-
-          if (filteredList.length === 0) {
+          console.log('max in NEP :>> ', max)
+          console.log('last_episode :>> ', last_episode)
+          console.log('episodes after loop :>> ', episodes)
+          if (last_episode === max) {
             resolve(`${name} 已經更新到最新!`)
           }
           else {
-            console.log('filteredList :>> ', filteredList)
-            console.log('max :>> ', max)
+            const pushList: string[] = []
             // TODO: (error) avoid sending too many messages
             // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
-            for (const item of filteredList) {
-              ctx.reply(String(item.link), {
-                message_thread_id: threadID,
-              })
-            }
-            updateSingleAnime(animeID, { last_episode: max }).then((res) => {
+            console.log('left edge :>> ', last_episode)
+            console.log('right edge:>> ', max)
+            for (let i = last_episode; i <= max; i++)
+              pushList.push(episodes[i - 1].videoLink)
+
+            updateSingleAnime(animeID, { episodes, last_episode: max, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
               console.log(' :>> ', res)
-              resolve('进度管理更新成功')
+              resolve('进度管理更新成功,推送中...')
+              for (const item of pushList) {
+                ctx.reply(item, {
+                  message_thread_id: threadID,
+                })
+              }
             }).catch((err) => {
               reject(err)
             })
