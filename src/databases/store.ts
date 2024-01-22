@@ -6,6 +6,7 @@ import type { AnimeContext } from '#root/types/index.js'
 interface SharedDB {
   timer: ITimer | null
   bot: Bot<AnimeContext> | null
+  userChatID: string | null
   menus: any
   clock: typeof ZonedDateTime | null
   operatingAnimeID: number | null
@@ -16,6 +17,7 @@ interface SharedDB {
 const db: SharedDB = {
   timer: null,
   bot: null,
+  userChatID: null,
   menus: null,
   clock: null,
   operatingAnimeID: null,

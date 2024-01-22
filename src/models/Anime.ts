@@ -1,5 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 import { ChronoUnit, LocalDate } from '@js-joda/core'
+import type { Bot } from 'grammy'
 import type { Image } from './Image.js'
 import type { Rating } from './Rating.js'
 import type { Episode } from './Episode.js'
@@ -10,6 +11,8 @@ import { useFetchNEP } from '#root/api/nep.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
 import type { AnimeContext } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
+import type { IEpisode } from '#root/types/response.js'
+import BotLogger from '#root/bot/logger.js'
 
 /**
  * EVERYDAY TYPES
@@ -116,16 +119,42 @@ export async function createNewAnime(anime: IAnimeCritical): Promise<any> {
   return new AnimeModel(anime).save()
 }
 
-export async function updateSingleAnime(animeID: number, anime: any, successMessage: string = '更新成功'): Promise<any> {
+export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage: string = '更新成功'): Promise<any> {
   return new Promise((resolve, reject) => {
-    if (store.clock && anime.date) {
-      const timeDistancebyDay = LocalDate.parse(anime.date).until(store.clock.now(), ChronoUnit.DAYS)
-      anime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
-    }
+    readSingleAnime(animeID).then((anime) => {
+      let needUpdateBangumiEpisodeInfo = false
+      if (!anime.episodes && anime.episodes.length === 0)
+        needUpdateBangumiEpisodeInfo = true
 
-    AnimeModel.findOneAndUpdate({ id: animeID }, anime).then((res) => {
-      Logger.logSuccess(`更新成功: ${res}`)
-      resolve(successMessage)
+      if (store.clock && anime.date) {
+        const timeDistancebyDay = LocalDate.parse(anime.date).until(store.clock.now(), ChronoUnit.DAYS)
+        const oldStatus = anime.status
+        anime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
+        if (anime.status !== oldStatus && anime.status === STATUS.AIRED)
+          needUpdateBangumiEpisodeInfo = true
+      }
+      if (needUpdateBangumiEpisodeInfo) {
+        useFetchBangumiEpisodesInfo(animeID).then((res) => {
+          const localEpisodes: any = res
+          console.log('localEpisodes in updating meta:>> ', localEpisodes)
+          anime.episodes = localEpisodes
+          AnimeModel.findOneAndUpdate({ id: animeID }, anime).then((res) => {
+            Logger.logSuccess(`更新并插入meta剧集信息成功: ${res}`)
+            resolve(`更新${anime.name_cn}元信息及剧集成功}`)
+          }).catch((err) => {
+            reject(err)
+          })
+        })
+      }
+      else {
+        delete anime.episodes
+        AnimeModel.findOneAndUpdate({ id: animeID }, anime).then((res) => {
+          Logger.logSuccess(`更新meta信息成功: ${res}`)
+          resolve(successMessage)
+        }).catch((err) => {
+          reject(err)
+        })
+      }
     }).catch((err) => {
       reject(err)
     })
@@ -166,22 +195,17 @@ export async function updateCurrentEpisode(id: number, current_episode: number) 
  *
  *
  */
-export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<any> {
-  const res = await useFetchBangumiSubjectInfo(animeID)
-  const episodesRes = await useFetchBangumiEpisodesInfo(animeID)
-  if (typeof episodesRes !== 'string')
-    res.episodes = episodesRes
-
-  else
-    Logger.logError(`Fech Bangumi episode info error: ${res}`)
-
-  if (res && !(res instanceof Error))
-    return updateSingleAnime(animeID, res, '拉取Bangumi信息成功')
-  else
-    return Promise.reject(new Error('拉取Bangumi信息失败'))
+export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<string> {
+  return new Promise((resolve) => {
+    updateAnimeMetaAndEpisodes(animeID, '更新动画元信息及剧集成功').then(() => {
+      resolve('更新动画元信息及剧集成功')
+    }).catch(() => {
+      resolve('更新动画元信息及剧集失败')
+    })
+  })
 }
 
-export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: AnimeContext): Promise<string | Error> {
+export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: AnimeContext): Promise<string | Error> {
   return new Promise((resolve, reject) => {
     readSingleAnime(animeID).then((anime) => {
       const query: string = anime?.query
@@ -218,15 +242,22 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
             for (let i = last_episode === 0 ? 1 : last_episode; i <= max; i++)
               pushList.push(episodes[i - 1].videoLink)
 
-            console.log('pushList :>> ', pushList)
-            updateSingleAnime(animeID, { episodes, last_episode: max, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
-              console.log('res, preparing for pushing :>> ', res)
+            updateSingleAnimeQuick(animeID, { episodes, last_episode: max, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
               Logger.logSuccess(`更新成功: ${res}`)
-              resolve('进度管理更新成功,推送中...')
-              for (const item of pushList) {
-                ctx.reply(item, {
-                  message_thread_id: threadID,
-                })
+              if (pushList.length !== 0) {
+                for (const item of pushList) {
+                  if (ctx) {
+                    ctx.reply(item, {
+                      message_thread_id: threadID,
+                    })
+                  }
+                  else {
+                    BotLogger.sendServerMessage(item, {
+                      message_thread_id: threadID,
+                    })
+                  }
+                }
+                resolve('进度管理更新成功,推送中...')
               }
             }).catch((err) => {
               Logger.logError(`更新失败: ${err}`)

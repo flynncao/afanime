@@ -1,5 +1,5 @@
 import { createConversation } from '@grammyjs/conversations'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateSingleAnime } from '../models/Anime.js'
+import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes, updateSingleAnimeQuick } from '../models/Anime.js'
 import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
@@ -41,7 +41,7 @@ async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx
     if (msg === '/exit')
       return ctx.reply('退出成功')
   } while (!msg)
-  await updateSingleAnime(store.operatingAnimeID, { query: msg }).then(() => {
+  await updateSingleAnimeQuick(store.operatingAnimeID, { query: msg }).then(() => {
     return ctx.reply('更新成功')
   }).catch((err) => {
     return ctx.reply('更新失败', err)
@@ -75,7 +75,7 @@ async function updateCurrentEpisodeConversation(conversation: AnimeConversation,
     }
   }
   episode = unwrapTypedMessageAsNumber(typedInfo)
-  await updateSingleAnime(id, { current_episode: episode }).then(() => {
+  await updateSingleAnimeQuick(id, { current_episode: episode }).then(() => {
     return ctx.reply('更新成功')
   }).catch((err) => {
     return ctx.reply('更新失败', err)
@@ -118,13 +118,8 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
       Logger.logSuccess(`创建成功: ${res} `)
       store.dashboardFingerprint = new Date().toISOString()
       ctx.reply('创建成功, 拉取Bangumi主题信息中...')
-      await fetchAndUpdateAnimeMetaInfo(id).then(async (res) => {
-        ctx.reply(`${res}，拉取Bangumi剧集信息中...`)
-        const finalRes: string | Error = await fetchAndUpdateAnimeEpisodesInfo(id, ctx)
-        ctx.reply(finalRes instanceof Error ? finalRes.message : finalRes)
-      }).catch((err) => {
-        ctx.reply(err)
-      })
+      const msg = await updateAnimeMetaAndEpisodes(id)
+      return ctx.reply(msg)
     }).catch((err) => {
       return ctx.reply('创建失败', err)
     })

@@ -50,6 +50,7 @@ class ClassicMenuBuilder implements IMyMenu {
       if (button.newLine)
         this.menu.row()
     }
+    this.menu.text('取消', ctx => ctx.deleteMessage())
   }
 
   public getIdentifier() {
@@ -73,27 +74,24 @@ const menuList: MenuList[] = [
   {
     identifier: 'anime-action',
     buttons: [
-      { text: '拉取bangumi信息', callback: async (ctx: AnimeContext) => {
+      { text: '拉取bangumi信息(周常)', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
-        await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID).then((res) => {
-          ctx.reply(res)
-        }).catch((err) => {
-          ctx.reply(err)
-        })
+        const msg = await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID)
+        return await ctx.reply(msg)
       }, newLine: true },
+      // {
+      //   text: '拉取bangumi剧集信息',
+      //   callback: async (ctx: AnimeContext) => {
+      //     if (!store.operatingAnimeID)
+      //       return ctx.reply('找不到操作中的动画ID，请重试！')
+      //     await useFetchBangumiEpisodesInfo(store.operatingAnimeID, ctx, true)
+      //     return await ctx.reply(ctx.session.message!)
+      //   },
+      //   newLine: true,
+      // },
       {
-        text: '拉取bangumi剧集信息',
-        callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
-          await useFetchBangumiEpisodesInfo(store.operatingAnimeID, ctx, true)
-          return await ctx.reply(ctx.session.message!)
-        },
-        newLine: true,
-      },
-      {
-        text: '从NEP仓库拉取动画并推送',
+        text: '从NEP仓库拉取动画并推送(日常)',
         callback: async (ctx: AnimeContext) => {
           if (!store.operatingAnimeID) {
             // TODO: fix: consider store animeID and other useful information in context instead of memory.
@@ -102,7 +100,6 @@ const menuList: MenuList[] = [
 
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
-            console.log('tuche...')
             return ctx.reply(res instanceof Error ? res.message : res)
           }
         },

@@ -33,17 +33,6 @@ export async function init() {
     const zdt = ZonedDateTime
     db.clock = zdt
   }
-  // TODO: feat: use immutable js clock
-  // db.timer?.start({ callback(timer: ITimer) {
-  //   if (timer.getTotalTimeValues().seconds === TIMER_INTERVAL_IN_SECONDS) {
-  //     bot.api.sendMessage(userChatID, `地球已經過去了24小時，爲什麽不使用/all來看看有沒有新的動畫呢！`)
-  //     // threadQueries.forEach(async (thread) => {
-  //     // updateAnimePerThread(ctx, thread.threadID, false)
-  //     // })
-  //     timer.reset()
-  //   }
-  // }, countdown: false, startValues: { seconds: 0 }, target: { seconds: TIMER_INTERVAL_IN_SECONDS } })
-
   /**
    * Error handling
    */
