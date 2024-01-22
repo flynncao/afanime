@@ -37,9 +37,9 @@
     "grammy": "^1.19.2",
     "mongodb": "~6.3.0",
     "mongoose": "^8.0.4",
+    "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
-    "tsx": "3.14.0",
-    "unsplash-js": "^7.0.18"
+    "tsx": "3.14.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^1.2.1",
