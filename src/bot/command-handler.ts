@@ -51,22 +51,22 @@ export default function registerCommandHandler() {
     }
   })
 
-  bot.command('update', async (ctx) => {
-    if (ctx.message?.is_topic_message) {
-      const theadID = ctx.message?.message_thread_id
-      updateAnimePerThread(ctx, theadID!)
-    }
-    else {
-      return ctx.reply('Please reply to the thread message')
-    }
-  })
+  // bot.command('update', async (ctx) => {
+  //   if (ctx.message?.is_topic_message) {
+  //     const theadID = ctx.message?.message_thread_id
+  //     updateAnimePerThread(ctx, theadID!)
+  //   }
+  //   else {
+  //     return ctx.reply('Please reply to the thread message')
+  //   }
+  // })
 
-  bot.command('all', async (ctx) => {
-    ctx.reply(`更新全部動畫中..`)
-    threadQueries.forEach(async (thread) => {
-      updateAnimePerThread(ctx, thread.threadID, false)
-    })
-  })
+  // bot.command('all', async (ctx) => {
+  //   ctx.reply(`更新全部動畫中..`)
+  //   threadQueries.forEach(async (thread) => {
+  //     updateAnimePerThread(ctx, thread.threadID, false)
+  //   })
+  // })
 
   bot.command('metainfo', async (ctx) => {
     if (ctx.session.animes === undefined) {

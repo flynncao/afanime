@@ -1,5 +1,5 @@
 import { createConversation } from '@grammyjs/conversations'
-import { Anime, STATUS, updateSingleAnime } from '../models/Anime.js'
+import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateSingleAnime } from '../models/Anime.js'
 import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
@@ -114,9 +114,17 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
   conversation.external(async () => {
     if (!query)
       query = ''
-    await createNewAnime({ id, threadID, name_cn, query }).then((res) => {
-      Logger.logSuccess(`创建成功: ${res}`)
-      return ctx.reply('创建成功')
+    await createNewAnime({ id, threadID, name_cn, query }).then(async (res) => {
+      Logger.logSuccess(`创建成功: ${res} `)
+      store.dashboardFingerprint = new Date().toISOString()
+      ctx.reply('创建成功, 拉取Bangumi主题信息中...')
+      await fetchAndUpdateAnimeMetaInfo(id).then(async (res) => {
+        ctx.reply(`${res}，拉取Bangumi剧集信息中...`)
+        const finalRes: string | Error = await fetchAndUpdateAnimeEpisodesInfo(id, ctx)
+        ctx.reply(finalRes instanceof Error ? finalRes.message : finalRes)
+      }).catch((err) => {
+        ctx.reply(err)
+      })
     }).catch((err) => {
       return ctx.reply('创建失败', err)
     })

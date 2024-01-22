@@ -102,6 +102,7 @@ const menuList: MenuList[] = [
 
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
+            console.log('tuche...')
             return ctx.reply(res instanceof Error ? res.message : res)
           }
         },
