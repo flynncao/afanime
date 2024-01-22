@@ -203,6 +203,8 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
             const episodeNum = extractEpisodeNumber(item.text)
             if (episodeNum !== null && episodeNum > last_episode) {
               max = episodeNum // update ready for last episode
+              console.log('episodeNum :>> ', episodeNum)
+
               episodes[episodeNum - 1].videoLink = item.link
             }
           }
@@ -213,10 +215,12 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
             const pushList: string[] = []
             // TODO: (error) avoid sending too many messages
             // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
-            for (let i = last_episode; i <= max; i++)
+            for (let i = last_episode === 0 ? 1 : last_episode; i <= max; i++)
               pushList.push(episodes[i - 1].videoLink)
 
+            console.log('pushList :>> ', pushList)
             updateSingleAnime(animeID, { episodes, last_episode: max, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
+              console.log('res, preparing for pushing :>> ', res)
               Logger.logSuccess(`更新成功: ${res}`)
               resolve('进度管理更新成功,推送中...')
               for (const item of pushList) {
@@ -225,10 +229,13 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
                 })
               }
             }).catch((err) => {
+              Logger.logError(`更新失败: ${err}`)
+
               reject(err)
             })
           }
         }).catch((err) => {
+          Logger.logError(`更新失败: ${err}`)
           reject(err)
         })
       }
@@ -236,6 +243,7 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx: Anim
         reject(new Error('不合理的查询语句，话题ID或进度管理信息'))
       }
     }).catch((err) => {
+      Logger.logError(`更新失败: ${err}`)
       reject(err)
     })
   })
