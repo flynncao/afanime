@@ -35,6 +35,15 @@ export interface BangumiSubjectInfoResponseData {
   locked: boolean
   nsfw: boolean
   type: number
+  episodes: IEpisode[]
+}
+
+export interface IEpisode {
+  id: number
+  bangumiID: number
+  name: string
+  name_cn: string
+  videoLink: string
 }
 
 interface Collection {

@@ -4,7 +4,7 @@ import type { TelegramMessageResponse } from '../types/response.js'
 
 const NEP_BASE_URL = 'https://search.acgn.es/api/'
 
-type possibleResult = TelegramMessageResponse | AxiosError
+export type possibleResult = TelegramMessageResponse | AxiosError
 export async function useFetchNEP(word: string): Promise<possibleResult> {
   return new Promise ((resolve: any, reject: any) => {
     axios.get(NEP_BASE_URL, {
@@ -16,6 +16,7 @@ export async function useFetchNEP(word: string): Promise<possibleResult> {
         page: 0,
         limit: 24,
         word,
+        sort: 'time',
       },
     }).then((response: AxiosResponse<TelegramMessageResponse>) => {
       const { data } = response

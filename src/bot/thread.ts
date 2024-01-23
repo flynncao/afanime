@@ -1,7 +1,7 @@
 import { threadQueries } from '#root/constants/index.js'
 import type { AnimeContext, AnimeData, AnimeThread } from '#root/types/index.js'
 import { useFetchNEP } from '#root/modules/acgn.js'
-import db from '#root/databases/db.js'
+import db from '#root/databases/store.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
 
 // TODO: (feat) Periodically update anime without context?
@@ -38,12 +38,6 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
       message_thread_id: threadID,
     })
   }
-  // data.data.splice(cloudLastEpisode - localLastEpisode)
-  // data.data.forEach((item: any) => {
-  //   ctx.reply(String(item.link), {
-  //     message_thread_id: threadID,
-  //   })
-  // })
   const filteredList: any[] = []
   let max = localLastEpisode
   for (let i = 0; i < data.data.length; i++) {
@@ -65,8 +59,6 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
     })
   }
   else {
-    console.log('filteredList :>> ', filteredList)
-    console.log('max :>> ', max)
     for (const item of filteredList) {
       ctx.reply(String(item.link), {
         message_thread_id: threadID,
