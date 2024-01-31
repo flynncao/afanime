@@ -1,9 +1,9 @@
 {
-  "name": "telegram-bot-template",
+  "name": "afanime-tg-bot",
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "GrammY bot starter template",
+  "description": "Auto forward anime episodes from NEP ani library.",
   "author": "Flynn Cao",
   "license": "MIT",
   "main": "./dist/start.js",

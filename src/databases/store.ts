@@ -10,6 +10,7 @@ interface SharedDB {
   menus: any
   clock: typeof ZonedDateTime | null
   operatingAnimeID: number | null
+  pushCenter: { list: any[], threadID: number | null }
   dashboardFingerprint: string
   botContextMessage: string | null
 }
@@ -23,6 +24,10 @@ const db: SharedDB = {
   operatingAnimeID: null,
   dashboardFingerprint: 'default',
   botContextMessage: '',
+  pushCenter: {
+    threadID: null,
+    list: [],
+  },
 }
 
 export default db

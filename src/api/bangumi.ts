@@ -100,43 +100,48 @@ export async function useFetchBangumiSubjectInfo(subject_id: number): Promise<Ba
     })
   })
 }
+// weekly: update subject and episode info; daily: update episode info only
+export async function useFetchBangumiEpisodesInfo(id: number, ctx?: AnimeContext, dailyTask: boolean = false): Promise<string | IEpisode[] | Promise<any>> {
+  return new Promise((resolve, reject) => {
+    dedicatedAxios.get(`/v0/episodes`, {
+      subject_id: id,
+      type: 0,
+      limit: 100,
+      offset: 0,
+    }).then((res: any): any => {
+      if (res?.data?.data?.length === 0)
+        reject(new Error('没有找到剧集信息，是否是未开播番剧？'))
 
-export async function useFetchBangumiEpisodesInfo(id: number, ctx?: AnimeContext, push: boolean = false): Promise<string | IEpisode[] | Promise<any>> {
-  await dedicatedAxios.get(`/v0/episodes`, {
-    subject_id: id,
-    type: 0,
-    limit: 100,
-    offset: 0,
-  }).then((res: any): any => {
-    if (res?.data?.data?.length === 0)
-      return '没有找到剧集信息，是否是未开播番剧？'
-
-    const localEpisodes: IEpisode[] = []
-    for (const item of res?.data?.data) {
-      localEpisodes.push({
-        id: item.id,
-        bangumiID: item.bangumi_id,
-        name: item.name,
-        name_cn: item.name_cn,
-        videoLink: item.url,
-      })
-    }
-    if (!push) {
-      return localEpisodes
-    }
-    else {
-      return updateSingleAnimeQuick(id, { episodes: localEpisodes }).then((res) => {
-        if (ctx)
-          ctx.session.message = '更新成功'
-      }).catch((err: any) => {
-        Logger.logError(`更新本地数据库失败: ${err}`)
-        if (ctx)
-          ctx.session.message = err?.message ? err?.message : '更新本地数据库失败'
-      })
-    }
-  }).catch((resInterceptorError: AxiosError) => {
-    if (ctx)
-      ctx.session.message = resInterceptorError.message
-    return resInterceptorError.message
+      const localEpisodes: IEpisode[] = []
+      for (const item of res?.data?.data) {
+        localEpisodes.push({
+          id: item.id,
+          bangumiID: item.bangumi_id,
+          name: item.name,
+          name_cn: item.name_cn,
+          videoLink: item.url,
+          pushed: false,
+        })
+      }
+      if (dailyTask === false) {
+        // DEFAULT: return episodes info only
+        resolve(localEpisodes)
+      }
+      else {
+        updateSingleAnimeQuick(id, { episodes: localEpisodes }).then((res) => {
+          if (ctx) {
+            ctx.session.message = '更新成功'
+            resolve(ctx.session.message)
+          }
+        }).catch((err: any) => {
+          Logger.logError(`更新本地数据库失败: ${err}`)
+          if (ctx)
+            ctx.session.message = err?.message ? err?.message : '更新本地数据库失败'
+          reject(err)
+        })
+      }
+    }).catch((resInterceptorError: AxiosError) => {
+      reject(new Error(`Bangumi API error: ${resInterceptorError.message}`))
+    })
   })
 }

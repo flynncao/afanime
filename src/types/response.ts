@@ -44,6 +44,7 @@ export interface IEpisode {
   name: string
   name_cn: string
   videoLink: string
+  pushed: boolean
 }
 
 interface Collection {

@@ -5,6 +5,7 @@ import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
 import type { AnimeData } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/models/Anime.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -12,10 +13,6 @@ export default function registerCommandHandler() {
     Logger.logError('registerCommandHandler: env, bot or menus is null')
     return
   }
-
-  bot.command('test', async (ctx) => {
-    return ctx.reply('added!?...')
-  })
 
   bot.command('start', async (ctx) => {
     const index = Math.floor(Math.random() * welcomeMessages.length)
@@ -109,6 +106,13 @@ export default function registerCommandHandler() {
     else {
       ctx.reply('動畫元信息不全！請使用`/metainfo`更新！')
     }
+  })
+
+  bot.command('test', async (ctx) => {
+    store.operatingAnimeID = 325281
+    const msg = await fetchAndUpdateAnimeMetaInfo(325281)
+    console.log('msg :>> ', msg)
+    await ctx.reply('Test Done')
   })
 
   Logger.logSuccess('Command handler registered')

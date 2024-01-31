@@ -80,16 +80,6 @@ const menuList: MenuList[] = [
         const msg = await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID)
         return await ctx.reply(msg)
       }, newLine: true },
-      // {
-      //   text: '拉取bangumi剧集信息',
-      //   callback: async (ctx: AnimeContext) => {
-      //     if (!store.operatingAnimeID)
-      //       return ctx.reply('找不到操作中的动画ID，请重试！')
-      //     await useFetchBangumiEpisodesInfo(store.operatingAnimeID, ctx, true)
-      //     return await ctx.reply(ctx.session.message!)
-      //   },
-      //   newLine: true,
-      // },
       {
         text: '从NEP仓库拉取动画并推送(日常)',
         callback: async (ctx: AnimeContext) => {
@@ -100,7 +90,21 @@ const menuList: MenuList[] = [
 
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
-            return ctx.reply(res instanceof Error ? res.message : res)
+            if (typeof res === 'string') {
+              if (store.pushCenter.list.length > 0) {
+                const list = store.pushCenter.list
+                for (const item of list) {
+                  await ctx.reply(item, {
+                    message_thread_id: store.pushCenter.threadID!,
+                  }).then(() => {
+                    item.pushed = true
+                  })
+                }
+              }
+            }
+            else {
+              return ctx.reply('更新失败')
+            }
           }
         },
         newLine: true,
@@ -170,7 +174,7 @@ export async function initAnimeDashboardMenu(): Promise<Menu<AnimeContext>> {
       const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true, fingerprint: (ctx: AnimeContext) => sharedIdent() }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
         for (const item of res) {
           range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
-            // TODO: (fix) fingerprint never changes, why?
+            // TODO: (fix) fingerprint changes but menu does not update(production mode)
             // store.clock ? store.clock?.now().toString() : new Date().
             store.dashboardFingerprint = new Date().toISOString()
             // TODO: refactor: use conversation & payload to pass value

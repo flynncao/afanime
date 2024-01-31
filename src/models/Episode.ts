@@ -15,4 +15,7 @@ export class Episode {
 
   @prop({ required: false })
   public videoLink!: string
+
+  @prop({ required: false })
+  public pushed!: boolean
 }
