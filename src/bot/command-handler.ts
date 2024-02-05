@@ -6,6 +6,7 @@ import store from '#root/databases/store.js'
 import type { AnimeData } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/models/Anime.js'
+import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -109,10 +110,14 @@ export default function registerCommandHandler() {
   })
 
   bot.command('test', async (ctx) => {
-    store.operatingAnimeID = 325281
-    const msg = await fetchAndUpdateAnimeMetaInfo(325281)
-    console.log('msg :>> ', msg)
-    await ctx.reply('Test Done')
+    // store.operatingAnimeID = 325281
+    // const msg = await fetchAndUpdateAnimeMetaInfo(325281)
+    // console.log('msg :>> ', msg)
+    // await ctx.reply('Test Done')
+    const videoLink = 'https://t.me/AnimeNep/67597'
+    const episodePageLink = 'https://bangumi.tv/ep/1277148'
+    // ctx.reply(`${videoLink}`)
+    ctx.reply(`原视频：${videoLink}\n评论区：${episodePageLink}`)
   })
 
   Logger.logSuccess('Command handler registered')

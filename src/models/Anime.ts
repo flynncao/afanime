@@ -263,10 +263,11 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
             const pushList: any[] = []
             // TODO: (error) avoid sending too many messages
             // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
-            for (let i = last_episode === 0 ? 1 : last_episode; i <= maxInNEP; i++) {
+            for (let i = last_episode + 1; i <= maxInNEP; i++) {
               pushList.push({
                 link: episodes[i - 1].videoLink,
                 pushEpisodeNum: i,
+                bangumiID: episodes[i - 1].id,
               })
             }
             updateSingleAnimeQuick(animeID, { episodes, last_episode: maxInNEP, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {

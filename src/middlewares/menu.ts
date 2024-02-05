@@ -94,11 +94,13 @@ const menuList: MenuList[] = [
               if (store.pushCenter.list.length > 0) {
                 const list = store.pushCenter.list
                 for (const item of list) {
-                  await ctx.reply(item, {
-                    message_thread_id: store.pushCenter.threadID!,
-                  }).then(() => {
-                    item.pushed = true
-                  })
+                  if (item.link && item.link !== '') {
+                    const videoLink = item.link
+                    const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
+                    await ctx.reply(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
+                      message_thread_id: store.pushCenter.threadID!,
+                    })
+                  }
                 }
               }
             }
@@ -131,7 +133,7 @@ export async function createAllMenus(): Promise<string | Error> {
   const init = async (resolve: any) => {
     const builder = new ClassicMenuBuilder('my-menu-identifier')
     const globalMenuObj: Record<string, ProducedMenu<AnimeContext>> = {}
-    const dashboardMenu = await initAnimeDashboardMenu()
+    const dashboardMenu = initAnimeDashboardMenu()
     // Auto-register
     // TODO: refactor: add composer for builder
     for (const item of menuList) {
@@ -168,25 +170,20 @@ const statusLabelArr: string[] = [
   '已归档',
 ]
 
-export async function initAnimeDashboardMenu(): Promise<Menu<AnimeContext>> {
-  return new Promise ((resolve, reject) => {
-    readAnimes().then((res) => {
-      const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true, fingerprint: (ctx: AnimeContext) => sharedIdent() }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
-        for (const item of res) {
-          range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
-            // TODO: (fix) fingerprint changes but menu does not update(production mode)
-            // store.clock ? store.clock?.now().toString() : new Date().
-            store.dashboardFingerprint = new Date().toISOString()
-            // TODO: refactor: use conversation & payload to pass value
-            store.operatingAnimeID = item.id
-            return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
-          }).row()
-        }
-      })
-      resolve(rangedMenu)
-    }).catch((err) => {
-      reject(err)
-      BotLogger.sendServerMessage('createDashboardMenu: readAnimes failed')
+export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
+  try {
+    const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
+      const res = await readAnimes()
+      for (const item of res) {
+        range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
+          store.operatingAnimeID = item.id
+          return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
+        }).row()
+      }
     })
-  })
+    return rangedMenu
+  }
+  catch (error: any) {
+    return error
+  }
 }
