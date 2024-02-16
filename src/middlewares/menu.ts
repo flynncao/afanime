@@ -91,14 +91,15 @@ const menuList: MenuList[] = [
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
             if (typeof res === 'string') {
+              await ctx.reply(res)
               if (store.pushCenter.list.length > 0) {
                 const list = store.pushCenter.list
                 for (const item of list) {
                   if (item.link && item.link !== '') {
                     const videoLink = item.link
                     const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
-                    await ctx.reply(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
-                      message_thread_id: store.pushCenter.threadID!,
+                    await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
+                      message_thread_id: store.pushCenter.threadID,
                     })
                   }
                 }

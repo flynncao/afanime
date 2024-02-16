@@ -67,10 +67,10 @@ export class Anime {
   public total_episodes!: number
 
   @prop({ required: false, default: 0 })
-  public current_episode!: number
+  public current_episode!: number // newest episode shown in Telegram group
 
   @prop({ required: false, default: 0 })
-  public last_episode!: number
+  public last_episode!: number // newest espisode in the NEP database
 
   @prop({ required: false, enum: STATUS, default: STATUS.ARCHIVED })
 
@@ -233,12 +233,15 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
     readSingleAnime(animeID).then((anime) => {
       const query: string = anime?.query
       const threadID: number = anime?.threadID
+      console.log('threadID :>> ', threadID)
       const last_episode: number = anime?.last_episode
+      const current_episode: number = anime?.current_episode
+
       const name = anime?.name_cn
       const episodes = anime?.episodes
       if (!episodes || episodes.length === 0)
         reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
-      if (query && threadID && last_episode >= 0 && name) {
+      if (query && threadID && current_episode >= 0 && name) {
         useFetchNEP(query).then((res: possibleResult) => {
           // TODO: (refactor) use subDocument (ref) for better performance
           if (!('data' in res) || res.data.length === 0)
@@ -248,45 +251,41 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
           for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
-            if (episodeNum !== null && episodeNum > maxInNEP) {
-              maxInNEP = episodeNum // update ready for last episode
-              const isValid = item.link && item.link !== ''
-              episodes[episodeNum - 1].videoLink = isValid ? item.link : ''
-              if (isValid)
-                episodes[episodeNum - 1].pushed = true
+            if (episodeNum !== null && episodeNum > maxInNEP)
+              maxInNEP = episodeNum
+
+            const isValidLink = item.link && item.link !== '' && item.link !== null
+            if (isValidLink && episodeNum !== null) {
+              episodes[episodeNum - 1].videoLink = item.link
+              episodes[episodeNum - 1].pushed = true
             }
           }
-          if (last_episode === maxInNEP) {
+          console.log('maxInNEP :>> ', maxInNEP)
+          if (current_episode === maxInNEP) {
             resolve(`${name} 无需更新!`)
           }
           else {
             const pushList: any[] = []
             // TODO: (error) avoid sending too many messages
             // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
-            for (let i = last_episode + 1; i <= maxInNEP; i++) {
+            let pushedMaxNum = current_episode + 1
+            for (let i = pushedMaxNum; i <= maxInNEP; i++) {
+              const pushedLink = episodes[i - 1].videoLink
               pushList.push({
-                link: episodes[i - 1].videoLink,
+                link: pushedLink,
                 pushEpisodeNum: i,
                 bangumiID: episodes[i - 1].id,
               })
+              if (i > pushedMaxNum && pushedLink)
+                pushedMaxNum = i
             }
-            updateSingleAnimeQuick(animeID, { episodes, last_episode: maxInNEP, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
-              console.log('pushList :>> ', pushList)
+            updateSingleAnimeQuick(animeID, { episodes, current_episode: pushedMaxNum, last_episode: maxInNEP, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
               Logger.logSuccess(`更新成功: ${res}`)
+              console.log('threadID :>> ', threadID)
               if (pushList.length !== 0) {
-                if (!ctx) {
-                  for (const item of pushList) {
-                    BotLogger.sendServerMessage(item, {
-                      message_thread_id: threadID,
-                    })
-                  }
-                  resolve('进度管理更新成功,自动推送中...')
-                }
-                else {
-                  store.pushCenter.list = pushList
-                  store.pushCenter.threadID = threadID
-                  resolve('进度管理更新成功,手动推送中...')
-                }
+                store.pushCenter.list = pushList
+                store.pushCenter.threadID = threadID
+                resolve('进度管理更新成功,手动推送中...')
               }
             }).catch((err) => {
               Logger.logError(`更新失败: ${err}`)

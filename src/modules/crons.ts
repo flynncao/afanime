@@ -17,11 +17,25 @@ export function initCrons() {
 
     const dailyJob = new CronJob('0 0 8 * * *', () => {
       console.log('running a task every 8:00')
-      botInstance.api.sendMessage(userChatId, '早上好~').then(() => {
+      botInstance.api.sendMessage(userChatId, '早上好~现在开始推送动画更新').then(() => {
         readAnimes().then((res) => {
           res.filter(item => item.status === 1).forEach(async (anime) => {
-            const msg = await fetchAndUpdateAnimeEpisodesInfo(anime.id)
-            BotLogger.sendServerMessage(msg instanceof Error ? msg.message : msg)
+            const res = await fetchAndUpdateAnimeEpisodesInfo(anime.id)
+            if (typeof res === 'string') {
+              await BotLogger.sendServerMessageAsync(res)
+              if (store.pushCenter.list.length > 0) {
+                const list = store.pushCenter.list
+                for (const item of list) {
+                  if (item.link && item.link !== '') {
+                    const videoLink = item.link
+                    const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
+                    await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
+                      message_thread_id: store.pushCenter.threadID,
+                    })
+                  }
+                }
+              }
+            }
           })
         })
       })
@@ -33,7 +47,7 @@ export function initCrons() {
         readAnimes().then((res) => {
           res.forEach(async (anime) => {
             const msg = await updateAnimeMetaAndEpisodes(anime.id)
-            botInstance.api.sendMessage(userChatId, msg)
+            BotLogger.sendServerMessage(msg)
           })
         })
       })

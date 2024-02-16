@@ -1,5 +1,6 @@
 import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
 import { updateAnimePerThread } from './thread.js'
+import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
@@ -76,7 +77,6 @@ export default function registerCommandHandler() {
     for (let i = 0; i < length; i++) {
       const anime: AnimeData = ctx.session.animes[i]!
       if (anime && anime.metaInfo === null) {
-        // TODO: https://github.com/flynncao/telegram-bot-auto-forward-acgn/issues/2
         await useFetchBangumiSubjectInfo(anime.bangumiID).then((data) => {
           console.log('updatingd meta data :>> ', data)
           anime.totalEpisodes = data.total_episodes
@@ -117,7 +117,7 @@ export default function registerCommandHandler() {
     const videoLink = 'https://t.me/AnimeNep/67597'
     const episodePageLink = 'https://bangumi.tv/ep/1277148'
     // ctx.reply(`${videoLink}`)
-    ctx.reply(`原视频：${videoLink}\n评论区：${episodePageLink}`)
+    await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`)
   })
 
   Logger.logSuccess('Command handler registered')
