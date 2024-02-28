@@ -1,4 +1,4 @@
-import { getModelForClass, prop } from '@typegoose/typegoose'
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 import { ChronoUnit, LocalDate } from '@js-joda/core'
 import type { Bot } from 'grammy'
 import type { Image } from './Image.js'
@@ -9,10 +9,12 @@ import store from '#root/databases/store.js'
 import type { possibleResult } from '#root/api/nep.js'
 import { useFetchNEP } from '#root/api/nep.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
-import type { AnimeContext } from '#root/types/index.js'
+import type { AnimeContext, IAnime } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
 import type { IEpisode } from '#root/types/response.js'
 import BotLogger from '#root/bot/logger.js'
+import { getLocalAnimeDataByID } from '#root/modules/anime/index.js'
+import { fetchBangumiSubjectInfoFromID } from '#root/modules/bangumi/index.js'
 
 /**
  * EVERYDAY TYPES
@@ -35,6 +37,9 @@ export interface IAnimeCritical {
 /**
  * MONGOOSE SCHEMAS
  */
+@modelOptions({ options: {
+  allowMixed: 0,
+} })
 export class Anime {
   /** Critical Information */
   @prop({ required: true, unique: true, index: true })
@@ -118,64 +123,26 @@ export async function createNewAnime(anime: IAnimeCritical): Promise<any> {
   anime.status = STATUS.ARCHIVED
   return new AnimeModel(anime).save()
 }
+
 export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage: string = '更新成功'): Promise<any> {
   return new Promise((resolve, reject) => {
-    let updatedAnime: any = null
-    // p1
-    const readSingleAnimePromise = () => readSingleAnime(animeID).then((data) => {
-      updatedAnime = data
-      console.log('p1: updatedAnime :>> ', updatedAnime)
-      return Promise.resolve()
-    }).catch((err) => {
-      Logger.logError(`p1: ${err}`)
-      return Promise.reject(err)
-    })
-    // p2
-    const fetchBangumiSubjectInfoPromise = () => useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo) => {
-      console.log('p2 start')
-      const needUpdateBangumiEpisodeInfo = updatedAnime.episodes.length === 0
-      console.log('subjectInfo :>> ', subjectInfo)
-      console.log('needUpdateBangumiEpisodeInfo start :>> ', needUpdateBangumiEpisodeInfo)
-      if (store.clock && subjectInfo.date) {
-        const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
-        updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
-      }
-      console.log('p2: updatedAnime :>> ', updatedAnime)
-      if (needUpdateBangumiEpisodeInfo) {
-        console.log('start fetching episodes info from bangumi...')
-        return useFetchBangumiEpisodesInfo(animeID).then((res) => {
-          const localEpisodes: any = res
-          console.log('localEpisodes in updating meta:>> ', localEpisodes)
-          updatedAnime.episodes = localEpisodes
-          console.log('updatedAnime :>> ', updatedAnime)
-        })
-      }
-      else {
-        delete updatedAnime.episodes
-        console.log('p2 NO NEED: updatedAnime :>> ', updatedAnime)
-
-        return Promise.resolve()
-      }
-    }).catch((err) => {
-      Logger.logError(`p2: ${err}`)
-      return Promise.reject(err)
-    })
-    // p3
-    const findOneAndUpdatePromise = () => AnimeModel.findOneAndUpdate({ id: animeID }, updatedAnime).then((res) => {
+    const findOneAndUpdatePromise = (updatedAnime: IAnime) => AnimeModel.findOneAndUpdate({ id: animeID }, updatedAnime).then((res) => {
       console.log('DB res :>> ', res)
       return Promise.resolve()
     }).catch((err) => {
       Logger.logError(`p3: ${err}`)
       return Promise.reject(err)
     })
-    const promiseArr: any = [readSingleAnimePromise, fetchBangumiSubjectInfoPromise, findOneAndUpdatePromise]
-    function runSequentially(promiseArr: Promise<any>[]) {
-      return promiseArr.reduce((accum, p: any) => accum.then(p), Promise.resolve())
+    const promiseArr: Array<any> = [getLocalAnimeDataByID, fetchBangumiSubjectInfoFromID, findOneAndUpdatePromise]
+    function runSequentially(promises: any[]) {
+      return promises.reduce((accum, p) => accum.then((res: any) => {
+        return p(res)
+      }), Promise.resolve(animeID))
     }
     runSequentially(promiseArr).then(() => {
       Logger.logSuccess(`All done`)
       resolve(successMessage)
-    }).catch((err) => {
+    }).catch((err: Error) => {
       Logger.logError(`更新失败: ${err}`)
       reject(err)
     })

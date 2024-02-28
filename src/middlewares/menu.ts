@@ -5,7 +5,7 @@ import { STATES } from 'mongoose'
 import type { AnimeContext } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
+import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes, updateAnimeMetaAndEpisodes } from '#root/models/Anime.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 
@@ -74,7 +74,17 @@ const menuList: MenuList[] = [
   {
     identifier: 'anime-action',
     buttons: [
-      { text: '拉取bangumi信息(周常)', callback: async (ctx: AnimeContext) => {
+      {
+        text: '更新bangumi基础信息',
+        callback: async (ctx: AnimeContext) => {
+          if (!store.operatingAnimeID)
+            return ctx.reply('找不到操作中的动画ID，请重试！')
+          const msg = await updateAnimeMetaAndEpisodes(store.operatingAnimeID)
+          await ctx.reply(msg)
+        },
+        newLine: true,
+      },
+      { text: '拉取bangumi剧集信息(周常)', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
         const msg = await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID)
@@ -165,10 +175,10 @@ export async function createAllMenus(): Promise<string | Error> {
 }
 
 const statusLabelArr: string[] = [
-  '未放送',
-  '放送中',
-  '已完结',
-  '已归档',
+  '🟡',
+  '🟢',
+  '💯',
+  '⭕',
 ]
 
 export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
@@ -176,7 +186,7 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
     const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
       const res = await readAnimes()
       for (const item of res) {
-        range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
+        range.text(`${item.name_cn}  (${item.current_episode}/${item.total_episodes}) ${statusLabelArr[item.status]}`, (ctx) => {
           store.operatingAnimeID = item.id
           return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
         }).row()
