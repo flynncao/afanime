@@ -1,20 +1,12 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 import { ChronoUnit, LocalDate } from '@js-joda/core'
-import type { Bot } from 'grammy'
-import type { Image } from './Image.js'
-import type { Rating } from './Rating.js'
-import type { Episode } from './Episode.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import store from '#root/databases/store.js'
-import type { possibleResult } from '#root/api/nep.js'
-import { useFetchNEP } from '#root/api/nep.js'
-import { extractEpisodeNumber } from '#root/utils/string.js'
+import { STATUS } from '#root/types/index.js'
 import type { AnimeContext, IAnime } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
 import type { BangumiSubjectInfoResponseData, IEpisode } from '#root/types/response.js'
 import BotLogger from '#root/bot/logger.js'
 import type { Anime } from '#root/models/Anime.js'
-import { STATUS } from '#root/models/Anime.js'
 
 export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime> {
   return new Promise((resolve, reject) => {
@@ -40,6 +32,7 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
           const localEpisodes: any = res
           console.log('localEpisodes in updating meta:>> ', localEpisodes)
           updatedAnime.episodes = localEpisodes
+          resolve(updatedAnime)
         }).catch((err) => {
           Logger.logError(`useFetchBangumiEpisodesInfo err: ${err}`)
           resolve(updatedAnime)

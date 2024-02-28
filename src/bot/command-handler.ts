@@ -6,7 +6,7 @@ import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
 import type { AnimeData } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
-import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/models/Anime.js'
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
 
 export default function registerCommandHandler() {
@@ -50,44 +50,7 @@ export default function registerCommandHandler() {
     }
   })
 
-  // bot.command('update', async (ctx) => {
-  //   if (ctx.message?.is_topic_message) {
-  //     const theadID = ctx.message?.message_thread_id
-  //     updateAnimePerThread(ctx, theadID!)
-  //   }
-  //   else {
-  //     return ctx.reply('Please reply to the thread message')
-  //   }
-  // })
-
-  // bot.command('all', async (ctx) => {
-  //   ctx.reply(`更新全部動畫中..`)
-  //   threadQueries.forEach(async (thread) => {
-  //     updateAnimePerThread(ctx, thread.threadID, false)
-  //   })
-  // })
-
-  bot.command('metainfo', async (ctx) => {
-    if (ctx.session.animes === undefined) {
-      ctx.reply('沒有動畫資料')
-      return
-    }
-    const length = ctx.session.animes.length
-    ctx.reply(`正在更新動畫元信息，共${length}個`)
-    for (let i = 0; i < length; i++) {
-      const anime: AnimeData = ctx.session.animes[i]!
-      if (anime && anime.metaInfo === null) {
-        await useFetchBangumiSubjectInfo(anime.bangumiID).then((data) => {
-          console.log('updatingd meta data :>> ', data)
-          anime.totalEpisodes = data.total_episodes
-          anime.imageURL = data.images.small
-        })
-      }
-    }
-    ctx.reply(`更新動畫元信息完成。`)
-  })
-
-  bot.command('meta', async (ctx) => {
+  bot.command('info', async (ctx) => {
     let threadID = 8
     if (ctx.message?.is_topic_message)
       threadID = ctx.message.message_thread_id!
@@ -105,19 +68,16 @@ export default function registerCommandHandler() {
       })
     }
     else {
-      ctx.reply('動畫元信息不全！請使用`/metainfo`更新！')
+      ctx.reply('动画元信息不全或者未更新，请使用/menu打开菜单并更新元信息！', { message_thread_id: threadID })
     }
   })
 
-  bot.command('test', async (ctx) => {
-    // store.operatingAnimeID = 325281
-    // const msg = await fetchAndUpdateAnimeMetaInfo(325281)
-    // console.log('msg :>> ', msg)
-    // await ctx.reply('Test Done')
-    const videoLink = 'https://t.me/AnimeNep/67597'
-    const episodePageLink = 'https://bangumi.tv/ep/1277148'
-    // ctx.reply(`${videoLink}`)
-    await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`)
+  bot.command('getid', async (ctx) => {
+    const messageThreadID = ctx.message?.message_thread_id
+    if (messageThreadID)
+      await ctx.reply(`此频道ID为:\`${messageThreadID}\``, { message_thread_id: messageThreadID, parse_mode: 'MarkdownV2' })
+    else
+      ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
   })
 
   Logger.logSuccess('Command handler registered')

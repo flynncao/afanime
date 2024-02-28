@@ -1,5 +1,5 @@
 import { threadQueries } from '#root/constants/index.js'
-import type { AnimeContext, AnimeData, AnimeThread } from '#root/types/index.js'
+import type { AnimeContext, AnimeData, AnimeThread, IAnime } from '#root/types/index.js'
 import { useFetchNEP } from '#root/modules/acgn.js'
 import db from '#root/databases/store.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
@@ -13,7 +13,7 @@ function botSendMessage(ctx: possibleContext, message: string) {
   else
     db.bot?.api.sendMessage(userChatID, message)
 }
-
+// Deprecated function
 export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, feedBack = true) {
   const thread = threadQueries.find((thread: AnimeThread) => thread.threadID === threadID)
   // TODO: (refactor) Better error handling
@@ -66,4 +66,15 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
     }
     matchedAnime.lastEpisode = max
   }
+}
+
+export function InitAnimeThreadRelations() {
+  const animes = db.animeList
+}
+
+export function getAnimeIDFromThreadID(threadID: number) {
+  const animes = db.animeList
+  if (animes.length === 0)
+    return undefined
+  return animes.find((anime: IAnime) => anime.threadID === threadID)?.id
 }

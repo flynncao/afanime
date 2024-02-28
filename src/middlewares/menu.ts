@@ -2,12 +2,13 @@ import type { Context } from 'grammy'
 import type { MenuRange } from '@grammyjs/menu'
 import { Menu } from '@grammyjs/menu'
 import { STATES } from 'mongoose'
-import type { AnimeContext } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes, updateAnimeMetaAndEpisodes } from '#root/models/Anime.js'
+import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.js'
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { readAnimes } from '#root/models/Anime.js'
 
 interface MenuButton {
   text: string
@@ -74,16 +75,6 @@ const menuList: MenuList[] = [
   {
     identifier: 'anime-action',
     buttons: [
-      {
-        text: '更新bangumi基础信息',
-        callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
-          const msg = await updateAnimeMetaAndEpisodes(store.operatingAnimeID)
-          await ctx.reply(msg)
-        },
-        newLine: true,
-      },
       { text: '拉取bangumi剧集信息(周常)', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')

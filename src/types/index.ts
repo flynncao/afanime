@@ -41,6 +41,14 @@ export enum STATUS {
   ARCHIVED = 3,
 }
 
+export interface IAnimeCritical {
+  id: number
+  name_cn: string
+  query: string
+  threadID: number
+  status?: STATUS
+}
+
 export interface IAnime {
   /** Critical Information */
   id: number

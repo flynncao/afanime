@@ -1,9 +1,10 @@
 import { createConversation } from '@grammyjs/conversations'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes, updateSingleAnimeQuick } from '../models/Anime.js'
-import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
+import { updateSingleAnimeQuick } from '../models/Anime.js'
+import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { createNewAnime } from '#root/models/Anime.js'
+import { fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 
 /**
  * UTILITIES
@@ -110,7 +111,7 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
     if (query)
       break
   }
-
+  console.log('ゆびさきと恋々', query)
   conversation.external(async () => {
     if (!query)
       query = ''
@@ -121,7 +122,8 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
       const msg = await updateAnimeMetaAndEpisodes(id)
       await ctx.reply(msg)
     }).catch((err) => {
-      return ctx.reply('创建失败', err)
+      Logger.logError(`创建失败: ${err}`)
+      return ctx.reply('创建失败')
     })
   })
 }
