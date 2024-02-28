@@ -22,10 +22,12 @@ export async function init() {
   }
   // TODO: refactor: run all the register functions sequentially via await promise and apply suitable patterns to reduce duplicate code
   registerCriticalMiddlewares()
-  await bot.api.setMyCommands(commandList)
   createAllConversations()
   await createAllMenus()
   registerCommandHandler()
+  await bot.api.setMyCommands(commandList).catch((err) => {
+    Logger.logError(err)
+  })
   /**
    * Repetitive message handlers
    */
