@@ -6,6 +6,7 @@ import { ZonedDateTime } from '@js-joda/core'
 import db from '../databases/store.js'
 import { TIMER_INTERVAL_IN_SECONDS, commandList } from '../constants/index.js'
 import registerCommandHandler from './command-handler.js'
+import BotLogger from './logger.js'
 import Logger from '#root/utils/logger.js'
 import { createAllConversations } from '#root/middlewares/conversation.js'
 import { createAllMenus } from '#root/middlewares/menu.js'
@@ -21,20 +22,25 @@ export async function init() {
     return
   }
   // TODO: refactor: run all the register functions sequentially via await promise and apply suitable patterns to reduce duplicate code
-  registerCriticalMiddlewares()
-  createAllConversations()
-  await createAllMenus()
-  registerCommandHandler()
-  await bot.api.setMyCommands(commandList).catch((err) => {
-    Logger.logError(err)
-  })
-  /**
-   * Repetitive message handlers
-   */
-  if (!db.clock) {
-    const zdt = ZonedDateTime
-    db.clock = zdt
+  try {
+    registerCriticalMiddlewares()
+    createAllConversations()
+    await createAllMenus()
+    registerCommandHandler()
+    await bot.api.setMyCommands(commandList).catch((err) => {
+      Logger.logError(err)
+    })
+    if (!db.clock) {
+      const zdt = ZonedDateTime
+      db.clock = zdt
+    }
+    await db.AT.initRelations()
   }
+  catch (error) {
+    Logger.logError('Bot failed to start', error)
+    BotLogger.sendServerMessage('Bot failed to start', error)
+  }
+
   /**
    * Error handling
    */

@@ -1,7 +1,9 @@
 import type { Timer as ITimer } from 'easytimer.js'
 import type { Bot } from 'grammy'
 import type { ZonedDateTime } from '@js-joda/core'
-import type { AnimeContext } from '#root/types/index.js'
+import { ATRelation } from '../bot/thread'
+import type { AnimeContext, IAnime } from '#root/types/index.js'
+import type { IATRelationInstance } from '#root/bot/thread.js'
 
 interface SharedDB {
   timer: ITimer | null
@@ -13,6 +15,7 @@ interface SharedDB {
   pushCenter: { list: any[], threadID: number | null }
   dashboardFingerprint: string
   botContextMessage: string | null
+  AT: IATRelationInstance
 }
 
 const db: SharedDB = {
@@ -28,6 +31,7 @@ const db: SharedDB = {
     threadID: null,
     list: [],
   },
+  AT: ATRelation.getInstance(),
 }
 
 export default db

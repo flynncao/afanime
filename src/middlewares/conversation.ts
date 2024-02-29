@@ -117,7 +117,7 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
       query = ''
     await createNewAnime({ id, threadID, name_cn, query }).then(async (res) => {
       Logger.logSuccess(`创建成功: ${res} `)
-      //   store.dashboardFingerprint = new Date().toISOString()
+      store.AT.insertOne(id, threadID)
       ctx.reply('创建成功, 拉取Bangumi主题信息中...')
       const msg = await updateAnimeMetaAndEpisodes(id)
       await ctx.reply(msg)

@@ -4,10 +4,11 @@ import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
-import type { AnimeData } from '#root/types/index.js'
+import type { AnimeData, IAnime } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
+import { readSingleAnime } from '#root/models/Anime.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -51,25 +52,28 @@ export default function registerCommandHandler() {
   })
 
   bot.command('info', async (ctx) => {
-    let threadID = 8
+    let threadID: number | undefined = Number.NaN
     if (ctx.message?.is_topic_message)
-      threadID = ctx.message.message_thread_id!
-
-    if (ctx.session.animes === undefined) {
-      ctx.reply('沒找到這個動畫！')
+      threadID = ctx.message.message_thread_id
+    if (!threadID) {
+      ctx.reply('请在频道内使用此命令！')
       return
     }
-    const anime = ctx.session.animes.find((anime: AnimeData) => anime.threadID === threadID)
-    console.log('anime :>> ', anime)
-    if (anime && typeof anime.imageURL !== 'undefined') {
-      ctx.replyWithPhoto(anime.imageURL, {
-        caption: `動畫名稱: ${anime?.title}\nBangumiID: ${anime?.bangumiID}\n總集數: ${anime?.totalEpisodes}\n當前集數：${anime.lastEpisode}\n動畫信息： https://bgm.tv/subject/${anime?.bangumiID}`,
-        message_thread_id: threadID,
-      })
-    }
-    else {
-      ctx.reply('动画元信息不全或者未更新，请使用/menu打开菜单并更新元信息！', { message_thread_id: threadID })
-    }
+    console.log('threadID', threadID)
+    const animeID = store.AT.getAnimeIDFromThreadID(threadID)
+    readSingleAnime(animeID).catch((err) => {
+      throw new Error(err)
+    }).then((anime: IAnime) => {
+      if (anime && anime.images) {
+        ctx.replyWithPhoto(anime.images.common, {
+          caption: `动画名称: ${anime.name}\n總集數: ${anime?.total_episodes}\n当前更新到：${anime.current_episode}\n信息页： https://bgm.tv/subject/${anime.id}`,
+          message_thread_id: threadID,
+        })
+      }
+      else {
+        ctx.reply('动画信息不全！')
+      }
+    })
   })
 
   bot.command('getid', async (ctx) => {
@@ -80,5 +84,9 @@ export default function registerCommandHandler() {
       ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
   })
 
-  Logger.logSuccess('Command handler registered')
+  bot.command('test', async (ctx) => {
+    const list = store.AT.getRelations()
+    console.log('list', list)
+  })
+  Logger.logSuccess('Command handler regisred')
 }
