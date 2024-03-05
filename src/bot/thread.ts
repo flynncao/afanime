@@ -1,10 +1,10 @@
 import { threadQueries } from '#root/constants/index.js'
 import type { AnimeContext, AnimeData, AnimeThread, IAnime } from '#root/types/index.js'
-import { useFetchNEP } from '#root/modules/acgn.js'
 import db from '#root/databases/store.js'
 import { extractEpisodeNumber } from '#root/utils/string.js'
 import { readAnimes } from '#root/models/Anime.js'
 import Logger from '#root/utils/logger.js'
+import { useFetchNEP } from '#root/api/nep.js'
 
 // TODO: (feat) Periodically update anime without context?
 const userChatID = process.env.USER_CHAT_ID!
