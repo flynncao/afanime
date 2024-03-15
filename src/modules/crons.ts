@@ -34,6 +34,7 @@ export function initCrons() {
                     })
                   }
                 }
+                store.pushCenter.list = []
               }
             }
           })
