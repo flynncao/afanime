@@ -8,3 +8,7 @@ export function extractEpisodeNumber(inputString: string) {
   // Return the matched episode number without "END" suffix
   return match ? Number.parseInt(match[0], 10) : null
 }
+
+export function objToString(obj: any) {
+  return JSON.stringify(obj, null, 2)
+}

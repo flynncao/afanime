@@ -25,7 +25,6 @@ try {
   // throttle all API calls
   db.bot.api.config.use(throttler)
   await init()
-  run(db.bot)
 }
 catch (error: any) {
   Logger.logError(error)

@@ -14,10 +14,8 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
     const animeID = animeData.id
     useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo: BangumiSubjectInfoResponseData) => {
       const updatedAnime: IAnime = animeData
-      console.log('p2 start')
+      updatedAnime.query = updatedAnime.query === '1' ? subjectInfo.name_cn : updatedAnime.query
       const needUpdateBangumiEpisodeInfo = updatedAnime.episodes?.length === 0
-      console.log('subjectInfo :>> ', subjectInfo)
-      console.log('needUpdateBangumiEpisodeInfo start :>> ', needUpdateBangumiEpisodeInfo)
       if (store.clock && subjectInfo.date) {
         const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
         updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
@@ -27,10 +25,8 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
       if (needUpdateBangumiEpisodeInfo) {
-        console.log('start fetching episodes info from bangumi...')
         useFetchBangumiEpisodesInfo(animeID).then((res) => {
           const localEpisodes: any = res
-          console.log('localEpisodes in updating meta:>> ', localEpisodes)
           updatedAnime.episodes = localEpisodes
           resolve(updatedAnime)
         }).catch((err) => {

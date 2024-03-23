@@ -9,6 +9,7 @@ import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/a
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
 import { readSingleAnime } from '#root/models/Anime.js'
+import { objToString } from '#root/utils/string.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -82,6 +83,24 @@ export default function registerCommandHandler() {
       await ctx.reply(`此频道ID为:\`${messageThreadID}\``, { message_thread_id: messageThreadID, parse_mode: 'MarkdownV2' })
     else
       ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
+  })
+
+  bot.command('meta', async (ctx) => {
+    const messageThreadID = ctx.message?.message_thread_id
+    if (!messageThreadID) {
+      ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
+      return
+    }
+    const animeID = store.AT.getAnimeIDFromThreadID(messageThreadID)
+    if (!animeID)
+      return
+    const animeData: IAnime = await readSingleAnime(animeID)
+    if (animeData) {
+      delete animeData.episodes
+      await ctx.reply(objToString(animeData), {
+        message_thread_id: messageThreadID,
+      })
+    }
   })
 
   bot.command('test', async (ctx) => {

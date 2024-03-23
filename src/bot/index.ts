@@ -35,26 +35,22 @@ export async function init() {
       db.clock = zdt
     }
     await db.AT.initRelations()
+    bot.catch((err) => {
+      const ctx = err.ctx
+      Logger.logError(`Error while handling update ${ctx.update.update_id}:`)
+      const e = err.error
+      if (e instanceof GrammyError)
+        Logger.logError('Error in request:', e.description)
+
+      else if (e instanceof HttpError)
+        Logger.logError('Could not contact Telegram:', e)
+
+      else
+        Logger.logError('Unknown error:', e)
+    })
   }
   catch (error) {
     Logger.logError('Bot failed to start', error)
     BotLogger.sendServerMessage('Bot failed to start', error)
   }
-
-  /**
-   * Error handling
-   */
-  bot.catch((err) => {
-    const ctx = err.ctx
-    Logger.logError(`Error while handling update ${ctx.update.update_id}:`)
-    const e = err.error
-    if (e instanceof GrammyError)
-      Logger.logError('Error in request:', e.description)
-
-    else if (e instanceof HttpError)
-      Logger.logError('Could not contact Telegram:', e)
-
-    else
-      Logger.logError('Unknown error:', e)
-  })
 }

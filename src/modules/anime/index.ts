@@ -21,7 +21,7 @@ export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage
     const findOneAndUpdatePromise = (updatedAnime: IAnime) => AnimeModel.findOneAndUpdate({ id: animeID }, updatedAnime).then((res: any) => {
       return Promise.resolve()
     }).catch((err: Error) => {
-      Logger.logError(`p3: ${err}`)
+      Logger.logError('Error while updateAnimeMetaAndEpisodes: ', err)
       return Promise.reject(err)
     })
     const promiseArr: Array<any> = [getLocalAnimeDataByID, fetchBangumiSubjectInfoFromID, findOneAndUpdatePromise]
