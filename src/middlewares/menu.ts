@@ -104,6 +104,7 @@ const menuList: MenuList[] = [
                     })
                   }
                 }
+                store.pushCenter.list = []
               }
             }
             else {
