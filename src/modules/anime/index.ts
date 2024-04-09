@@ -51,7 +51,7 @@ export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<stri
   })
 }
 // MENU ACTION2: Update Episode info only from bangumi
-export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: AnimeContext): Promise<string | Error> {
+export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<string | Error> {
   return new Promise((resolve, reject) => {
     readSingleAnime(animeID).then((anime: IAnime) => {
       const query: string = anime?.query
@@ -81,7 +81,6 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
               maxInNEP = episodeNum
             const isValidLink = item.link && item.link !== '' && item.link !== null
             const doubleCheck = item.text.includes(anime.name) || item.text.includes(anime.name_cn)
-            const pass = isValidLink && episodeNum !== null && doubleCheck
             if (isValidLink && episodeNum !== null && doubleCheck) {
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true

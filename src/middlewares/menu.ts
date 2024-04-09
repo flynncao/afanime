@@ -90,7 +90,7 @@ const menuList: MenuList[] = [
           }
 
           else {
-            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
+            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID)
             if (typeof res === 'string') {
               console.log('res', res)
               await ctx.reply(res)
