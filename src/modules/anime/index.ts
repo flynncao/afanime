@@ -18,7 +18,7 @@ export async function getLocalAnimeDataByID(animeID: number): Promise<any> {
 
 export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage: string = '更新成功'): Promise<any> {
   return new Promise((resolve, reject) => {
-    const findOneAndUpdatePromise = (updatedAnime: IAnime) => AnimeModel.findOneAndUpdate({ id: animeID }, updatedAnime).then((res: any) => {
+    const findOneAndUpdatePromise = (updatedAnime: IAnime) => AnimeModel.findOneAndUpdate({ id: animeID }, updatedAnime).then(() => {
       return Promise.resolve()
     }).catch((err: Error) => {
       Logger.logError('Error while updateAnimeMetaAndEpisodes: ', err)
@@ -71,19 +71,18 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
           // TODO: (refactor) use subDocument (ref) for better performance
           if (!('data' in res) || res.data.length === 0)
             return reject(new Error('讀取動畫倉庫時發生錯誤！'))
-
           let maxInNEP = 0
           for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
 
-            if (episodeNum !== null && episodeNum > maxInNEP)
-              maxInNEP = episodeNum
             const isValidLink = item.link && item.link !== '' && item.link !== null
             const doubleCheck = item.text.includes(anime.name) || item.text.includes(anime.name_cn)
             if (isValidLink && episodeNum !== null && doubleCheck) {
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true
+              if (episodeNum !== null && episodeNum > maxInNEP)
+                maxInNEP = episodeNum
             }
           }
           if (current_episode === maxInNEP) {
