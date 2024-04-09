@@ -53,17 +53,19 @@ export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<stri
 // MENU ACTION2: Update Episode info only from bangumi
 export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: AnimeContext): Promise<string | Error> {
   return new Promise((resolve, reject) => {
-    readSingleAnime(animeID).then((anime) => {
+    readSingleAnime(animeID).then((anime: IAnime) => {
       const query: string = anime?.query
       const threadID: number = anime?.threadID
-      console.log('threadID :>> ', threadID)
       const last_episode: number = anime?.last_episode
       const current_episode: number = anime?.current_episode
 
       const name = anime?.name_cn
       const episodes = anime?.episodes
-      if (!episodes || episodes.length === 0)
+      if (!episodes || episodes.length === 0) {
         reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
+        return
+      }
+
       if (query && threadID && current_episode >= 0 && name) {
         useFetchNEP(query).then((res: possibleResult) => {
           // TODO: (refactor) use subDocument (ref) for better performance
@@ -74,23 +76,22 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
           for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
+
             if (episodeNum !== null && episodeNum > maxInNEP)
               maxInNEP = episodeNum
-
             const isValidLink = item.link && item.link !== '' && item.link !== null
-            if (isValidLink && episodeNum !== null) {
+            const doubleCheck = item.text.includes(anime.name) || item.text.includes(anime.name_cn)
+            const pass = isValidLink && episodeNum !== null && doubleCheck
+            if (isValidLink && episodeNum !== null && doubleCheck) {
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true
             }
           }
-          console.log('maxInNEP :>> ', maxInNEP)
           if (current_episode === maxInNEP) {
             resolve(`${name} 无需更新!`)
           }
           else {
             const pushList: any[] = []
-            // TODO: (error) avoid sending too many messages
-            // GrammyError: Call to 'sendMessage' failed! (429: Too Many Requests: retry after 5)
             let pushedMaxNum = current_episode + 1
             for (let i = pushedMaxNum; i <= maxInNEP; i++) {
               const pushedLink = episodes[i - 1].videoLink
@@ -104,7 +105,6 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number, ctx?: Ani
             }
             updateSingleAnimeQuick(animeID, { episodes, current_episode: pushedMaxNum, last_episode: maxInNEP, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
               Logger.logSuccess(`更新成功: ${res}`)
-              console.log('threadID :>> ', threadID)
               if (pushList.length !== 0) {
                 store.pushCenter.list = pushList
                 store.pushCenter.threadID = threadID

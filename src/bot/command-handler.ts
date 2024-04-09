@@ -60,7 +60,6 @@ export default function registerCommandHandler() {
       ctx.reply('请在频道内使用此命令！')
       return
     }
-    console.log('threadID', threadID)
     const animeID = store.AT.getAnimeIDFromThreadID(threadID)
     readSingleAnime(animeID).catch((err) => {
       throw new Error(err)

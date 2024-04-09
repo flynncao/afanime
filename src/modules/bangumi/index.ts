@@ -10,7 +10,6 @@ import type { Anime } from '#root/models/Anime.js'
 
 export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime> {
   return new Promise((resolve, reject) => {
-    console.log('animeData', animeData)
     const animeID = animeData.id
     useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo: BangumiSubjectInfoResponseData) => {
       const updatedAnime: IAnime = animeData
@@ -36,7 +35,6 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
       }
       else {
         delete updatedAnime.episodes
-        console.log('p2 NO NEED: updatedAnime :>> ', updatedAnime)
         resolve(updatedAnime)
       }
     }).catch((err) => {

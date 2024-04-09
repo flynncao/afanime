@@ -92,7 +92,9 @@ const menuList: MenuList[] = [
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
             if (typeof res === 'string') {
+              console.log('res', res)
               await ctx.reply(res)
+              console.log('store.pushCenter.list', store.pushCenter.list)
               if (store.pushCenter.list.length > 0) {
                 const list = store.pushCenter.list
                 for (const item of list) {
@@ -101,10 +103,13 @@ const menuList: MenuList[] = [
                     const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
                     await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
                       message_thread_id: store.pushCenter.threadID,
+                    }).catch((err) => {
+                      BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
+                    }).finally(() => {
+                      store.pushCenter.list = []
                     })
                   }
                 }
-                store.pushCenter.list = []
               }
             }
             else {
@@ -169,7 +174,7 @@ export async function createAllMenus(): Promise<string | Error> {
 const statusLabelArr: string[] = [
   '🟡',
   '🟢',
-  '💯',
+  '✔',
   '⭕',
 ]
 
