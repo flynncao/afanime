@@ -24,10 +24,14 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
       if (needUpdateBangumiEpisodeInfo) {
-        useFetchBangumiEpisodesInfo(animeID).then((res) => {
-          const localEpisodes: any = res
-          updatedAnime.episodes = localEpisodes
-          resolve(updatedAnime)
+        useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
+          // TODO: OOP design pattern: Encapsulation
+          if (Array.isArray(res)) {
+            const localEpisodes: any = res
+            updatedAnime.episodes = localEpisodes
+            console.log('updatedAnime', updatedAnime)
+            resolve(updatedAnime)
+          }
         }).catch((err) => {
           Logger.logError(`useFetchBangumiEpisodesInfo err: ${err}`)
           resolve(updatedAnime)

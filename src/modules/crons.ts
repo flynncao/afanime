@@ -11,20 +11,17 @@ export function initCrons() {
   try {
     const timeZone = 'Asia/Shanghai'
 
-    const job = new CronJob('*/5 * * * * *', () => {
-      console.log('running a task every 5 seconds')
-    }, null, false, timeZone)
-
-    const dailyJob = new CronJob('0 0 8 * * *', () => {
+    const dailyJob = new CronJob('15 15 * * *', () => {
       console.log('running a task every 8:00')
       BotLogger.sendServerMessageAsync('早上好~现在开始推送动画更新').then(() => {
         readAnimes().then((res) => {
+          console.log('res', res)
           res.filter(item => item.status === 1).forEach(async (anime) => {
             await executeAnimeEpisodeInfoTask(anime.id, anime.name_cn)
           })
         })
       })
-    })
+    }, null, false, timeZone)
 
     const weeklyJob = new CronJob('0 0 0 * * 1', () => {
       console.log('running a task every Monday 0:00:00')
@@ -36,9 +33,9 @@ export function initCrons() {
           })
         })
       })
-    })
+    }, null, false, timeZone)
 
-    const jobs = [job, dailyJob, weeklyJob]
+    const jobs = [dailyJob, weeklyJob]
     jobs.forEach(job => job.start())
     Logger.logSuccess('Crons initialized')
   }

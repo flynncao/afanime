@@ -11,6 +11,7 @@ import Logger from '#root/utils/logger.js'
 import { createAllConversations } from '#root/middlewares/conversation.js'
 import { createAllMenus } from '#root/middlewares/menu.js'
 import registerCriticalMiddlewares from '#root/middlewares/index.js'
+import { initCrons } from '#root/modules/crons.js'
 
 const userChatID = process.env.USER_CHAT_ID!
 
@@ -35,6 +36,7 @@ export async function init() {
       db.clock = zdt
     }
     await db.AT.initRelations()
+    initCrons()
     bot.catch((err) => {
       const ctx = err.ctx
       Logger.logError(`Error while handling update ${ctx.update.update_id}:`)
