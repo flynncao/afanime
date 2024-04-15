@@ -31,6 +31,6 @@ export function objToString(obj: any) {
 }
 
 export function normalizedAnimeTitle(inputString: string): string {
-  const reg = /[【】!！·「」]/g
+  const reg = /[\s【】!！·・、「」]/g
   return inputString.replace(reg, '')
 }

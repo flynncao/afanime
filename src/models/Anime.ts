@@ -10,7 +10,6 @@ import type { IAnimeCritical } from '#root/types/index.js'
 import { AnimeContext, IAnime, STATUS } from '#root/types/index.js'
 
 import Logger from '#root/utils/logger.js'
-import type { IEpisode } from '#root/types/response.js'
 import BotLogger from '#root/bot/logger.js'
 import { getLocalAnimeDataByID } from '#root/modules/anime/index.js'
 import { fetchBangumiSubjectInfoFromID } from '#root/modules/bangumi/index.js'

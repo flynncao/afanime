@@ -116,10 +116,9 @@ export async function useFetchBangumiEpisodesInfo(id: number, ctx?: AnimeContext
       for (const item of res?.data?.data) {
         localEpisodes.push({
           id: item.id,
-          bangumiID: item.bangumi_id,
           name: item.name,
           name_cn: item.name_cn,
-          videoLink: item.url,
+          videoLink: '',
           pushed: false,
         })
       }
