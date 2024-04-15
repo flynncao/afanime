@@ -74,13 +74,18 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
             return reject(new Error('讀取動畫倉庫時發生錯誤！'))
           let maxInNEP = 0
           console.log('res.data', res.data)
+          console.log('episodes', episodes)
           for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
 
             const isValidLink = item.link && item.link !== '' && item.link !== null
+            const isValiadNum = episodeNum !== null && episodeNum > 0 && episodeNum < episodes.length
+            console.log(`${item.text}/${episodeNum}/${isValidLink}/${isValiadNum}`)
             const doubleCheck = normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name)) || normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name_cn))
-            if (isValidLink && episodeNum !== null && doubleCheck) {
+            if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && episodes[episodeNum - 1].name && episodes[episodeNum - 1].name_cn) {
+              console.log('item.text', item.text)
+              console.log('item.', episodeNum)
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true
               if (episodeNum !== null && episodeNum > maxInNEP)
