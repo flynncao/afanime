@@ -92,9 +92,7 @@ const menuList: MenuList[] = [
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID)
             if (typeof res === 'string') {
-              console.log('res', res)
               await ctx.reply(res)
-              console.log('store.pushCenter.list', store.pushCenter.list)
               if (store.pushCenter.list.length > 0) {
                 const list = store.pushCenter.list
                 for (const item of list) {

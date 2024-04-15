@@ -1,4 +1,5 @@
 import { fetchBangumiSubjectInfoFromID } from '../bangumi/index.js'
+import { normalizedAnimeTitle } from '../../utils/string'
 import { AnimeModel, readSingleAnime, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { type AnimeContext, type IAnime, STATUS } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
@@ -72,12 +73,13 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
           if (!('data' in res) || res.data.length === 0)
             return reject(new Error('讀取動畫倉庫時發生錯誤！'))
           let maxInNEP = 0
+          console.log('res.data', res.data)
           for (let i = (res.data.length - 1); i >= 0; i--) {
             const item = res.data[i]
             const episodeNum = extractEpisodeNumber(item.text)
 
             const isValidLink = item.link && item.link !== '' && item.link !== null
-            const doubleCheck = item.text.includes(anime.name) || item.text.includes(anime.name_cn)
+            const doubleCheck = normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name)) || normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name_cn))
             if (isValidLink && episodeNum !== null && doubleCheck) {
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true

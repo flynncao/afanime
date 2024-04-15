@@ -29,3 +29,8 @@ export function extractEpisodeNumber(inputString: string) {
 export function objToString(obj: any) {
   return JSON.stringify(obj, null, 2)
 }
+
+export function normalizedAnimeTitle(inputString: string): string {
+  const reg = /[【】!！·「」]/g
+  return inputString.replace(reg, '')
+}
