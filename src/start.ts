@@ -24,7 +24,10 @@ try {
   // await initDB()
   await connectMongodb()
   db.bot.api.config.use(throttler) // throttle all API calls
-  db.bot.api.config.use(autoRetry()) // automatically retry failed requests
+  db.bot.api.config.use(autoRetry({
+    retryOnInternalServerErrors: true,
+    maxRetryAttempts: 20,
+  })) // automatically retry failed requests
 
   await init()
   run(db.bot)

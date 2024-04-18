@@ -6,6 +6,10 @@ function parse(str: string, ...args: any) {
 }
 
 export default class Logger {
+  static logInfo = (message: string, ...args: any[]): void => {
+    console.log(chalk.inverse.italic(`${parse(message, ...args)}`))
+  }
+
   static logSuccess = (message: string, ...args: any[]): void => {
     console.log(chalk.green.italic(`✅ ${parse(message, ...args)}`))
   }

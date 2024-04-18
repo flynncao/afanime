@@ -13,10 +13,13 @@ export default class BotLogger {
 
   static sendServerMessageAsync = async (message: string, otherConfig?: any): Promise<void> => {
     const { bot } = store
-    if (bot && process.env.USER_CHAT_ID)
-      await bot.api.sendMessage(process.env.USER_CHAT_ID, message, otherConfig)
+    if (bot && process.env.USER_CHAT_ID) {
+      await bot.api.sendMessage(process.env.USER_CHAT_ID, message, otherConfig).catch((error) => {
+        Logger.logInfo(`Timestamp:${new Date().toLocaleString()}`)
+        Logger.logError(`sendServerMessageAsync:Error while sending message: ${error} at ${new Date().toISOString()}`)
+      })
+    }
 
-    else
-      Logger.logError('FATAL: Bot is not initialized or env file not found, cannot send message')
+    else { Logger.logError('FATAL: Bot is not initialized or env file not found, cannot send message') }
   }
 }

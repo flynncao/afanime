@@ -38,6 +38,7 @@ export async function init() {
     await db.AT.initRelations()
     initCrons()
     bot.catch((err) => {
+      Logger.logInfo(`Timestamp:${new Date().toLocaleString()}`)
       const ctx = err.ctx
       Logger.logError(`Error while handling update ${ctx.update.update_id}:`)
       const e = err.error
@@ -52,6 +53,7 @@ export async function init() {
     })
   }
   catch (error) {
+    Logger.logInfo(`Timestamp:${new Date().toLocaleString()}`)
     Logger.logError('Bot failed to start', error)
     BotLogger.sendServerMessage('Bot failed to start', error)
   }
