@@ -9,6 +9,7 @@ import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAni
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { readAnimes } from '#root/models/Anime.js'
+import { handleAnimeResolve } from '#root/modules/anime/event.js'
 
 interface MenuButton {
   text: string
@@ -91,28 +92,11 @@ const menuList: MenuList[] = [
 
           else {
             const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID)
-            if (typeof res === 'string') {
-              await ctx.reply(res)
-              if (store.pushCenter.list.length > 0) {
-                const list = store.pushCenter.list
-                for (const item of list) {
-                  if (item.link && item.link !== '') {
-                    const videoLink = item.link
-                    const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
-                    await BotLogger.sendServerMessageAsync(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
-                      message_thread_id: store.pushCenter.threadID,
-                    }).catch((err) => {
-                      BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
-                    }).finally(() => {
-                      store.pushCenter.list = []
-                    })
-                  }
-                }
-              }
-            }
-            else {
+            if (typeof res === 'string')
+              handleAnimeResolve(res, ctx)
+
+            else
               return ctx.reply('更新失败')
-            }
           }
         },
         newLine: true,
@@ -172,7 +156,7 @@ export async function createAllMenus(): Promise<string | Error> {
 const statusLabelArr: string[] = [
   '🟡',
   '🟢',
-  '✔',
+  '✅',
   '⭕',
 ]
 

@@ -129,3 +129,7 @@ export async function updateCurrentEpisode(id: number, current_episode: number) 
     current_episode,
   })
 }
+
+export async function deleteAnime(id: number) {
+  return AnimeModel.deleteOne({ id })
+}

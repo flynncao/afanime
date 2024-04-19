@@ -29,7 +29,6 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
           if (Array.isArray(res)) {
             const localEpisodes: any = res
             updatedAnime.episodes = localEpisodes
-            console.log('updatedAnime', updatedAnime)
             resolve(updatedAnime)
           }
         }).catch((err) => {

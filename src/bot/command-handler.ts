@@ -10,6 +10,7 @@ import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#r
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
 import { readSingleAnime } from '#root/models/Anime.js'
 import { objToString } from '#root/utils/string.js'
+import * as animeJobs from '#root/modules/crons/jobs.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -102,9 +103,12 @@ export default function registerCommandHandler() {
     }
   })
 
-  bot.command('test', async (ctx) => {
-    const list = store.AT.getRelations()
-    console.log('list', list)
+  bot.command('dailytask', async () => {
+    animeJobs.updateAnimeLibraryEpisodesInfo()
+  })
+
+  bot.command('weeklytask', async () => {
+    animeJobs.updateAnimeLibraryMetaInfo()
   })
   Logger.logSuccess('Command handler regisred')
 }

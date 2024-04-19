@@ -5,6 +5,10 @@ import { ATRelation } from '../bot/thread.js'
 import type { AnimeContext, IAnime } from '#root/types/index.js'
 import type { IATRelationInstance } from '#root/bot/thread.js'
 
+enum CRON_JOB_STATUS {
+  IDLE = 0,
+  PUSHING = 1,
+}
 interface SharedDB {
   timer: ITimer | null
   bot: Bot<AnimeContext> | null
@@ -16,6 +20,7 @@ interface SharedDB {
   dashboardFingerprint: string
   botContextMessage: string | null
   AT: IATRelationInstance
+  cronStatus: CRON_JOB_STATUS
 }
 
 const db: SharedDB = {
@@ -32,6 +37,7 @@ const db: SharedDB = {
     list: [],
   },
   AT: ATRelation.getInstance(),
+  cronStatus: 0,
 }
 
 export default db

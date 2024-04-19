@@ -103,6 +103,7 @@ export function getAnimeIDFromThreadID(threadID: number) {
 interface IATRelation {
   threadID: number
   id: number
+  title: string
 }
 export class ATRelation {
   private static Instance: ATRelation
@@ -123,10 +124,11 @@ export class ATRelation {
     return this.relations
   }
 
-  public insertOne(animeID: number, threadID: number) {
+  public insertOne(animeID: number, threadID: number, title: string) {
     this.relations.push({
       threadID,
       id: animeID,
+      title,
     })
   }
 
@@ -138,6 +140,14 @@ export class ATRelation {
     return matched.id
   }
 
+  public getAnimeTitleFromThreadID(threadID: number): string {
+    const relations = this.relations
+    const matched = relations.find((relation: IATRelation) => relation.threadID === threadID)
+    if (relations.length === 0 || !matched)
+      return ''
+    return matched.title
+  }
+
   public async initRelations() {
     const res = await readAnimes().catch((err) => {
       Logger.logError(`ATRelation: ${err}`)
@@ -146,7 +156,7 @@ export class ATRelation {
     if (res.length === 0)
       return
     res.forEach((anime: IAnime) => {
-      this.insertOne(anime.id, anime.threadID)
+      this.insertOne(anime.id, anime.threadID, anime.name_cn)
     })
   }
 }

@@ -11,7 +11,7 @@ import Logger from '#root/utils/logger.js'
 import { createAllConversations } from '#root/middlewares/conversation.js'
 import { createAllMenus } from '#root/middlewares/menu.js'
 import registerCriticalMiddlewares from '#root/middlewares/index.js'
-import { initCrons } from '#root/modules/crons.js'
+import { initCrons } from '#root/modules/crons/index.js'
 
 const userChatID = process.env.USER_CHAT_ID!
 
