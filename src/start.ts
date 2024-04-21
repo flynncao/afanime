@@ -8,30 +8,19 @@ import db from './databases/store.js'
 import { init } from './bot/index.js'
 import type { AnimeContext } from './types/index.js'
 import { connectMongodb } from './utils/mongodb.js'
+import throttlerConfig from '#root/config/throttler.js'
+import autoRetryConfig from '#root/config/autoretry.js'
 
 const botToken = process.env.BOT_TOKEN!
 
-const throttler = apiThrottler({
-  global: {
-    reservoir: 100,
-    reservoirRefreshAmount: 100,
-    reservoirRefreshInterval: 60 * 1000,
-  },
-  out: {
-    maxInflight: 1,
-    minTime: 2000,
-  },
-})
+const throttler = apiThrottler(throttlerConfig)
 
 try {
   if (!db.bot)
     db.bot = new Bot<AnimeContext>(botToken)
   await connectMongodb()
   db.bot.api.config.use(throttler)
-  db.bot.api.config.use(autoRetry({
-    maxRetryAttempts: 10,
-    retryOnInternalServerErrors: false,
-  }))
+  db.bot.api.config.use(autoRetry(autoRetryConfig))
 
   await init()
   run(db.bot)

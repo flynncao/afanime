@@ -2,6 +2,7 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   // Disable the default formatter, use eslint instead
   "eslint.experimental.useFlatConfig": true,
+	"workbench.colorTheme": "Monokai Dimmed",
   "prettier.enable": false,
   "editor.formatOnSave": false,
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
@@ -11,6 +12,8 @@
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
   },
+
+	
 
   // The following is optional.
   // It's better to put under project setting `.vscode/settings.json`
