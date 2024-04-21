@@ -7,8 +7,8 @@ export const AcronymMap = {
   UAEI: 'fetchAndUpdateAnimeEpisodesInfo',
 }
 
-function optionalMessenger(msg: string, ctx?: AnimeContext, otherConfig: { message_thread_id?: number } = {}): any {
-  return ctx ? ctx.reply(msg, otherConfig) : BotLogger.sendServerMessageAsync(msg, otherConfig, true)
+async function messenger(msg: string, otherConfig: { message_thread_id?: number } = {}): Promise<any> {
+  await BotLogger.sendServerMessageAsync(msg, otherConfig, true)
 }
 
 const handlers: {
@@ -20,17 +20,17 @@ const handlers: {
     'no-need-update': async (ctx?: AnimeContext) => {
       const threadID = store.pushCenter.threadID
       if (!threadID) {
-        optionalMessenger('threadID不能为空！', ctx)
+        messenger('threadID不能为空！')
         return
       }
       const animeTitle = store.AT.getAnimeTitleFromThreadID(threadID)
       const msg = `「${animeTitle}」无需更新！`
-      await optionalMessenger(msg, ctx)
+      messenger(msg)
     },
     'update-available': async (ctx?: AnimeContext) => {
       const threadID = store.pushCenter.threadID
       if (!threadID) {
-        optionalMessenger('threadID不能为空！', ctx)
+        messenger('threadID不能为空！')
         return
       }
       const list = store.pushCenter.list
@@ -38,18 +38,16 @@ const handlers: {
 
       if (list.length === 0) {
         const msg = `「${animeTitle}」无需更新！`
-        optionalMessenger(msg, ctx)
+        messenger(msg)
         return
       }
-      console.log('threadID::::', threadID)
       const msg = `「${animeTitle}」推送中！`
-      optionalMessenger(msg, ctx)
-
+      messenger(msg)
       for (const item of list) {
         if (item.link && item.link !== '') {
           const videoLink = item.link
           const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
-          await optionalMessenger(`原视频：${videoLink}\n评论区：${episodePageLink}`, ctx, {
+          messenger(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
             message_thread_id: threadID,
           }).catch((err: Error) => {
             BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
@@ -68,6 +66,8 @@ export function handleAnimeResolve(str: string, ctx?: AnimeContext) {
   const callbackFn: string = actions[1]
   const opertaingAnimeID: number = Number.parseInt(actions[2])
   Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${opertaingAnimeID}`)
-  const cb = handlers[callerFn][callbackFn](ctx)
+  if (ctx)
+    console.log(JSON.stringify(ctx))
+  const cb = handlers[callerFn][callbackFn]()
   typeof (cb) === 'function' && cb()
 }

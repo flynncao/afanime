@@ -110,5 +110,11 @@ export default function registerCommandHandler() {
   bot.command('weeklytask', async () => {
     animeJobs.updateAnimeLibraryMetaInfo()
   })
+
+  bot.command('group', async (ctx) => {
+    ctx.reply('hello group', {
+      message_thread_id: 1563,
+    })
+  })
   Logger.logSuccess('Command handler regisred')
 }

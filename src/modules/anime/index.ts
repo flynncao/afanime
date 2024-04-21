@@ -82,8 +82,9 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
 
             const isValidLink = item.link && item.link !== '' && item.link !== null
             const isValiadNum = episodeNum !== null && episodeNum > 0 && episodeNum < episodes.length
-            // console.log(`${item.text}/${episodeNum}/${isValidLink}/${isValiadNum}`)
+            console.log(`${item.text}/${episodeNum}/${isValidLink}/${isValiadNum}`)
             const doubleCheck = normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name)) || normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name_cn))
+            console.log('doubleCheck result:', doubleCheck)
             if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && episodes[episodeNum - 1].name && episodes[episodeNum - 1].name_cn) {
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true
@@ -91,14 +92,14 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
                 maxInNEP = episodeNum
             }
           }
+          console.log('maxInNEP', maxInNEP)
           if (current_episode === maxInNEP) {
             resolve(`UAEI#no-need-update#${id}`)
           }
           else {
             const pushList: any[] = []
             let pushedMaxNum = current_episode + 1
-            // console.log('pushedMaxNum: ', pushedMaxNum)
-            // console.log('maxInNEP: ', maxInNEP)
+            console.log('pushedMaxNum: ', pushedMaxNum)
             for (let i = pushedMaxNum; i <= maxInNEP; i++) {
               const pushedLink = episodes[i - 1].videoLink
               pushList.push({

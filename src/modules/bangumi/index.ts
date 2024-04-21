@@ -14,7 +14,7 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
     useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo: BangumiSubjectInfoResponseData) => {
       const updatedAnime: IAnime = animeData
       updatedAnime.query = updatedAnime.query === '1' ? subjectInfo.name_cn : updatedAnime.query
-      const needUpdateBangumiEpisodeInfo = updatedAnime.episodes?.length === 0
+      const needUpdateBangumiEpisodeInfo = (updatedAnime.episodes?.length === 0 || updatedAnime.episodes?.at(-1)?.name === '')
       if (store.clock && subjectInfo.date) {
         const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
         updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
@@ -26,9 +26,17 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation
-          if (Array.isArray(res)) {
+          if (Array.isArray(res) && updatedAnime.episodes) {
             const localEpisodes: any = res
-            updatedAnime.episodes = localEpisodes
+            for (const item of updatedAnime.episodes) {
+              if (item.name === '') {
+                const newItem = localEpisodes.find((episode: any) => episode.id === item.id)
+                if (newItem) {
+                  item.name = newItem.name
+                  item.name_cn = newItem.name_cn
+                }
+              }
+            }
             resolve(updatedAnime)
           }
         }).catch((err) => {

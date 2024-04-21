@@ -11,10 +11,6 @@ export default class BotLogger {
       Logger.logError('FATAL: Bot is not initialized or env file not found, cannot send message')
   }
 
-  static sendMessageWithInstance = (message: string, otherConfig?: any): void => {
-
-  }
-
   static sendServerMessageAsync = (message: string, otherConfig?: any, getInstance: boolean = false): Promise<any> | void => {
     const { bot } = store
     if (bot && process.env.USER_CHAT_ID) {
