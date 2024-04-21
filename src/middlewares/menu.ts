@@ -8,7 +8,7 @@ import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
-import { readAnimes } from '#root/models/Anime.js'
+import { deleteAnime, readAnimes } from '#root/models/Anime.js'
 import { handleAnimeResolve } from '#root/modules/anime/event.js'
 
 interface MenuButton {
@@ -111,6 +111,18 @@ const menuList: MenuList[] = [
           return ctx.reply('找不到操作中的动画ID，请重试！')
         await ctx.conversation.enter('updateCurrentEpisodeConversation')
       }, newLine: true },
+      {
+        text: '删除动画',
+        callback: async (ctx: AnimeContext) => {
+          if (!store.operatingAnimeID)
+            return ctx.reply('找不到操作中的动画ID，请重试！')
+          await deleteAnime(store.operatingAnimeID).then((res) => {
+            console.log('res', res)
+            ctx.reply('删除完成')
+          })
+        },
+        newLine: true,
+      },
     ],
   },
 ]
