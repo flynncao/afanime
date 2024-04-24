@@ -9,7 +9,6 @@ import { init } from './bot/index.js'
 import type { AnimeContext } from './types/index.js'
 import { connectMongodb } from './utils/mongodb.js'
 import throttlerConfig from '#root/config/throttler.js'
-import autoRetryConfig from '#root/config/autoretry.js'
 
 const botToken = process.env.BOT_TOKEN!
 
@@ -20,7 +19,7 @@ try {
     db.bot = new Bot<AnimeContext>(botToken)
   await connectMongodb()
   db.bot.api.config.use(throttler)
-  db.bot.api.config.use(autoRetry(autoRetryConfig))
+  db.bot.api.config.use(autoRetry())
 
   await init()
   run(db.bot)
