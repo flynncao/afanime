@@ -9,6 +9,10 @@ enum CRON_JOB_STATUS {
   IDLE = 0,
   PUSHING = 1,
 }
+enum DASHBOARD_VISIBILITY{
+	ALL=0,
+	AIRED=1
+}
 interface SharedDB {
   timer: ITimer | null
   bot: Bot<AnimeContext> | null
@@ -16,6 +20,7 @@ interface SharedDB {
   menus: any
   clock: typeof ZonedDateTime | null
   operatingAnimeID: number | null
+	dashboardVisibility:DASHBOARD_VISIBILITY
   pushCenter: { list: any[], threadID: number | null }
   dashboardFingerprint: string
   botContextMessage: string | null
@@ -30,6 +35,7 @@ const db: SharedDB = {
   menus: null,
   clock: null,
   operatingAnimeID: null,
+	dashboardVisibility:DASHBOARD_VISIBILITY.AIRED,
   dashboardFingerprint: 'default',
   botContextMessage: '',
   pushCenter: {

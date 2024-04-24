@@ -4,13 +4,16 @@ import { Menu } from '@grammyjs/menu'
 import { STATES } from 'mongoose'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.js'
+import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
+import { STATUS } from '#root/types/index.js';
+
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
-import { deleteAnime, readAnimes } from '#root/models/Anime.js'
+import { deleteAnime, readAnimes, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { handleAnimeResolve } from '#root/modules/anime/event.js'
 
+ 
 interface MenuButton {
   text: string
   callback: (ctx: AnimeContext) => Promise<any> | void
@@ -111,13 +114,23 @@ const menuList: MenuList[] = [
           return ctx.reply('找不到操作中的动画ID，请重试！')
         await ctx.conversation.enter('updateCurrentEpisodeConversation')
       }, newLine: true },
+			{
+				text: '✅标记为完成',
+				callback: async(ctx: AnimeContext)=>{
+					if (!store.operatingAnimeID)
+						return ctx.reply('找不到操作中的动画ID，请重试！')
+					await updateSingleAnimeQuick(store.operatingAnimeID, {status: STATUS.COMPLETED}).then((res)=>{
+						ctx.reply('标记成功！')
+					})	
+				},
+				newLine: false
+			},
       {
-        text: '删除动画',
+        text: '❌删除动画',
         callback: async (ctx: AnimeContext) => {
           if (!store.operatingAnimeID)
             return ctx.reply('找不到操作中的动画ID，请重试！')
           await deleteAnime(store.operatingAnimeID).then((res) => {
-            console.log('res', res)
             ctx.reply('删除完成')
           })
         },
@@ -128,7 +141,7 @@ const menuList: MenuList[] = [
 ]
 
 function sharedIdent(): string {
-  return store.dashboardFingerprint
+  return store.dashboardFingerprint  
 }
 
 export async function createAllMenus(): Promise<string | Error> {
@@ -177,13 +190,23 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
     const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
       const res = await readAnimes()
       for (const item of res) {
-        range.text(`${item.name_cn}  (${item.current_episode}/${item.total_episodes}) ${statusLabelArr[item.status]}`, (ctx) => {
-          store.operatingAnimeID = item.id
-          return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
-        }).row()
+				if(store.dashboardVisibility === 0 || (store.dashboardVisibility === 1 && item.status === STATUS.AIRED)){
+					range.text(`${item.name_cn}  (${item.current_episode}/${item.total_episodes}) ${statusLabelArr[item.status]}`, (ctx) => {
+						store.operatingAnimeID = item.id
+							return ctx.reply(`操作中的动画：${item.name_cn}`, { reply_markup: store.menus['anime-action'] })
+					}).row()
+				}
+
       }
     })
-    return rangedMenu
+    return rangedMenu.row().text(
+			()=> `🔄当前显示${store.dashboardVisibility===0?'全部':'追番中'}动画信息`,
+			(ctx)=> {
+				store.dashboardVisibility=store.dashboardVisibility===0?1:0
+				ctx.answerCallbackQuery('切换成功')
+				ctx.editMessageReplyMarkup(store.menus['anime-dashboard'].reply_markup)
+			}
+		).row().text('取消', ctx => ctx.deleteMessage())
   }
   catch (error: any) {
     return error
