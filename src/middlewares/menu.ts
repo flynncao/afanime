@@ -2,13 +2,18 @@ import type { Context } from 'grammy'
 import type { MenuRange } from '@grammyjs/menu'
 import { Menu } from '@grammyjs/menu'
 import { STATES } from 'mongoose'
-import type { AnimeContext } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, readAnimes } from '#root/models/Anime.js'
+import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
+import { STATUS } from '#root/types/index.js';
+
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { deleteAnime, readAnimes, updateSingleAnimeQuick } from '#root/models/Anime.js'
+import { handleAnimeResolve } from '#root/modules/anime/event.js'
 
+ 
 interface MenuButton {
   text: string
   callback: (ctx: AnimeContext) => Promise<any> | void
@@ -74,22 +79,12 @@ const menuList: MenuList[] = [
   {
     identifier: 'anime-action',
     buttons: [
-      { text: '拉取bangumi信息(周常)', callback: async (ctx: AnimeContext) => {
+      { text: '拉取bangumi剧集信息(周常)', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
         const msg = await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID)
         return await ctx.reply(msg)
       }, newLine: true },
-      // {
-      //   text: '拉取bangumi剧集信息',
-      //   callback: async (ctx: AnimeContext) => {
-      //     if (!store.operatingAnimeID)
-      //       return ctx.reply('找不到操作中的动画ID，请重试！')
-      //     await useFetchBangumiEpisodesInfo(store.operatingAnimeID, ctx, true)
-      //     return await ctx.reply(ctx.session.message!)
-      //   },
-      //   newLine: true,
-      // },
       {
         text: '从NEP仓库拉取动画并推送(日常)',
         callback: async (ctx: AnimeContext) => {
@@ -99,8 +94,12 @@ const menuList: MenuList[] = [
           }
 
           else {
-            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID, ctx)
-            return ctx.reply(res instanceof Error ? res.message : res)
+            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID)
+            if (typeof res === 'string')
+              handleAnimeResolve(res, ctx)
+
+            else
+              return ctx.reply('更新失败')
           }
         },
         newLine: true,
@@ -115,19 +114,41 @@ const menuList: MenuList[] = [
           return ctx.reply('找不到操作中的动画ID，请重试！')
         await ctx.conversation.enter('updateCurrentEpisodeConversation')
       }, newLine: true },
+			{
+				text: '✅标记为完成',
+				callback: async(ctx: AnimeContext)=>{
+					if (!store.operatingAnimeID)
+						return ctx.reply('找不到操作中的动画ID，请重试！')
+					await updateSingleAnimeQuick(store.operatingAnimeID, {status: STATUS.COMPLETED}).then((res)=>{
+						ctx.reply('标记成功！')
+					})	
+				},
+				newLine: false
+			},
+      {
+        text: '❌删除动画',
+        callback: async (ctx: AnimeContext) => {
+          if (!store.operatingAnimeID)
+            return ctx.reply('找不到操作中的动画ID，请重试！')
+          await deleteAnime(store.operatingAnimeID).then((res) => {
+            ctx.reply('删除完成')
+          })
+        },
+        newLine: true,
+      },
     ],
   },
 ]
 
 function sharedIdent(): string {
-  return store.dashboardFingerprint
+  return store.dashboardFingerprint  
 }
 
 export async function createAllMenus(): Promise<string | Error> {
   const init = async (resolve: any) => {
     const builder = new ClassicMenuBuilder('my-menu-identifier')
     const globalMenuObj: Record<string, ProducedMenu<AnimeContext>> = {}
-    const dashboardMenu = await initAnimeDashboardMenu()
+    const dashboardMenu = initAnimeDashboardMenu()
     // Auto-register
     // TODO: refactor: add composer for builder
     for (const item of menuList) {
@@ -158,31 +179,36 @@ export async function createAllMenus(): Promise<string | Error> {
 }
 
 const statusLabelArr: string[] = [
-  '未放送',
-  '放送中',
-  '已完结',
-  '已归档',
+  '🟡',
+  '🟢',
+  '✅',
+  '⭕',
 ]
 
-export async function initAnimeDashboardMenu(): Promise<Menu<AnimeContext>> {
-  return new Promise ((resolve, reject) => {
-    readAnimes().then((res) => {
-      const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true, fingerprint: (ctx: AnimeContext) => sharedIdent() }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
-        for (const item of res) {
-          range.text(`${item.name_cn}:${statusLabelArr[item.status]}`, (ctx) => {
-            // TODO: (fix) fingerprint never changes, why?
-            // store.clock ? store.clock?.now().toString() : new Date().
-            store.dashboardFingerprint = new Date().toISOString()
-            // TODO: refactor: use conversation & payload to pass value
-            store.operatingAnimeID = item.id
-            return ctx.reply(`${item.name_cn}:`, { reply_markup: store.menus['anime-action'] })
-          }).row()
-        }
-      })
-      resolve(rangedMenu)
-    }).catch((err) => {
-      reject(err)
-      BotLogger.sendServerMessage('createDashboardMenu: readAnimes failed')
+export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
+  try {
+    const rangedMenu = new Menu<AnimeContext>('anime-dashboard', { autoAnswer: true }).dynamic(async (ctx: AnimeContext, range: MenuRange<AnimeContext>) => {
+      const res = await readAnimes()
+      for (const item of res) {
+				if(store.dashboardVisibility === 0 || (store.dashboardVisibility === 1 && item.status === STATUS.AIRED)){
+					range.text(`${item.name_cn}  (${item.current_episode}/${item.total_episodes}) ${statusLabelArr[item.status]}`, (ctx) => {
+						store.operatingAnimeID = item.id
+							return ctx.reply(`操作中的动画：${item.name_cn}`, { reply_markup: store.menus['anime-action'] })
+					}).row()
+				}
+
+      }
     })
-  })
+    return rangedMenu.row().text(
+			()=> `🔄当前显示${store.dashboardVisibility===0?'全部':'追番中'}动画信息`,
+			(ctx)=> {
+				store.dashboardVisibility=store.dashboardVisibility===0?1:0
+				ctx.answerCallbackQuery('切换成功')
+				ctx.editMessageReplyMarkup(store.menus['anime-dashboard'].reply_markup)
+			}
+		).row().text('取消', ctx => ctx.deleteMessage())
+  }
+  catch (error: any) {
+    return error
+  }
 }

@@ -1,22 +1,10 @@
 import { createConversation } from '@grammyjs/conversations'
-import { Anime, STATUS, fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes, updateSingleAnimeQuick } from '../models/Anime.js'
-import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
+import { updateSingleAnimeQuick } from '../models/Anime.js'
+import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { createNewAnime } from '#root/models/Anime.js'
-
-/**
- * UTILITIES
- */
-async function paramsGuard(...params: any[]) {
-  return new Promise((resolve, reject) => {
-    if (params.some(param => param === null || param === undefined))
-      reject(new Error('paramsGuard check failed'))
-
-    else
-      resolve(1)
-  })
-}
+import { fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 
 /**
  * CONVERSATIONS
@@ -83,22 +71,25 @@ async function updateCurrentEpisodeConversation(conversation: AnimeConversation,
 }
 
 async function createNewConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-  await ctx.reply('ハロー～请输入BangumiID，群话题ID，中文名称，使用逗号隔开就好哦！ 输入/exit退出新增')
+  await ctx.reply('ハロー～请输入BangumiID，群话题ID，使用逗号隔开就好哦！ 输入/exit退出新增')
   const typedInfo = await conversation.waitFor(':text')
   let info = typedInfo.update.message?.text?.split(',')
-  while (!info || info.length !== 3) {
+  while (!info || info.length !== 2) {
     if (info && info[0] === '/exit')
       return ctx.reply('退出成功')
     await ctx.reply('输入有误，请重新输入')
     const typedInfo = await conversation.waitFor(':text')
     info = typedInfo.update.message?.text?.split(',')
-    if (info && info.length === 3)
+    if (info && info.length === 2)
       break
   }
   const id = Number(info[0])
   const threadID = Number(info[1])
-  const name_cn = info[2]
-  await ctx.reply('现在输入动画仓库的查询串：')
+  const name_cn = ' '
+  await ctx.reply('现在输入动画仓库的查询串,输入1表示采用中文名搜索，你可以稍后在/dashboard中修改这个查询串，具体来源：[Real Search](https://search.acgn.es/)：', {
+    parse_mode: 'MarkdownV2',
+    disable_web_page_preview: true,
+  })
   const typedInfo2 = await conversation.waitFor(':text')
   let query = typedInfo2.update.message?.text
   while (!query && query === undefined) {
@@ -110,18 +101,18 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
     if (query)
       break
   }
-
   conversation.external(async () => {
     if (!query)
       query = ''
     await createNewAnime({ id, threadID, name_cn, query }).then(async (res) => {
       Logger.logSuccess(`创建成功: ${res} `)
-      store.dashboardFingerprint = new Date().toISOString()
+      store.AT.insertOne(id, threadID)
       ctx.reply('创建成功, 拉取Bangumi主题信息中...')
       const msg = await updateAnimeMetaAndEpisodes(id)
-      return ctx.reply(msg)
+      await ctx.reply(msg)
     }).catch((err) => {
-      return ctx.reply('创建失败', err)
+      Logger.logError(`创建失败: ${err}`)
+      return ctx.reply('创建失败')
     })
   })
 }

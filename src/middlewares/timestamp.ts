@@ -16,4 +16,6 @@ export default async function responseTime(
   const after = Instant.now().toEpochMilli()
   console.log(`Response time: ${after - before} ms`)
   console.log(`Dashboard updated at: ${store.dashboardFingerprint}`)
+  if (store.menus['anime-dashboard'].update)
+    store.menus['anime-dashboard'].update()
 }

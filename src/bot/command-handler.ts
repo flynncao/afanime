@@ -1,10 +1,16 @@
 import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
 import { updateAnimePerThread } from './thread.js'
+import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
-import type { AnimeData } from '#root/types/index.js'
+import type { AnimeData, IAnime } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
+import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
+import { readSingleAnime } from '#root/models/Anime.js'
+import { objToString } from '#root/utils/string.js'
+import * as animeJobs from '#root/modules/crons/jobs.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -12,10 +18,6 @@ export default function registerCommandHandler() {
     Logger.logError('registerCommandHandler: env, bot or menus is null')
     return
   }
-
-  bot.command('test', async (ctx) => {
-    return ctx.reply('added!?...')
-  })
 
   bot.command('start', async (ctx) => {
     const index = Math.floor(Math.random() * welcomeMessages.length)
@@ -51,65 +53,68 @@ export default function registerCommandHandler() {
     }
   })
 
-  // bot.command('update', async (ctx) => {
-  //   if (ctx.message?.is_topic_message) {
-  //     const theadID = ctx.message?.message_thread_id
-  //     updateAnimePerThread(ctx, theadID!)
-  //   }
-  //   else {
-  //     return ctx.reply('Please reply to the thread message')
-  //   }
-  // })
-
-  // bot.command('all', async (ctx) => {
-  //   ctx.reply(`更新全部動畫中..`)
-  //   threadQueries.forEach(async (thread) => {
-  //     updateAnimePerThread(ctx, thread.threadID, false)
-  //   })
-  // })
-
-  bot.command('metainfo', async (ctx) => {
-    if (ctx.session.animes === undefined) {
-      ctx.reply('沒有動畫資料')
+  bot.command('info', async (ctx) => {
+    let threadID: number | undefined = Number.NaN
+    if (ctx.message?.is_topic_message)
+      threadID = ctx.message.message_thread_id
+    if (!threadID) {
+      ctx.reply('请在频道内使用此命令！')
       return
     }
-    const length = ctx.session.animes.length
-    ctx.reply(`正在更新動畫元信息，共${length}個`)
-    for (let i = 0; i < length; i++) {
-      const anime: AnimeData = ctx.session.animes[i]!
-      if (anime && anime.metaInfo === null) {
-        // TODO: https://github.com/flynncao/telegram-bot-auto-forward-acgn/issues/2
-        await useFetchBangumiSubjectInfo(anime.bangumiID).then((data) => {
-          console.log('updatingd meta data :>> ', data)
-          anime.totalEpisodes = data.total_episodes
-          anime.imageURL = data.images.small
+    const animeID = store.AT.getAnimeIDFromThreadID(threadID)
+    readSingleAnime(animeID).catch((err) => {
+      throw new Error(err)
+    }).then((anime: IAnime) => {
+      if (anime && anime.images) {
+        ctx.replyWithPhoto(anime.images.common, {
+          caption: `动画名称: ${anime.name}\n總集數: ${anime?.total_episodes}\n当前更新到：${anime.current_episode}\n信息页： https://bgm.tv/subject/${anime.id}`,
+          message_thread_id: threadID,
         })
       }
-    }
-    ctx.reply(`更新動畫元信息完成。`)
+      else {
+        ctx.reply('动画信息不全！')
+      }
+    })
+  })
+
+  bot.command('getid', async (ctx) => {
+    const messageThreadID = ctx.message?.message_thread_id
+    if (messageThreadID)
+      await ctx.reply(`此频道ID为:\`${messageThreadID}\``, { message_thread_id: messageThreadID, parse_mode: 'MarkdownV2' })
+    else
+      ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
   })
 
   bot.command('meta', async (ctx) => {
-    let threadID = 8
-    if (ctx.message?.is_topic_message)
-      threadID = ctx.message.message_thread_id!
-
-    if (ctx.session.animes === undefined) {
-      ctx.reply('沒找到這個動畫！')
+    const messageThreadID = ctx.message?.message_thread_id
+    if (!messageThreadID) {
+      ctx.reply(ctx.message?.message_thread_id?.toString() ?? '请在频道内发消息来获取ID！')
       return
     }
-    const anime = ctx.session.animes.find((anime: AnimeData) => anime.threadID === threadID)
-    console.log('anime :>> ', anime)
-    if (anime && typeof anime.imageURL !== 'undefined') {
-      ctx.replyWithPhoto(anime.imageURL, {
-        caption: `動畫名稱: ${anime?.title}\nBangumiID: ${anime?.bangumiID}\n總集數: ${anime?.totalEpisodes}\n當前集數：${anime.lastEpisode}\n動畫信息： https://bgm.tv/subject/${anime?.bangumiID}`,
-        message_thread_id: threadID,
+    const animeID = store.AT.getAnimeIDFromThreadID(messageThreadID)
+    if (!animeID)
+      return
+    const animeData: IAnime = await readSingleAnime(animeID)
+    if (animeData) {
+      delete animeData.episodes
+      await ctx.reply(objToString(animeData), {
+        message_thread_id: messageThreadID,
       })
-    }
-    else {
-      ctx.reply('動畫元信息不全！請使用`/metainfo`更新！')
     }
   })
 
-  Logger.logSuccess('Command handler registered')
+  bot.command('dailytask', async () => {
+    animeJobs.updateAnimeLibraryEpisodesInfo()
+  })
+
+  bot.command('weeklytask', async () => {
+    animeJobs.updateAnimeLibraryMetaInfo()
+  })
+
+  bot.command('group', async (ctx) => {
+    ctx.reply('hello group', {
+      message_thread_id: 1563,
+    })
+  })
+  Logger.logSuccess('Command handler regisred')
 }
