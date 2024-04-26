@@ -13,29 +13,20 @@ async function messenger(msg: string, otherConfig: { message_thread_id?: number 
 
 const handlers: {
   [key: string]: {
-    [key: string]: (ctx?: AnimeContext) => any
+    [key: string]: (animeID: number) => any
   }
 } = {
   UAEI: {
-    'no-need-update': async (ctx?: AnimeContext) => {
-      const threadID = store.pushCenter.threadID
-      if (!threadID) {
-        messenger('threadID不能为空！')
-        return
-      }
-      const animeTitle = store.AT.getAnimeTitleFromThreadID(threadID)
-      const msg = `「${animeTitle}」无需更新！`
+    'no-need-update': async (animeID:number) => {
+      const animeObject = store.AT.getThreadIDAndTitleFromID(animeID)
+      const msg = `「${animeObject.title}」无需更新！`
       messenger(msg)
     },
-    'update-available': async (ctx?: AnimeContext) => {
-      const threadID = store.pushCenter.threadID
-      if (!threadID) {
-        messenger('threadID不能为空！')
-        return
-      }
+    'update-available': async (animeID: number) => {
       const list = store.pushCenter.list
-      const animeTitle = store.AT.getAnimeTitleFromThreadID(threadID)
-
+      const animeObject = store.AT.getThreadIDAndTitleFromID(animeID)
+			const animeTitle = animeObject.title
+			const threadID = animeObject.threadID
       if (list.length === 0) {
         const msg = `「${animeTitle}」无需更新！`
         messenger(msg)
@@ -53,7 +44,7 @@ const handlers: {
             BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
           }).finally(() => {
             store.pushCenter.list = []
-            store.pushCenter.threadID = -100
+            store.pushCenter.threadID = 0
           })
         }
       }
@@ -64,10 +55,10 @@ export function handleAnimeResolve(str: string, ctx?: AnimeContext) {
   const actions = str.split('#')
   const callerFn: string = actions[0]
   const callbackFn: string = actions[1]
-  const opertaingAnimeID: number = Number.parseInt(actions[2])
-  Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${opertaingAnimeID}`)
+  const currentAnimeID: number = Number.parseInt(actions[2])
+  Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${currentAnimeID}`)
   if (ctx)
     console.log(JSON.stringify(ctx))
-  const cb = handlers[callerFn][callbackFn]()
+  const cb = handlers[callerFn][callbackFn](currentAnimeID)
   typeof (cb) === 'function' && cb()
 }
