@@ -1,6 +1,6 @@
 import { CronJob } from 'cron'
 import 'dotenv/config'
-import { executeAnimeEpisodeInfoTask } from '../anime/task.js'
+import {  executeAnimeEpisodeInfoTaskInOrder } from '../anime/task.js'
 import { fetchAndUpdateAnimeMetaInfo } from '../anime/index.js'
 import BotLogger from '#root/bot/logger.js'
 import db from '#root/databases/store.js'
@@ -44,9 +44,11 @@ export function updateAnimeLibraryEpisodesInfo() {
     readAnimes().then((res) => {
       const activeAnimes = res.filter(item => item.status === 1)
       optionalMessenger(`放送中的动画数：${activeAnimes.length}`, undefined, {})
+			type EAEIPromise = Promise<string | Promise<any>>
+			type cbFn = () => EAEIPromise
+			const promises: EAEIPromise[] = []
       activeAnimes.forEach(async (anime) => {
-        console.log('anime:', anime.name_cn)
-        await executeAnimeEpisodeInfoTask(anime.id, anime.name_cn)
+				executeAnimeEpisodeInfoTaskInOrder(anime.id, anime.name_cn)
       })
     })
   })

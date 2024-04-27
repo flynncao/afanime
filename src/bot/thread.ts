@@ -70,35 +70,6 @@ export async function updateAnimePerThread(ctx: AnimeContext, threadID: number, 
   }
 }
 
-export async function InitAnimeThreadRelations() {
-  const animes = db.animeList
-  const res: IAnime[] = await readAnimes()
-  if (res.length === 0)
-    return
-
-  animes.push(res.map((anime: IAnime) => {
-    return {
-      threadID: anime.threadID,
-      id: anime.id,
-    }
-  },
-  ))
-}
-
-export function insertNewAnimeThreadRelation(threadID: number, animeID: number) {
-  const animes = db.animeList
-  animes.push({
-    threadID,
-    id: animeID,
-  })
-}
-
-export function getAnimeIDFromThreadID(threadID: number) {
-  const animes = db.animeList
-  if (animes.length === 0)
-    return undefined
-  return animes.find((anime: IAnime) => anime.threadID === threadID)?.id
-}
 
 interface IATRelation {
   threadID: number
@@ -147,6 +118,17 @@ export class ATRelation {
       return ''
     return matched.title
   }
+
+	public getThreadIDAndTitleFromID(animeID: number): { threadID: number, title: string } {
+		const relations = this.relations
+		const matched = relations.find((relation: IATRelation) => relation.id === animeID)
+		if (relations.length === 0 || !matched)
+			return { threadID: 0, title: '' }
+		else
+			return { threadID: matched.threadID, title: matched.title }
+	}
+
+
 
   public async initRelations() {
     const res = await readAnimes().catch((err) => {
