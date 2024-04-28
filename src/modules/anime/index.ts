@@ -84,7 +84,7 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
         //    console.log(`${item.text}/${episodeNum}/${isValidLink}/${isValiadNum}`)
             const doubleCheck = normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name)) || normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name_cn))
         //    console.log('doubleCheck result:', doubleCheck)
-            if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && episodes[episodeNum - 1].name && episodes[episodeNum - 1].name_cn) {
+            if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && (episodes[episodeNum - 1].name || episodes[episodeNum - 1].name_cn)){
               episodes[episodeNum - 1].videoLink = item.link
               episodes[episodeNum - 1].pushed = true
               if (episodeNum !== null && episodeNum > maxInNEP)
