@@ -67,6 +67,9 @@ export class Anime {
   @prop({ required: false, default: null })
   public episodes?: Episode[]
 
+	@prop({required: false,default: ''})
+	public name_phantom?: string
+	
   /** Required: False */
   @prop({ required: false })
   public date!: string
@@ -85,6 +88,8 @@ export class Anime {
 
   @prop({ required: false })
   public nsfw!: boolean
+
+
 }
 
 export const AnimeModel = getModelForClass(Anime)
