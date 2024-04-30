@@ -94,6 +94,7 @@ export async function useFetchBangumiSubjectInfo(subject_id: number): Promise<Ba
     dedicatedAxios.get(`/v0/subjects/${subject_id}`, {
     }).then((res: any) => {
       const { data } = res
+		 Logger.logInfo(`useFetchBangumiSubjectInfo->data: ${data}`)
       resolve(data)
     }).catch((error: AxiosError) => {
       reject(error)

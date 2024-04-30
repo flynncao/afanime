@@ -57,8 +57,9 @@ export function handleAnimeResolve(str: string, ctx?: AnimeContext) {
   const callbackFn: string = actions[1]
   const currentAnimeID: number = Number.parseInt(actions[2])
   Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${currentAnimeID}`)
-  if (ctx)
-    console.log(JSON.stringify(ctx))
   const cb = handlers[callerFn][callbackFn](currentAnimeID)
+	if(ctx){
+		Logger.logInfo('ctx is not null')
+	}
   typeof (cb) === 'function' && cb()
 }

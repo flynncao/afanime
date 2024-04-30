@@ -39,7 +39,6 @@ function optionalMessenger(msg: string, ctx?: AnimeContext, otherConfig: { messa
 }
 
 export function updateAnimeLibraryEpisodesInfo() {
-  console.log('running a task every 8:00')
   optionalMessenger('早上好~现在开始推送动画更新', undefined, {}).then(() => {
     readAnimes().then((res) => {
       const activeAnimes = res.filter(item => item.status === 1)

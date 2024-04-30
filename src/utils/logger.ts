@@ -31,4 +31,8 @@ export default class Logger {
       chalk.bgMagenta('**************************************************'),
     )
   }
+
+	static logInfo = (message: string, ...args: any[]): void => {
+		console.log(chalk.blue(`ℹ️ ${parse(message, args)}`))
+	}
 }
