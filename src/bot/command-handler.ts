@@ -1,5 +1,4 @@
 import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
-import { updateAnimePerThread } from './thread.js'
 import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
@@ -116,5 +115,12 @@ export default function registerCommandHandler() {
       message_thread_id: 1563,
     })
   })
+
+	bot.command('test', async (ctx) => {
+		if(store.AT){
+			console.log('AT', store.AT.getRelations())
+		}
+
+	})
   Logger.logSuccess('Command handler regisred')
 }

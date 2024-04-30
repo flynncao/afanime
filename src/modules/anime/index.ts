@@ -62,11 +62,12 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
       const id = anime?.id
       const name = anime?.name_cn
       const episodes = anime?.episodes
+			Logger.logInfo(`Anime Info: ${query}, threadID: ${threadID}, last_episode: ${last_episode}, current_episode: ${current_episode}, id: ${id}, name: ${name}, episodes: ${episodes}`)
       if (!episodes || episodes.length === 0) {
         reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
         return
       }
-      if (query && threadID && current_episode >= 0 && name) {
+      if (query && threadID && current_episode >= 0 && name && anime.eps) {
         useFetchNEP(query).then((res: possibleResult) => {
           // TODO: (refactor) use subDocument (ref) for better performance
           if (!('data' in res) || res.data.length === 0)
@@ -77,13 +78,16 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
             const episodeNum = extractEpisodeNumber(item.text)
 
             const isValidLink = item.link && item.link !== '' && item.link !== null
-            const isValiadNum = episodeNum !== null && episodeNum > 0 && episodeNum < episodes.length
-
-            const doubleCheck = normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name)) || normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(anime.name_cn))
+            const isValiadNum = episodeNum !== null && episodeNum >= anime.eps! && episodeNum < (episodes.length + anime.eps! - 1)
+						const phantomNames  = anime.name_phantom ? anime.name_phantom.split(',') : [anime.name_cn, anime.name]
+						const doubleCheck = phantomNames.some((name: string) => normalizedAnimeTitle(item.text).includes(normalizedAnimeTitle(name)))
 						Logger.logInfo(`Title:${item.text}/ep no:${episodeNum}/validLink:${isValidLink}/validNum:${isValiadNum}/dc:${doubleCheck}`)
-            if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && (episodes[episodeNum - 1].name || episodes[episodeNum - 1].name_cn)){
-              episodes[episodeNum - 1].videoLink = item.link
-              episodes[episodeNum - 1].pushed = true
+
+            if (isValiadNum && isValidLink && episodeNum !== null && doubleCheck && (episodes[episodeNum - anime.eps!].name || episodes[ episodeNum - anime.eps!].name_cn)){
+							const dbEpisodeIndex = episodeNum - anime.eps!
+							console.log('dbEpisodeIndex', dbEpisodeIndex)
+              episodes[dbEpisodeIndex].videoLink = item.link
+              episodes[dbEpisodeIndex].pushed = true
               if (episodeNum !== null && episodeNum > maxInNEP)
                 maxInNEP = episodeNum
             }
@@ -96,18 +100,19 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
             const pushList: any[] = []
             let pushedMaxNum = current_episode + 1
 						Logger.logInfo(`pushedMaxNum: ${pushedMaxNum}`)
+
             for (let i = pushedMaxNum; i <= maxInNEP; i++) {
-              const pushedLink = episodes[i - 1].videoLink
+              const pushedLink = episodes[i - anime.eps!].videoLink
               pushList.push({
                 link: pushedLink,
                 pushEpisodeNum: i,
-                bangumiID: episodes[i - 1].id,
+                bangumiID: episodes[i - anime.eps!].id,
               })
               if (i > pushedMaxNum && pushedLink)
                 pushedMaxNum = i
             }
-						Logger.logInfo(`pushList: ${pushList}`)
-            updateSingleAnimeQuick(animeID, { episodes, current_episode: pushedMaxNum, last_episode: maxInNEP, status: (last_episode === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
+						Logger.logInfo(`pushList: ${JSON.stringify(pushList)}`)
+            updateSingleAnimeQuick(animeID, { episodes, current_episode: pushedMaxNum, last_episode: maxInNEP, status: (last_episode - anime.eps! + 1=== anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) }).then((res) => {
               Logger.logSuccess(`更新成功: ${res}`)
               if (pushList.length !== 0) {
                 store.pushCenter.list = pushList

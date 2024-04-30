@@ -17,7 +17,9 @@ export const commandList: Command[] = [
 
 // TODO: Consider mobilizing OpenAI to generate anime girl messages
 export const welcomeMessages: string[] = [
-  'おはよう！',
+	'你好！',
+	'こんにちは！',
+	'Hello! ',
 ]
 
 // TODO: Set as mongodb database initial value

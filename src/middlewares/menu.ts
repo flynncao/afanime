@@ -104,16 +104,34 @@ const menuList: MenuList[] = [
         },
         newLine: true,
       },
-      { text: '调整数据库中查询字符串(初始用)', callback: async (ctx: AnimeContext) => {
+      { text: '调整动画查询字符串', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
         await ctx.conversation.enter('updateAnimeQueryConversation')
       }, newLine: true },
-      { text: '调整数据库中最新集(初始用)', callback: async (ctx: AnimeContext) => {
+      { text: '调整推送完的最新集', callback: async (ctx: AnimeContext) => {
         if (!store.operatingAnimeID)
           return ctx.reply('找不到操作中的动画ID，请重试！')
         await ctx.conversation.enter('updateCurrentEpisodeConversation')
       }, newLine: true },
+			{
+				text: '调整动画名匹配串',
+				callback: async(ctx: AnimeContext)=>{
+					if (!store.operatingAnimeID)
+						return ctx.reply('找不到操作中的动画ID，请重试！')
+					await ctx.conversation.enter('updateAnimeNamePhantomConversation')
+				},
+				newLine: true
+			},
+			{
+				text: '[特殊]动画开始的集数（默认为1）',
+				callback: async(ctx: AnimeContext)=>{
+					if (!store.operatingAnimeID)
+						return ctx.reply('找不到操作中的动画ID，请重试！')
+					await ctx.conversation.enter('updateAnimeStartEpisodeConversation')
+				},
+				newLine: true
+			},
 			{
 				text: '✅标记为完成',
 				callback: async(ctx: AnimeContext)=>{
@@ -191,7 +209,7 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
       const res = await readAnimes()
       for (const item of res) {
 				if(store.dashboardVisibility === 0 || (store.dashboardVisibility === 1 && item.status === STATUS.AIRED)){
-					range.text(`${item.name_cn}  (${item.current_episode}/${item.total_episodes}) ${statusLabelArr[item.status]}`, (ctx) => {
+					range.text(`${item.name_cn}  (${item.current_episode < item.eps ? '~' : item.current_episode }/${item.total_episodes + item.eps - 1}) ${statusLabelArr[item.status]}`, (ctx) => {
 						store.operatingAnimeID = item.id
 							return ctx.reply(`操作中的动画：${item.name_cn}`, { reply_markup: store.menus['anime-action'] })
 					}).row()

@@ -71,6 +71,7 @@ export interface IAnime {
   /** Additional Information */
   rating?: IRating
   episodes?: any[]
+	name_phantom?: string
 
   /** Required: False */
   date?: string
