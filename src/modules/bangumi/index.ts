@@ -20,10 +20,13 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
       const needUpdateBangumiEpisodeInfo = (updatedAnime.episodes?.length === 0 || updatedAnime.episodes?.at(-1)?.name === '')
       if (store.clock && subjectInfo.date) {
         const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
-        updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
+				if(updatedAnime.status !== STATUS.COMPLETED){
+					updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
+				}
       }
       for (const key in subjectInfo) {
-        if (Object.prototype.hasOwnProperty.call(subjectInfo, key))
+				
+        if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
 			updatedAnime.name_phantom = subjectInfo.name + ',' + subjectInfo.name_cn + ','
