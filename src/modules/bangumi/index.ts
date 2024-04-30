@@ -13,6 +13,9 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
     const animeID = animeData.id
     useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo: BangumiSubjectInfoResponseData) => {
       const updatedAnime: IAnime = animeData
+			if(store.AT.getRelations().length !== 0 && store.AT.getThreadIDAndTitleFromID(animeID).title.trim() === ''){
+				store.AT.updateTitle(animeID, subjectInfo.name_cn)
+			}
       updatedAnime.query = updatedAnime.query === '1' ? subjectInfo.name_cn : updatedAnime.query
       const needUpdateBangumiEpisodeInfo = (updatedAnime.episodes?.length === 0 || updatedAnime.episodes?.at(-1)?.name === '')
       if (store.clock && subjectInfo.date) {
@@ -23,7 +26,8 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         if (Object.prototype.hasOwnProperty.call(subjectInfo, key))
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
-			console.log('needUpdateBangumiEpisodeInfo', needUpdateBangumiEpisodeInfo)
+			updatedAnime.name_phantom = subjectInfo.name + ',' + subjectInfo.name_cn + ','
+			updatedAnime.eps = 1  // which episode does this Anime season start with 
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation
