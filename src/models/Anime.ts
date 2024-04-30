@@ -59,6 +59,10 @@ export class Anime {
 
   @prop({ required: false, enum: STATUS, default: STATUS.ARCHIVED })
   public status!: number
+
+  @prop({ required: false, default: 1})
+  public eps!: number
+
   /** Additional Information */
 
   @prop({ required: false, default: null })
@@ -77,8 +81,7 @@ export class Anime {
   @prop({ required: false })
   public active!: boolean
 
-  @prop({ required: false })
-  public eps!: number
+
 
   @prop({ required: false })
   public volumes!: number

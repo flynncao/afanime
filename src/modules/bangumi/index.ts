@@ -30,7 +30,6 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
 			updatedAnime.name_phantom = subjectInfo.name + ',' + subjectInfo.name_cn + ','
-			updatedAnime.eps = 1  // which episode does this Anime season start with 
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation
