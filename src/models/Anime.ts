@@ -124,7 +124,6 @@ export async function updateSingleAnimeQuick(animeID: number, anime: any, succes
     AnimeModel.updateOne({
       id: animeID,
     }, anime).then((res) => {
-      Logger.logSuccess(`更新成功: ${res}`)
       resolve(successMessage)
     }).catch((err) => {
       reject(err)

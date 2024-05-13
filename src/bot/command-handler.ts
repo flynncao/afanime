@@ -3,7 +3,7 @@ import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
-import type { AnimeData, IAnime } from '#root/types/index.js'
+import type { AnimeContext, AnimeData, IAnime } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
@@ -102,12 +102,12 @@ export default function registerCommandHandler() {
     }
   })
 
-  bot.command('dailytask', async () => {
-    animeJobs.updateAnimeLibraryEpisodesInfo()
+  bot.command('dailytask', async (ctx: AnimeContext) => {
+    animeJobs.updateAnimeLibraryEpisodesInfo(ctx)
   })
 
-  bot.command('weeklytask', async () => {
-    animeJobs.updateAnimeLibraryMetaInfo()
+  bot.command('weeklytask', async (ctx: AnimeContext) => {
+    animeJobs.updateAnimeLibraryMetaInfo(ctx)
   })
 
   bot.command('group', async (ctx) => {

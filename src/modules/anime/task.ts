@@ -3,12 +3,11 @@ import { fetchAndUpdateAnimeEpisodesInfo } from './index.js'
 import BotLogger from '#root/bot/logger.js'
 
 
-export async function executeAnimeEpisodeInfoTaskInOrder(animeID: number, animeName: string){
+export async function executeAnimeEpisodeInfoTaskInOrder(animeID: number, animeName: string):Promise<string>{
 	const res = await fetchAndUpdateAnimeEpisodesInfo(animeID)
-
 	if (res && typeof res === 'string' ){
-		handleAnimeResolve(res)
+		return res
 	}else{
-		BotLogger.sendServerMessageAsync(`${animeName}：更新剧集信息失败`)
+		return `UAEI#error#${animeID}`
 	}
 }

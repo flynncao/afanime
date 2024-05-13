@@ -135,13 +135,11 @@ async function updateAnimeNamePhantomConversation(conversation: AnimeConversatio
 		await ctx.reply('请输入可能出现的动画名称，输入越多越准确，默认匹配串包含中日动画名，请使用英文逗号隔开，输入/exit退出')
 		const typedCtx = await conversation.waitFor(':text')
 		msg = typedCtx?.update.message?.text
-		console.log('msg', msg)
 		if (!msg)
 			await ctx.reply('输入有误，请重新输入')
 		if (msg === '/exit')
 			return ctx.reply('退出成功')
 	} while (!msg)
-	console.log(`msg: ${msg}`)
 	await updateSingleAnimeQuick(operatingAnimeID, { name_phantom: msg }).then(() => {
 		return ctx.reply('更新成功')
 	}).catch((err) => {

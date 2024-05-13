@@ -12,6 +12,7 @@ import BotLogger from '#root/bot/logger.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { deleteAnime, readAnimes, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { handleAnimeResolve } from '#root/modules/anime/event.js'
+import * as animeJobs from '#root/modules/crons/jobs.js';
 
  
 interface MenuButton {
@@ -224,7 +225,19 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
 				ctx.answerCallbackQuery('切换成功')
 				ctx.editMessageReplyMarkup(store.menus['anime-dashboard'].reply_markup)
 			}
-		).row().text('取消', ctx => ctx.deleteMessage())
+		).row().text(
+			()=> `🔆执行日常番剧放送任务`,
+			(ctx)=> {
+				animeJobs.updateAnimeLibraryEpisodesInfo(ctx)
+				ctx.answerCallbackQuery('执行成功')
+			}
+		).text(
+			()=> `📥执行周常元信息拉取任务`,
+			(ctx)=> {
+				animeJobs.updateAnimeLibraryMetaInfo(ctx)
+				ctx.answerCallbackQuery('执行成功')
+			}
+			).row().text('取消', ctx => ctx.deleteMessage())
   }
   catch (error: any) {
     return error

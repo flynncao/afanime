@@ -11,34 +11,42 @@ async function messenger(msg: string, otherConfig: { message_thread_id?: number 
   await BotLogger.sendServerMessageAsync(msg, otherConfig, true)
 }
 
+
 const handlers: {
   [key: string]: {
-    [key: string]: (animeID: number) => any
+    [key: string]: (animeID: number, ctx?: AnimeContext) => any
   }
 } = {
   UAEI: {
-    'no-need-update': async (animeID:number) => {
+    'no-need-update': async (animeID:number, ctx?: AnimeContext) => {
       const animeObject = store.AT.getThreadIDAndTitleFromID(animeID)
       const msg = `「${animeObject.title}」无需更新！`
-      messenger(msg)
+			if(ctx){
+				await ctx.reply(msg)
+			}
+			return Promise.resolve(false)
     },
-    'update-available': async (animeID: number) => {
+    'update-available': async (animeID: number, ctx?: AnimeContext) => {
       const list = store.pushCenter.list
       const animeObject = store.AT.getThreadIDAndTitleFromID(animeID)
 			const animeTitle = animeObject.title
 			const threadID = animeObject.threadID
       if (list.length === 0) {
         const msg = `「${animeTitle}」无需更新！`
-        messenger(msg)
-        return
+				if(ctx){
+					await ctx.reply(msg)
+				}
+				return Promise.resolve(false)
       }
       const msg = `「${animeTitle}」推送中！`
-      messenger(msg)
-      for (const item of list) {
+			if(ctx){
+				await ctx.reply(msg)
+			}
+			for (const item of list) {
         if (item.link && item.link !== '') {
           const videoLink = item.link
           const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
-          messenger(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
+          await messenger(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
             message_thread_id: threadID,
           }).catch((err: Error) => {
             BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
@@ -48,18 +56,21 @@ const handlers: {
           })
         }
       }
+			return Promise.resolve(true)
     },
   },
 }
-export function handleAnimeResolve(str: string, ctx?: AnimeContext) {
+// resolve TRUE if the anime will update
+export function handleAnimeResolve(str: string, ctx?: AnimeContext): Promise<boolean>{
   const actions = str.split('#')
   const callerFn: string = actions[0]
   const callbackFn: string = actions[1]
   const currentAnimeID: number = Number.parseInt(actions[2])
   Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${currentAnimeID}`)
-  const cb = handlers[callerFn][callbackFn](currentAnimeID)
-	if(ctx){
-		Logger.logInfo('ctx is not null')
+  const cb = handlers[callerFn][callbackFn]
+	if(typeof cb !== 'function'){
+		throw new Error(`[handleResolve] callback function ${callbackFn} not found!`)
+	}else{
+		return cb(currentAnimeID, ctx)
 	}
-  typeof (cb) === 'function' && cb()
 }
