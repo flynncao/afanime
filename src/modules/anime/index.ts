@@ -6,6 +6,7 @@ import Logger from '#root/utils/logger.js'
 import { type possibleResult, useFetchNEP } from '#root/api/nep.js'
 
 import store from '#root/databases/store.js'
+import { ATRelation } from '../../bot/thread';
 
 export async function getLocalAnimeDataByID(animeID: number): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -32,7 +33,6 @@ export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage
       }), Promise.resolve(animeID))
     }
     runSequentially(promiseArr).then(() => {
-      Logger.logSuccess(`All done`)
       resolve(successMessage)
     }).catch((err: Error) => {
       Logger.logError(`更新失败: ${err}`)
@@ -44,10 +44,11 @@ export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage
 // MENU ACTION1: Update Subject and Episode info from bangumi
 export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<string> {
   return new Promise((resolve) => {
+		const title = store.AT!.getThreadIDAndTitleFromID(animeID).title
     updateAnimeMetaAndEpisodes(animeID, '更新动画元信息及剧集成功').then((res) => {
-      resolve('更新动画元信息及剧集成功')
+      resolve(`success#更新「${title}」元信息成功`)
     }).catch(() => {
-      resolve('更新动画元信息及剧集失败')
+      resolve(`error#更新「${title}」元信息失败`)
     })
   })
 }
@@ -117,7 +118,9 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
               if (pushList.length !== 0) {
                 store.pushCenter.list = pushList
                 resolve(`UAEI#update-available#${id}`)
-              }
+              }else{
+								resolve(`UAEI#no-need-update#${id}`)
+							}
             }).catch((err) => {
               Logger.logError(`更新失败: ${err}`)
 
