@@ -116,7 +116,7 @@ export default function registerCommandHandler() {
     })
   })
 
-	bot.command('test', async (ctx) => {
+	bot.command('relation', async (ctx) => {
 		if(store.AT){
 			console.log('AT', store.AT.getRelations())
 		}

@@ -212,7 +212,7 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
 				if(store.dashboardVisibility === 0 || (store.dashboardVisibility === 1 && item.status === STATUS.AIRED)){
 					range.text(`${item.name_cn}  (${item.current_episode < item.eps ? '~' : item.current_episode }/${item.total_episodes + item.eps - 1}) ${statusLabelArr[item.status]}`, (ctx) => {
 						store.operatingAnimeID = item.id
-							return ctx.reply(`操作中的动画：${item.name_cn}`, { reply_markup: store.menus['anime-action'] })
+							return ctx.reply(`${item.name_cn} :第${item.current_episode}集已推送`, { reply_markup: store.menus['anime-action'] })
 					}).row()
 				}
 

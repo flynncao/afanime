@@ -104,8 +104,9 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
 
             for (let i = pushedMaxNum; i <= maxInNEP; i++) {
               const pushedLink = episodes[i - anime.eps!].videoLink
+							const mannualSearchLink = `https://search.acgn.es/?cid=0&word=${encodeURIComponent(`${anime.query}`)}`
               pushList.push({
-                link: pushedLink,
+                link: pushedLink ? pushedLink : `第${i}集未找到，尝试<a href="${mannualSearchLink}">手动搜索?</a>`,
                 pushEpisodeNum: i,
                 bangumiID: episodes[i - anime.eps!].id,
               })

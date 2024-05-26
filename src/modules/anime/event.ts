@@ -7,7 +7,7 @@ export const AcronymMap = {
   UAEI: 'fetchAndUpdateAnimeEpisodesInfo',
 }
 
-async function messenger(msg: string, otherConfig: { message_thread_id?: number } = {}): Promise<any> {
+async function messenger(msg: string, otherConfig: { message_thread_id?: number, parse_mode?: string } = {}): Promise<any> {
   await BotLogger.sendServerMessageAsync(msg, otherConfig, true)
 }
 
@@ -48,6 +48,7 @@ const handlers: {
           const episodePageLink = `https://bangumi.tv/ep/${item.bangumiID}`
           await messenger(`原视频：${videoLink}\n评论区：${episodePageLink}`, {
             message_thread_id: threadID,
+						parse_mode: 'HTML'
           }).catch((err: Error) => {
             BotLogger.sendServerMessageAsync(`Error in sending telegram message: ${err}`)
           }).finally(() => {
