@@ -13,30 +13,42 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
     const animeID = animeData.id
     useFetchBangumiSubjectInfo(animeID).then(async (subjectInfo: BangumiSubjectInfoResponseData) => {
       const updatedAnime: IAnime = animeData
+			if(store.AT.getRelations().length !== 0 && store.AT.getThreadIDAndTitleFromID(animeID).title.trim() === ''){
+				store.AT.updateTitle(animeID, subjectInfo.name_cn)
+			}
       updatedAnime.query = updatedAnime.query === '1' ? subjectInfo.name_cn : updatedAnime.query
       const needUpdateBangumiEpisodeInfo = (updatedAnime.episodes?.length === 0 || updatedAnime.episodes?.at(-1)?.name === '')
       if (store.clock && subjectInfo.date) {
         const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
-        updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
+				if(updatedAnime.status !== STATUS.COMPLETED){
+					updatedAnime.status = timeDistancebyDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
+				}
       }
       for (const key in subjectInfo) {
-        if (Object.prototype.hasOwnProperty.call(subjectInfo, key))
+				
+        if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
+			updatedAnime.name_phantom = subjectInfo.name + ',' + subjectInfo.name_cn + ','
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation
+					Logger.logInfo('useFetchBangumiEpisodesInfo->res', res)
           if (Array.isArray(res) && updatedAnime.episodes) {
-            const localEpisodes: any = res
-            for (const item of updatedAnime.episodes) {
-              if (item.name === '') {
-                const newItem = localEpisodes.find((episode: any) => episode.id === item.id)
-                if (newItem) {
-                  item.name = newItem.name
-                  item.name_cn = newItem.name_cn
-                }
-              }
-            }
+						if(updatedAnime.episodes.length === 0){
+							updatedAnime.episodes = res
+						}else{
+							const localEpisodes: any = res
+							for (const item of updatedAnime.episodes) {
+								if (item.name === '') {
+									const newItem = localEpisodes.find((episode: any) => episode.id === item.id)
+									if (newItem) {
+										item.name = newItem.name
+										item.name_cn = newItem.name_cn
+									}
+								}
+							}
+						}
             resolve(updatedAnime)
           }
         }).catch((err) => {

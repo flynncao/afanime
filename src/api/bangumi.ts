@@ -2,7 +2,7 @@ import type { AxiosError, AxiosInstance, AxiosResponse, CreateAxiosDefaults } fr
 import axios, { Axios } from 'axios'
 import type { BangumiSubjectInfoResponseData, IEpisode } from '#root/types/response.js'
 import Logger from '#root/utils/logger.js'
-import { updateAnimeMetaAndEpisodes, updateSingleAnimeQuick } from '#root/models/Anime.js'
+import {  updateSingleAnimeQuick } from '#root/models/Anime.js'
 import type { AnimeContext } from '#root/types/index.js'
 import storage from '#root/databases/store.js'
 
@@ -94,6 +94,7 @@ export async function useFetchBangumiSubjectInfo(subject_id: number): Promise<Ba
     dedicatedAxios.get(`/v0/subjects/${subject_id}`, {
     }).then((res: any) => {
       const { data } = res
+		 Logger.logInfo(`useFetchBangumiSubjectInfo->data: ${data}`)
       resolve(data)
     }).catch((error: AxiosError) => {
       reject(error)

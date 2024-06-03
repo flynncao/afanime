@@ -1,10 +1,9 @@
 import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
-import { updateAnimePerThread } from './thread.js'
 import BotLogger from './logger.js'
 import { threadQueries, welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
-import type { AnimeData, IAnime } from '#root/types/index.js'
+import type { AnimeContext, AnimeData, IAnime } from '#root/types/index.js'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
@@ -103,12 +102,12 @@ export default function registerCommandHandler() {
     }
   })
 
-  bot.command('dailytask', async () => {
-    animeJobs.updateAnimeLibraryEpisodesInfo()
+  bot.command('dailytask', async (ctx: AnimeContext) => {
+    animeJobs.updateAnimeLibraryEpisodesInfo(ctx)
   })
 
-  bot.command('weeklytask', async () => {
-    animeJobs.updateAnimeLibraryMetaInfo()
+  bot.command('weeklytask', async (ctx: AnimeContext) => {
+    animeJobs.updateAnimeLibraryMetaInfo(ctx)
   })
 
   bot.command('group', async (ctx) => {
@@ -116,5 +115,12 @@ export default function registerCommandHandler() {
       message_thread_id: 1563,
     })
   })
+
+	bot.command('relation', async (ctx) => {
+		if(store.AT){
+			console.log('AT', store.AT.getRelations())
+		}
+
+	})
   Logger.logSuccess('Command handler regisred')
 }

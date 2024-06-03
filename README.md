@@ -1,36 +1,44 @@
-# Telegram-bot-auto-forward-acgn
+# afanime-tg
 
-Automatically forward <https://search.acgn.es/> messages to your telegram channel.
+[English Version](./README_en.md)
 
-## Commands Preset
 
-* `/start` Welcome text
-* `/about` Show information about the bot
-* `/help` Show help text
-* `/settings` Open settings
-* `/update` Manually update all animes
+一个自动转发动画仓库的消息至你自己的Telegram频道&话题的机器人，由 Bangumi & [Real Search](https://search.acgn.es/)提供支持。
 
-## To-dos
+
+## 命令 
+
+* `/start` 显示欢迎信息
+* `/about` 显示机器人信息
+* `/help` 显示帮助信息
+* `/dailytask`  手动更新所有在追的动画视频（手动执行日常任务）
+* `/getid` 获取当前话题的ID（创建动画时需要）
+* `/settings` 调整周任务和日常任务的频率等
+
+## 预览
+
+立即加入我的[Telegram频道](https://t.me/gochumonwa)查看效果！
+
+
+
+## 特性
 
 ### v1
 
-* [x] Search desired animes from NEP Anime Warehouse repetitively(1 hour a time by default)
-* [x] Grab anime info from Bangumi <https://bangumi.github.io/ap>
-* [x] Allow update&create new Anime via bot menu  
-* [x] Useful untility: `/getid` for getting ThreadID.
-* [ ] Allow users to adjust updating frequency via `/setting`
+* [x] 按需从NEP Anime Library获取动画视频消息&自动转发。
+* [x] 从Bangumi刮取动画元信息.
+* [x] 本地动画信息&消息管理
+* [x] 实用工具&自定义
 
 ### v2
 
-* [ ] Format bot messages, work with Bangumi, Anilist.(in-chat comment, & ratings )
-* [ ] (Optional) Refactor http request: <https://github.com/infinitered/apisauce>
+* [ ]  通过Telegram聊天完成在Bangumi中评分，标记，评论动画的工作。
 
-## Thanks to
+## 鸣谢
 
 <https://github.com/grammyjs/grammY>
+
 <https://github.com/ShoroukAziz/notion-potion>
 
-## Textual References
 
-<https://hiro-game.sakura.ne.jp/?p=33394>
-<https://hiro-game.sakura.ne.jp/?p=125130>
+

@@ -59,6 +59,10 @@ export class Anime {
 
   @prop({ required: false, enum: STATUS, default: STATUS.ARCHIVED })
   public status!: number
+
+  @prop({ required: false, default: 1})
+  public eps!: number
+
   /** Additional Information */
 
   @prop({ required: false, default: null })
@@ -67,6 +71,9 @@ export class Anime {
   @prop({ required: false, default: null })
   public episodes?: Episode[]
 
+	@prop({required: false,default: ''})
+	public name_phantom?: string
+	
   /** Required: False */
   @prop({ required: false })
   public date!: string
@@ -74,8 +81,7 @@ export class Anime {
   @prop({ required: false })
   public active!: boolean
 
-  @prop({ required: false })
-  public eps!: number
+
 
   @prop({ required: false })
   public volumes!: number
@@ -85,6 +91,8 @@ export class Anime {
 
   @prop({ required: false })
   public nsfw!: boolean
+
+
 }
 
 export const AnimeModel = getModelForClass(Anime)
@@ -116,7 +124,6 @@ export async function updateSingleAnimeQuick(animeID: number, anime: any, succes
     AnimeModel.updateOne({
       id: animeID,
     }, anime).then((res) => {
-      Logger.logSuccess(`更新成功: ${res}`)
       resolve(successMessage)
     }).catch((err) => {
       reject(err)

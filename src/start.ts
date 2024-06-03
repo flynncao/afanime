@@ -24,7 +24,7 @@ try {
   await init()
   run(db.bot)
   setTimeout(() => {
-    console.log('store.AT', db.AT)
+		Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
   }, 3000)
 }
 catch (error: any) {
