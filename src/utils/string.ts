@@ -15,7 +15,7 @@ export function extractEpisodeNumber(inputString: string) {
   const match = inputString.match(regex)
   const rawNum = match ? String(match[0]) : null
   if (!rawNum)
-    return null
+    return NaN
   if (rawNum.includes('END'))
     return Number(rawNum.slice(0, rawNum.indexOf('END')))
 
