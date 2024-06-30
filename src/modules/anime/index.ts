@@ -107,11 +107,6 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
 						}	
 	
 					 }
-				// do{
-					
-					 
-				// 	queryPageNo++
-				// }while(queryPageNo <=5 && isPushListConsistent === false)
 			} catch (error) {
 				console.log('error in fetchAndUpdateAnimeEpisodesInfo:', error)
 			}
@@ -137,6 +132,7 @@ const dealNEPResult =  (nepResult: any, subject: AniSub): number =>{
 			link: item.link
 		}, subject)
 		console.log(`${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
+		//aniEpisodeEntity.printResult()
 		if (aniEpisodeEntity.isAllInfoValid()) {
 			const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
 			subject.episodes[dbEpisodeIndex].videoLink = item.link
@@ -153,8 +149,7 @@ const dealNEPResult =  (nepResult: any, subject: AniSub): number =>{
 	}
 	else {
 		Logger.logInfo(`pushedMaxNum: ${subject.pushedMaxNum}`)
-
-		for (let i = subject.pushedMaxNum; i <= subject.maxInNEP; i++) {
+		for (let i = subject.pushedMaxNum + 1 ; i <= subject.maxInNEP; i++) {
 			const pushedLink = subject.episodes[i - startEpiNum].videoLink
 			// const mannualSearchLink = `https://search.acgn.es/?cid=0&word=${encodeURIComponent(`${anime.query}`)}`
 			subject.addToPushList(
