@@ -1,12 +1,7 @@
-import { ChronoUnit, LocalDate, ZoneId, use } from '@js-joda/core'
-import BotLogger from './logger.js'
-import { threadQueries, welcomeMessages } from '#root/constants/index.js'
+import { welcomeMessages } from '#root/constants/index.js'
 import Logger from '#root/utils/logger.js'
 import store from '#root/databases/store.js'
-import type { AnimeContext, AnimeData, IAnime } from '#root/types/index.js'
-import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
-import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
-import { initAnimeDashboardMenu } from '#root/middlewares/menu.js'
+import type { AnimeContext, IAnime } from '#root/types/index.js'
 import { readSingleAnime } from '#root/models/Anime.js'
 import { objToString } from '#root/utils/string.js'
 import * as animeJobs from '#root/modules/crons/jobs.js'
@@ -116,11 +111,10 @@ export default function registerCommandHandler() {
     })
   })
 
-	bot.command('relation', async (ctx) => {
-		if(store.AT){
-			console.log('AT', store.AT.getRelations())
-		}
-
-	})
+  bot.command('relation', async (ctx) => {
+    if (store.AT) {
+      console.log('AT', store.AT.getRelations())
+    }
+  })
   Logger.logSuccess('Command handler regisred')
 }
