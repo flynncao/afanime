@@ -6,6 +6,7 @@ export class AniSub {
   episodes: any[]
   maxInNEP: number
   pushedMaxNum: number
+  maxInBangumi: number
 
   constructor(anime: IAnime) {
     this.animeInstance = anime
@@ -13,7 +14,8 @@ export class AniSub {
     this.episodes = anime.episodes || []
     this.pushedMaxNum = anime.current_episode
     // maxInNEP assigned to maxed valid episode number in episodes list
-    this.maxInNEP = Math.max(this.episodes.filter(ep => ep.name || ep.name_cn).length, this.pushedMaxNum)
+    this.maxInNEP = Math.max(this.episodes.filter(ep => ep.videoLink).length, this.pushedMaxNum)
+    this.maxInBangumi = anime.eps! + anime.total_episodes - 1
   }
 
   public getAnimeInstance(): IAnime {

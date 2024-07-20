@@ -2,6 +2,9 @@ import type { AniSub } from './AniSub.js'
 import Logger from '#root/utils/logger.js'
 import { normalizedAnimeTitle } from '#root/utils/string.js'
 
+const blacklist = [
+  'Up to 21°C',
+]
 interface RSEpiInfo {
   num: number
   title: string
@@ -66,13 +69,26 @@ export class AniEpi {
     const phantomNames = anime.name_phantom ? anime.name_phantom.split(',') : [anime.name_cn, anime.name]
     if (!anime || phantomNames.length === 0)
       return false
-    const isValidTitle = phantomNames.some((name: string) => name && normalizedAnimeTitle(this.title).includes(normalizedAnimeTitle(name)))
-    if (!isValidTitle)
-      Logger.logError('isValidTitle Error', this.num, this.title, this.link)
+    normalizedAnimeTitle(this.title)
+    let isValidTitle = false
+    isValidTitle = phantomNames.some((name: string) => {
+      return name && normalizedAnimeTitle(this.title).includes(normalizedAnimeTitle(name))
+    })
+    if (blacklist.some(substring => this.title.includes(substring))) {
+      isValidTitle = false
+    }
+    if (this.title) {
+      if (!isValidTitle)
+        Logger.logError('isValidTitle Error', this.num, this.title, this.link)
+    }
     return isValidTitle
   }
 
   public printResult() {
     Logger.logInfo(`${this.isAllInfoValid()}-Episode ${this.num} - ${this.title} - ${this.link}`, 'validLink:', this.isValidLink(), 'validNum:', this.isValidNum(), 'validTitle:', this.isValidTitle())
+  }
+
+  public getTitle(): string {
+    return this.title
   }
 }

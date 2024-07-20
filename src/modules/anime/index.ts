@@ -135,13 +135,15 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
           subject.episodes[dbEpisodeIndex].pushed = true
         }
 
-        if (episodeNum !== null && subject.isValidBroadEpisodeNum(episodeNum) && episodeNum > subject.maxInNEP)
+        if (subject.isValidBroadEpisodeNum(episodeNum) && episodeNum > subject.maxInNEP && episodeNum < subject.maxInBangumi) {
           subject.maxInNEP = episodeNum
+        }
       }
     }
 
     const current_episode = subject.getAnimeInstance().current_episode
     const startEpiNum = subject.getAnimeInstance().eps!
+    console.log('subject.maxInNEP ', subject.maxInNEP)
     if (current_episode === subject.maxInNEP) {
       return 1
     }
@@ -150,7 +152,6 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
         if (subject.isValidDBEpisodeIndex(i - startEpiNum)) {
           const pushedLink = subject.episodes[i - startEpiNum].videoLink
           if (pushedLink) {
-            console.log('pushedLink', pushedLink)
             subject.addToPushList(
               {
                 link: pushedLink,
