@@ -26,3 +26,18 @@ export async function useFetchNEP(word: string, page = 0): Promise<possibleResul
     })
   })
 }
+
+export async function useFetchSchedule(): Promise<any> {
+  return new Promise ((resolve: any, reject: any) => {
+    axios.get(`https://search.acgn.es/api/schedule`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    }).then((response: AxiosResponse<TelegramMessageResponse>) => {
+      const { data } = response
+      resolve(data)
+    }).catch((error: AxiosError) => {
+      reject(error)
+    })
+  })
+}

@@ -1,18 +1,9 @@
 import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
-import { ChronoUnit, LocalDate } from '@js-joda/core'
-import type { Bot } from 'grammy'
 import type { Image } from './Image.js'
 import type { Rating } from './Rating.js'
 import type { Episode } from './Episode.js'
-import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
-import { useFetchNEP } from '#root/api/nep.js'
 import type { IAnimeCritical } from '#root/types/index.js'
-import { AnimeContext, IAnime, STATUS } from '#root/types/index.js'
-
-import Logger from '#root/utils/logger.js'
-import BotLogger from '#root/bot/logger.js'
-import { getLocalAnimeDataByID } from '#root/modules/anime/index.js'
-import { fetchBangumiSubjectInfoFromID } from '#root/modules/bangumi/index.js'
+import { STATUS } from '#root/types/index.js'
 
 /**
  * MONGOOSE SCHEMAS
@@ -60,7 +51,7 @@ export class Anime {
   @prop({ required: false, enum: STATUS, default: STATUS.ARCHIVED })
   public status!: number
 
-  @prop({ required: false, default: 1})
+  @prop({ required: false, default: 1 })
   public eps!: number
 
   /** Additional Information */
@@ -71,17 +62,15 @@ export class Anime {
   @prop({ required: false, default: null })
   public episodes?: Episode[]
 
-	@prop({required: false,default: ''})
-	public name_phantom?: string
-	
+  @prop({ required: false, default: '' })
+  public name_phantom?: string
+
   /** Required: False */
   @prop({ required: false })
   public date!: string
 
   @prop({ required: false })
   public active!: boolean
-
-
 
   @prop({ required: false })
   public volumes!: number
@@ -91,8 +80,6 @@ export class Anime {
 
   @prop({ required: false })
   public nsfw!: boolean
-
-
 }
 
 export const AnimeModel = getModelForClass(Anime)
