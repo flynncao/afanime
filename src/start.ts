@@ -20,7 +20,6 @@ try {
   await connectMongodb()
   db.bot.api.config.use(throttler)
   db.bot.api.config.use(autoRetry())
-
   await init()
   run(db.bot)
   setTimeout(() => {

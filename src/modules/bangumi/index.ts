@@ -26,7 +26,9 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
-      updatedAnime.name_phantom = `${subjectInfo.name},${subjectInfo.name_cn},`
+      if (!updatedAnime.name_phantom) {
+        updatedAnime.name_phantom = `${subjectInfo.name_cn}`
+      }
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation

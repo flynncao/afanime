@@ -66,14 +66,20 @@ export class AniEpi {
 
   private isValidTitle(): boolean {
     const anime = this.parent.getAnimeInstance()
-    const phantomNames = anime.name_phantom ? anime.name_phantom.split(',') : [anime.name_cn, anime.name]
-    if (!anime || phantomNames.length === 0)
+    let phantomNameStr = anime.name_phantom ? anime.name_phantom : anime.name_cn
+    if (!phantomNameStr.includes('|') && phantomNameStr.includes(',')) {
+      phantomNameStr = phantomNameStr.replaceAll(',', '|');
+    }
+    function containsAllSubstrings(text: string, pattern: string): boolean {
+      const patternComponents = pattern.split('|').map(part => part.trim());
+      const normalizedText = normalizedAnimeTitle(text);
+      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component));
+      return normalizedPatternComponents.every(component => normalizedText.includes(component));
+    }
+    if (!anime)
       return false
-    normalizedAnimeTitle(this.title)
     let isValidTitle = false
-    isValidTitle = phantomNames.some((name: string) => {
-      return name && normalizedAnimeTitle(this.title).includes(normalizedAnimeTitle(name))
-    })
+    isValidTitle = containsAllSubstrings(this.title, phantomNameStr)
     if (blacklist.some(substring => this.title.includes(substring))) {
       isValidTitle = false
     }

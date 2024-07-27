@@ -18,10 +18,18 @@ async function greeting(conversation: AnimeConversation, ctx: AnimeContext) {
 async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx: AnimeContext) {
   if (!store.operatingAnimeID)
     return ctx.reply('animeID is null.')
+  const anime = await readSingleAnime(store.operatingAnimeID)
+  if (!anime) {
+    await ctx.reply('找不到动画信息')
+    return
+  }
   // TODO: (fix) conversation only works in the same layer, WHY?
   let msg: string | undefined = ''
   do {
-    await ctx.reply('请输入动画仓库的查询串，输入/exit退出')
+    const previousQuery = anime.query ? `现在的查询串为：\`${anime.query}\`` : ''
+    await ctx.reply(`${previousQuery}\n请输入动画仓库的查询串，输入/exit退出`, {
+      parse_mode: 'MarkdownV2',
+    })
     const typedCtx = await conversation.waitFor(':text')
     msg = typedCtx?.update.message?.text
     if (!msg)
@@ -127,12 +135,12 @@ async function updateAnimeNamePhantomConversation(conversation: AnimeConversatio
     await ctx.reply('找不到动画信息')
     return
   }
-  await ctx.reply(`当前总匹配串为：\`${anime.name_phantom}\``, {
-    parse_mode: 'MarkdownV2',
-  })
   let msg: string | undefined = ''
   do {
-    await ctx.reply('请输入可能出现的动画名称，输入越多越准确，默认匹配串包含中日动画名，请使用英文逗号隔开，输入/exit退出')
+    const previousPhantom = anime.name_phantom ? `现在的匹配串为：\`${anime.name_phantom}\`` : ''
+    await ctx.reply(`${previousPhantom}\n请输入以竖线分割的匹配要素，除去动画名和字幕组外可以匹配分辨率、字幕格式等，剔除动画仓库推送消息标题中不包含集数的部分可以得到较为精准的匹配串，如\`ANi | 孤獨搖滾 | 1080P | CHS\`\n输入/exit退出`,{
+      parse_mode: 'MarkdownV2',
+    });
     const typedCtx = await conversation.waitFor(':text')
     msg = typedCtx?.update.message?.text
     if (!msg)
