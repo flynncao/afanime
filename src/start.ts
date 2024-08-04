@@ -1,4 +1,4 @@
-import { Bot, session } from 'grammy'
+import { Bot } from 'grammy'
 import 'dotenv/config'
 import { run } from '@grammyjs/runner'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
@@ -20,11 +20,10 @@ try {
   await connectMongodb()
   db.bot.api.config.use(throttler)
   db.bot.api.config.use(autoRetry())
-
   await init()
   run(db.bot)
   setTimeout(() => {
-		Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
+    Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
   }, 3000)
 }
 catch (error: any) {

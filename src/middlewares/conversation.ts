@@ -1,10 +1,10 @@
 import { createConversation } from '@grammyjs/conversations'
 import { readSingleAnime, updateSingleAnimeQuick } from '../models/Anime.js'
-import type { AnimeContext, AnimeConversation, STATUS } from '#root/types/index.js'
+import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { createNewAnime } from '#root/models/Anime.js'
-import { fetchAndUpdateAnimeMetaInfo, updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
+import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 
 /**
  * CONVERSATIONS
@@ -18,10 +18,18 @@ async function greeting(conversation: AnimeConversation, ctx: AnimeContext) {
 async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx: AnimeContext) {
   if (!store.operatingAnimeID)
     return ctx.reply('animeID is null.')
+  const anime = await readSingleAnime(store.operatingAnimeID)
+  if (!anime) {
+    await ctx.reply('找不到动画信息')
+    return
+  }
   // TODO: (fix) conversation only works in the same layer, WHY?
   let msg: string | undefined = ''
   do {
-    await ctx.reply('请输入动画仓库的查询串，输入/exit退出')
+    const previousQuery = anime.query ? `现在的查询串为：\`${anime.query}\`` : ''
+    await ctx.reply(`${previousQuery}\n请输入动画仓库的查询串，输入/exit退出`, {
+      parse_mode: 'MarkdownV2',
+    })
     const typedCtx = await conversation.waitFor(':text')
     msg = typedCtx?.update.message?.text
     if (!msg)
@@ -106,7 +114,7 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
       query = ''
     await createNewAnime({ id, threadID, name_cn, query }).then(async (res) => {
       Logger.logSuccess(`创建成功: ${res} `)
-      store.AT.insertOne(id , threadID, name_cn)
+      store.AT.insertOne(id, threadID, name_cn)
       ctx.reply('创建成功, 拉取Bangumi主题信息中...')
       const msg = await updateAnimeMetaAndEpisodes(id)
       await ctx.reply(msg)
@@ -118,38 +126,37 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
 }
 
 async function updateAnimeNamePhantomConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-	if (!store.operatingAnimeID){
-		return ctx.reply('animeID is null.')
-	}
-	const operatingAnimeID: number = store.operatingAnimeID
-	const anime = await readSingleAnime(operatingAnimeID)
-	if(!anime){
-		await ctx.reply('找不到动画信息')
-		return
-	}
-	await ctx.reply(`当前总匹配串为：\`${anime.name_phantom}\``, {
-		parse_mode: 'MarkdownV2',
-	})
-	let msg: string | undefined = ''
-	do {
-		await ctx.reply('请输入可能出现的动画名称，输入越多越准确，默认匹配串包含中日动画名，请使用英文逗号隔开，输入/exit退出')
-		const typedCtx = await conversation.waitFor(':text')
-		msg = typedCtx?.update.message?.text
-		if (!msg)
-			await ctx.reply('输入有误，请重新输入')
-		if (msg === '/exit')
-			return ctx.reply('退出成功')
-	} while (!msg)
-	await updateSingleAnimeQuick(operatingAnimeID, { name_phantom: msg }).then(() => {
-		return ctx.reply('更新成功')
-	}).catch((err) => {
-		return ctx.reply('更新失败', err)
-	})
+  if (!store.operatingAnimeID) {
+    return ctx.reply('animeID is null.')
+  }
+  const operatingAnimeID: number = store.operatingAnimeID
+  const anime = await readSingleAnime(operatingAnimeID)
+  if (!anime) {
+    await ctx.reply('找不到动画信息')
+    return
+  }
+  let msg: string | undefined = ''
+  do {
+    const previousPhantom = anime.name_phantom ? `现在的匹配串为：\`${anime.name_phantom}\`` : ''
+    await ctx.reply(`${previousPhantom}\n请输入以竖线分割的匹配要素，除去动画名和字幕组外可以匹配分辨率、字幕格式等，剔除动画仓库推送消息标题中不包含集数的部分可以得到较为精准的匹配串，如\`ANi | 孤獨搖滾 | 1080P | CHS\`\n输入/exit退出`,{
+      parse_mode: 'MarkdownV2',
+    });
+    const typedCtx = await conversation.waitFor(':text')
+    msg = typedCtx?.update.message?.text
+    if (!msg)
+      await ctx.reply('输入有误，请重新输入')
+    if (msg === '/exit')
+      return ctx.reply('退出成功')
+  } while (!msg)
+  await updateSingleAnimeQuick(operatingAnimeID, { name_phantom: msg }).then(() => {
+    return ctx.reply('更新成功')
+  }).catch((err) => {
+    return ctx.reply('更新失败', err)
+  })
 }
 
-
 async function updateAnimeStartEpisodeConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-	function unwrapTypedMessageAsNumber(typedInfo: any): number {
+  function unwrapTypedMessageAsNumber(typedInfo: any): number {
     return Number(typedInfo.update.message?.text)
   }
 
@@ -180,15 +187,14 @@ async function updateAnimeStartEpisodeConversation(conversation: AnimeConversati
   }).catch((err) => {
     return ctx.reply('更新失败', err)
   })
-	
 }
 const conversations = [
   greeting,
   updateAnimeQueryConversation,
   updateCurrentEpisodeConversation,
   createNewConversation,
-	updateAnimeNamePhantomConversation,
-	updateAnimeStartEpisodeConversation
+  updateAnimeNamePhantomConversation,
+  updateAnimeStartEpisodeConversation,
 ]
 export function createAllConversations() {
   const { bot } = store
@@ -197,5 +203,4 @@ export function createAllConversations() {
   for (const conversation of conversations)
     bot.use(createConversation(conversation))
   Logger.logSuccess('All conversations initialized')
-	
 }

@@ -113,14 +113,11 @@ export default function registerCommandHandler() {
     })
   })
 
-  bot.command('relation', async (ctx) => {
-    if (store.AT) {
-      console.log('AT', store.AT.getRelations())
-    }
-  })
+	bot.command('relation', async (ctx) => {
+		if(store.AT){
+			console.log('AT', store.AT.getRelations())
+		}
 
-  bot.command('schedule', async (ctx: AnimeContext) => {
-    displayWeeklyScheduleFromRealsearch()
-  })
+	})
   Logger.logSuccess('Command handler regisred')
 }
