@@ -5,7 +5,8 @@ import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import { createNewAnime } from '#root/models/Anime.js'
 import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
-
+import type { AniConversationContext } from '#root/classes/grammy/CustomConversation.js'
+import { AniConversationBuilder } from '#root/classes/grammy/CustomConversation.js'
 /**
  * CONVERSATIONS
  */
@@ -138,9 +139,9 @@ async function updateAnimeNamePhantomConversation(conversation: AnimeConversatio
   let msg: string | undefined = ''
   do {
     const previousPhantom = anime.name_phantom ? `现在的匹配串为：\`${anime.name_phantom}\`` : ''
-    await ctx.reply(`${previousPhantom}\n请输入以竖线分割的匹配要素，除去动画名和字幕组外可以匹配分辨率、字幕格式等，剔除动画仓库推送消息标题中不包含集数的部分可以得到较为精准的匹配串，如\`ANi | 孤獨搖滾 | 1080P | CHS\`\n输入/exit退出`,{
+    await ctx.reply(`${previousPhantom}\n请输入以竖线分割的匹配要素，除去动画名和字幕组外可以匹配分辨率、字幕格式等，剔除动画仓库推送消息标题中不包含集数的部分可以得到较为精准的匹配串，如\`ANi | 孤獨搖滾 | 1080P | CHS\`\n输入/exit退出`, {
       parse_mode: 'MarkdownV2',
-    });
+    })
     const typedCtx = await conversation.waitFor(':text')
     msg = typedCtx?.update.message?.text
     if (!msg)
@@ -163,7 +164,6 @@ async function updateAnimeStartEpisodeConversation(conversation: AnimeConversati
   function abnormalTypedMessage(typedInfo: any): boolean {
     return !typedInfo || unwrapTypedMessageAsNumber(typedInfo) < 0 || !Number.isInteger(unwrapTypedMessageAsNumber(typedInfo))
   }
-  // TODO: (refactor) Better error handling
   const id = store.operatingAnimeID
   if (!id)
     return ctx.reply('animeID is null.')
@@ -188,6 +188,33 @@ async function updateAnimeStartEpisodeConversation(conversation: AnimeConversati
     return ctx.reply('更新失败', err)
   })
 }
+
+async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: AnimeContext) {
+  // https://stackoverflow.com/questions/14203122/create-a-regular-expression-for-cron-statement
+  // eslint-disable-next-line  regexp/no-unused-capturing-group
+  const cronRegex = /^((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?((2[0-3]|1\d|\d))(([,\-/])(2[0-3]|1\d|\d))*|\*)\s+((\*\/)?([1-9]|[12]\d|3[01])(([,\-/])([1-9]|[12]\d|3[01]))*|\*)\s+((\*\/)?([1-9]|1[0-2])(([,\-/])([1-9]|1[0-2]))*|\*|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\s+((\*\/)?[0-6](([,\-/])[0-6])*|\*|(sun|mon|tue|wed|thu|fri|sat))\s*$|@(annually|yearly|monthly|weekly|daily|hourly|reboot)$/
+  const testCron = (input: string) => cronRegex.test(input)
+  const userCrons: string[] = []
+  await new AniConversationBuilder().addContext(conversation, ctx).addStep('updateAnimeLibraryEpisodesInfo', testCron, {
+    hint: '请输入cron表达式来修改动画的日推频率',
+    error: '日推输入有误，请重新输入',
+  }, ({ context, conversation }: AniConversationContext, data: string) => {
+    userCrons.push(data)
+  }).addStep(
+    'updateAnimeLibraryMetaInfo',
+    testCron,
+    {
+      hint: '请输入cron表达式来修改动画的周拉取频率',
+      error: '周拉取cron输入有误，请重新输入',
+    },
+    ({ context, conversation }: AniConversationContext, data: string) => {
+      userCrons.push(data)
+    },
+  ).build().start()
+  // output
+  await ctx.reply(`日推cron: ${userCrons[0]}\n周拉取cron: ${userCrons[1]}`)
+}
+
 const conversations = [
   greeting,
   updateAnimeQueryConversation,
@@ -195,6 +222,7 @@ const conversations = [
   createNewConversation,
   updateAnimeNamePhantomConversation,
   updateAnimeStartEpisodeConversation,
+  updateAnimeUpdateFrequency,
 ]
 export function createAllConversations() {
   const { bot } = store
