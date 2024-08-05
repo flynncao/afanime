@@ -28,11 +28,13 @@ export async function updateAnimeMetaAndEpisodes(animeID: number, successMessage
       return Promise.reject(err)
     })
     const promiseArr: Array<any> = [getLocalAnimeDataByID, fetchBangumiSubjectInfoFromID, findOneAndUpdatePromise]
+
     function runSequentially(promises: any[]) {
       return promises.reduce((accum, p) => accum.then((res: any) => {
         return p(res)
       }), Promise.resolve(animeID))
     }
+
     runSequentially(promiseArr).then(() => {
       resolve(successMessage)
     }).catch((err: Error) => {
@@ -53,126 +55,130 @@ export async function fetchAndUpdateAnimeMetaInfo(animeID: number): Promise<stri
     })
   })
 }
+
 // MENU ACTION2: Update Episode info only from bangumi
 export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<string> {
-	return new Promise((resolve, reject) => {
-		(async ()=>{
-			try {
-				const anime: IAnime = await readSingleAnime(animeID)
-				const query: string = anime?.query
-				const threadID: number = anime?.threadID
-				const last_episode: number = anime?.last_episode
-				const current_episode: number = anime?.current_episode
-				const id = anime?.id
-				const name = anime?.name_cn
-				const episodes = anime?.episodes!
-				Logger.logInfo(`Anime Info: ${query}, threadID: ${threadID}, last_episode: ${last_episode}, current_episode: ${current_episode}, id: ${id}, name: ${name}, episodes: ${episodes}`)
-				if (!episodes || episodes.length === 0) {
-					 reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
-				}
-				if (!(query && threadID && current_episode >= 0 && name && anime.eps)) {
-					reject(new Error('query, threadID, current_episode, name, eps字段不能为空'))	
-				}
-				let queryPageNo = 0, isPushListConsistent = false
-				const aniSubjectEntity = new AniSub(anime)
-				const nepResult: possibleResult = await useFetchNEP(query, queryPageNo)
-					if (!('data' in nepResult) || nepResult.data.length === 0) {
-						reject(new Error('读取NEP仓库时发生错误！'))
-						return
-					}
-					 const dealtCode = dealNEPResult(nepResult, aniSubjectEntity)
-					 console.log('dealtCode:', dealtCode)
-					 if(dealtCode === 0){
-						 reject(new Error('Error in dealNEPResult'))
-						 return 
-					 }
-					 if(dealtCode === 1){
-						 resolve(`UAEI#no-need-update#${id}`)
-						 return
-					 }
-					 if(dealtCode === 3 || 2){
-						const dbRes = await updateSingleAnimeQuick(animeID, { episodes, current_episode: aniSubjectEntity.pushedMaxNum, last_episode: aniSubjectEntity.maxInNEP, status: (aniSubjectEntity.maxInNEP - anime.eps! + 1 === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) })
-						if(dbRes){
-							Logger.logSuccess(`更新成功: ${dbRes}`)
-							console.log('resolve func:', resolve)
-							if (aniSubjectEntity.getPushList().length !== 0) {
-								store.pushCenter.list = aniSubjectEntity.getPushList()
-								resolve(`UAEI#update-available#${id}`)
-							} else {
-								resolve(`UAEI#no-need-update#${id}`)
-							}
-						}else{
-							Logger.logError(`更新失败`)
-							reject(new Error('更新失败'))
-						}	
-	
-					 }
-				// do{
-					
-					 
-				// 	queryPageNo++
-				// }while(queryPageNo <=5 && isPushListConsistent === false)
-			} catch (error) {
-				console.log('error in fetchAndUpdateAnimeEpisodesInfo:', error)
-			}
-		})()
-	
-	
-	})
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const anime: IAnime = await readSingleAnime(animeID)
+        const query: string = anime?.query
+        const threadID: number = anime?.threadID
+        const last_episode: number = anime?.last_episode
+        const current_episode: number = anime?.current_episode
+        const id = anime?.id
+        const name = anime?.name_cn
+        const episodes = anime?.episodes!
+        Logger.logInfo(`Anime Info: ${query}, threadID: ${threadID}, last_episode: ${last_episode}, current_episode: ${current_episode}, id: ${id}, name: ${name}, episodes: ${episodes}`)
+        if (!episodes || episodes.length === 0) {
+          reject(new Error('本地数据库中没有剧集信息，请查询番剧是否开通，或者使用菜单中的【拉取Bangumi剧集信息】功能'))
+        }
+        if (!(query && threadID && current_episode >= 0 && name && anime.eps)) {
+          reject(new Error('query, threadID, current_episode, name, eps字段不能为空'))
+        }
+        const queryPageNo = 0
+        const isPushListConsistent = false
+        const aniSubjectEntity = new AniSub(anime)
+        const nepResult: possibleResult = await useFetchNEP(query, queryPageNo)
+        if (!('data' in nepResult) || nepResult.data.length === 0) {
+          reject(new Error('读取NEP仓库时发生错误！'))
+          return
+        }
+        const dealtCode = dealNEPResult(nepResult, aniSubjectEntity)
+        if (dealtCode === 0) {
+          reject(new Error('Error in dealNEPResult'))
+          return
+        }
+        if (dealtCode === 1) {
+          resolve(`UAEI#no-need-update#${id}`)
+          return
+        }
+        if (dealtCode === 3 || 2) {
+          const dbRes = await updateSingleAnimeQuick(animeID, {
+            episodes,
+            current_episode: aniSubjectEntity.pushedMaxNum,
+            last_episode: aniSubjectEntity.maxInNEP,
+            status: (aniSubjectEntity.maxInNEP - anime.eps! + 1 === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED),
+          })
+          if (dbRes) {
+            Logger.logSuccess(`更新成功: ${dbRes}`)
+            console.log('resolve func:', resolve)
+            if (aniSubjectEntity.getPushList().length !== 0) {
+              store.pushCenter.list = aniSubjectEntity.getPushList()
+              resolve(`UAEI#update-available#${id}`)
+            }
+            else {
+              resolve(`UAEI#no-need-update#${id}`)
+            }
+          }
+          else {
+            Logger.logError(`更新失败`)
+            reject(new Error('更新失败'))
+          }
+        }
+        // do{
 
+        // 	queryPageNo++
+        // }while(queryPageNo <=5 && isPushListConsistent === false)
+      }
+      catch (error) {
+        console.log('error in fetchAndUpdateAnimeEpisodesInfo:', error)
+      }
+    })()
+  })
 }
 
+function dealNEPResult(nepResult: any, subject: AniSub): number {
+  // 0 - error; 1 - no need update; 2 - not complete ; 3- update
+  try {
+    for (let i = (nepResult.data.length - 1); i >= 0; i--) {
+      const item = nepResult.data[i]
+      const episodeNum = extractEpisodeNumber(item.text)
+      if (!episodeNum)
+        continue
+      const aniEpisodeEntity = new AniEpi({
+        num: episodeNum,
+        title: item.text,
+        link: item.link,
+      }, subject)
+      console.log(`${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
+      if (aniEpisodeEntity.isAllInfoValid()) {
+        const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
+        subject.episodes[dbEpisodeIndex].videoLink = item.link
+        subject.episodes[dbEpisodeIndex].pushed = true
+        if (episodeNum !== null && episodeNum > subject.maxInNEP)
+          subject.maxInNEP = episodeNum
+      }
+    }
 
+    Logger.logInfo(`maxInNEP: ${subject.maxInNEP}`)
+    const current_episode = subject.getAnimeInstance().current_episode
+    const startEpiNum = subject.getAnimeInstance().eps!
+    if (current_episode === subject.maxInNEP) {
+      return 1
+    }
+    else {
+      Logger.logInfo(`pushedMaxNum: ${subject.pushedMaxNum}`)
 
-const dealNEPResult =  (nepResult: any, subject: AniSub): number =>{
-	// 0 - error; 1 - no need update; 2 - not complete ; 3- update
-	try {
-	 for (let i = (nepResult.data.length - 1); i >= 0; i--) {
-		const item = nepResult.data[i]
-		const episodeNum = extractEpisodeNumber(item.text)
-		if(!episodeNum) continue
-		const aniEpisodeEntity = new AniEpi({
-			num: episodeNum,
-			title: item.text,
-			link: item.link
-		}, subject)
-		console.log(`${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
-		if (aniEpisodeEntity.isAllInfoValid()) {
-			const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
-			subject.episodes[dbEpisodeIndex].videoLink = item.link
-			subject.episodes[dbEpisodeIndex].pushed = true
-			if (episodeNum !== null && episodeNum > subject.maxInNEP )
-				subject.maxInNEP = episodeNum
-		}
-	}
-
-	Logger.logInfo(`maxInNEP: ${subject.maxInNEP}`)
-	const current_episode = subject.getAnimeInstance().current_episode, startEpiNum = subject.getAnimeInstance().eps!
-	if (current_episode === subject.maxInNEP) {
-		return 1
-	}
-	else {
-		Logger.logInfo(`pushedMaxNum: ${subject.pushedMaxNum}`)
-
-		for (let i = subject.pushedMaxNum; i <= subject.maxInNEP; i++) {
-			const pushedLink = subject.episodes[i - startEpiNum].videoLink
-			// const mannualSearchLink = `https://search.acgn.es/?cid=0&word=${encodeURIComponent(`${anime.query}`)}`
-			subject.addToPushList(
-				{
-					link: pushedLink,
-					pushEpisodeNum: i,
-					bangumiID: subject.episodes[i - startEpiNum!].id,
-				}
-			)
-			if (i > subject.pushedMaxNum && pushedLink)
-				subject.pushedMaxNum = i
-		}
-		Logger.logInfo(`current pushList: ${JSON.stringify(subject.getPushList())}`)
-		return subject.isPushListConsisitent() ? 3 : 2
-	 }
-	} catch (error) {
-		Logger.logError(`Error in dealNEPResult: ${error}`)
-		return 0	
-	}
-
+      for (let i = subject.pushedMaxNum; i <= subject.maxInNEP; i++) {
+        const pushedLink = subject.episodes[i - startEpiNum].videoLink
+        // const mannualSearchLink = `https://search.acgn.es/?cid=0&word=${encodeURIComponent(`${anime.query}`)}`
+        subject.addToPushList(
+          {
+            link: pushedLink,
+            pushEpisodeNum: i,
+            bangumiID: subject.episodes[i - startEpiNum!].id,
+          },
+        )
+        if (i > subject.pushedMaxNum && pushedLink)
+          subject.pushedMaxNum = i
+      }
+      Logger.logInfo(`current pushList: ${JSON.stringify(subject.getPushList())}`)
+      return subject.isPushListConsisitent() ? 3 : 2
+    }
+  }
+  catch (error) {
+    Logger.logError(`Error in dealNEPResult: ${error}`)
+    return 0
+  }
 }
