@@ -5,8 +5,7 @@ import type { AnimeContext, IAnime } from '#root/types/index.js'
 import { readSingleAnime } from '#root/models/Anime.js'
 import { objToString } from '#root/utils/string.js'
 import * as animeJobs from '#root/modules/crons/jobs.js'
-import { useFetchSchedule } from '#root/api/realsearch.js'
-import displayWeeklyScheduleFromRealsearch from "#root/modules/realsearch/index.js";
+import displayWeeklyScheduleFromRealsearch from '#root/modules/realsearch/index.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
@@ -113,11 +112,18 @@ export default function registerCommandHandler() {
     })
   })
 
-	bot.command('relation', async (ctx) => {
-		if(store.AT){
-			console.log('AT', store.AT.getRelations())
-		}
+  bot.command('relation', async (ctx) => {
+    if (store.AT) {
+      console.log('AT', store.AT.getRelations())
+    }
+  })
 
-	})
+  bot.command('schedule', async (ctx) => {
+    displayWeeklyScheduleFromRealsearch()
+  })
   Logger.logSuccess('Command handler regisred')
+
+  bot.command('cron', async (ctx) => {
+    await ctx.conversation.enter('updateAnimeUpdateFrequency')
+  })
 }
