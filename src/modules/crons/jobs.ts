@@ -65,7 +65,6 @@ function optionalMessenger(msg: string, ctx?: AnimeContext, otherConfig: { messa
 
 export function updateAnimeLibraryEpisodesInfo(ctx?: AnimeContext) {
   const formattedDate = moment().format('YYYY-MM-DD HH:mm:ss')
-  console.log('weekday', moment().day())
   displayWeeklyScheduleFromRealsearch(moment().day())
   BotLogger.sendServerMessageAsync(`现在是${formattedDate}！拉取动画仓库中～`, {}, true)!.then(() => {
     readAnimes().then(async (res) => {

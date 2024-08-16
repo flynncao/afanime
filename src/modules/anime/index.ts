@@ -3,7 +3,7 @@ import { extractEpisodeNumber } from '#root/utils/string.js'
 import { AnimeModel, readSingleAnime, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { type IAnime, STATUS } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
-import { type possibleResult, useFetchNEP } from '#root/api/nep.js'
+import { type possibleResult, useFetchNEP } from '#root/api/realsearch.js'
 
 import store from '#root/databases/store.js'
 import { AniSub } from '#root/classes/AniSub.js'

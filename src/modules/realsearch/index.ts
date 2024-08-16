@@ -16,6 +16,7 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1) {
 
     res.data.forEach((item: any) => {
       const date: moment.Moment = moment.unix(item.date)
+      console.log('date.format', date.format('HH:mm'))
       const housouTime: string = replaceCharAt(date.format('HH:mm'), 4, '0')
       const housouWeekday: number = date.day()
       const mainName = item.name
@@ -24,10 +25,8 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1) {
         return
       timetable[housouWeekday].push(`${housouTime} | ${mainName} | ${enName}`)
     })
-    console.log('timetable', timetable)
     const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
     let message = ''
-    console.log('weekday', weekday)
     if (weekday === -1) {
       for (let i = 0; i < 7; i++) {
         message += `🎬${weekdays[i]}的放送表：\n`
