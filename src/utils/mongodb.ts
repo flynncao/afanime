@@ -1,13 +1,8 @@
 import mongoose from 'mongoose'
 import Logger from './logger.js'
+import { config } from '#root/config/index.js'
 
-const url = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/afanime'
-
-if (!url) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local',
-  )
-}
+const url = config.mongodbURL || 'mongodb://localhost:27017/afanime'
 
 export async function connectMongodb() {
   if (mongoose.connection.readyState >= 1)

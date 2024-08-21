@@ -24,10 +24,6 @@ class AniConversation {
     this.steps = steps
     this.gCtx = gCtx
   }
-  // TODO: Implement this
-  //   checkPreconditions(): boolean {
-  //
-  //   }
 
   async start() {
     let running = true
@@ -39,10 +35,7 @@ class AniConversation {
         continue
       const res = await this.processInput(message)
       running = !res.done
-      console.log('res', res)
-      console.log('running', running)
     } while (running)
-    console.log('Conversation ended.', this.data)
   }
 
   async processHinter() {
@@ -72,8 +65,6 @@ class AniConversation {
       this.data[currentStep.parameter] = userInput
       await this.processAsyncConsequence()
       this.currentStepIndex++
-      console.log('=>(CustomConversation.ts:74) this.steps.length', this.steps.length)
-      console.log('=>(CustomConversation.ts:75) this.currentStepIndex', this.currentStepIndex)
       if (this.currentStepIndex >= this.steps.length) {
         return { done: true, message: 'All inputs received.' }
       }

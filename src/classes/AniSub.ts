@@ -31,7 +31,6 @@ export class AniSub {
   }
 
   public addToPushList(item: any) {
-    console.log('addToPushList trigged')
     const index = this.pushList.findIndex(pushItem => pushItem.bangumiID === item.bangumiID)
     if (index === -1) {
       this.pushList.push(item)

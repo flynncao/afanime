@@ -7,10 +7,11 @@ import { objToString } from '#root/utils/string.js'
 import * as animeJobs from '#root/modules/crons/jobs.js'
 import { useFetchSchedule } from '#root/api/realsearch.js'
 import displayWeeklyScheduleFromRealsearch from '#root/modules/realsearch/index.js'
+import { config } from '#root/config/index.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
-  if (!process.env || bot === null || menus === null) {
+  if (config.botToken === '' || bot === null || menus === null) {
     Logger.logError('registerCommandHandler: env, bot or menus is null')
     return
   }
@@ -107,20 +108,15 @@ export default function registerCommandHandler() {
     animeJobs.updateAnimeLibraryMetaInfo(ctx)
   })
 
-  bot.command('group', async (ctx) => {
-    ctx.reply('hello group', {
-      message_thread_id: 1563,
-    })
-  })
-
   bot.command('relation', async (ctx) => {
+    // TODO(feat): Development purpose only
     if (store.AT) {
       console.log('AT', store.AT.getRelations())
     }
   })
 
   bot.command('schedule', async (ctx: AnimeContext) => {
-    displayWeeklyScheduleFromRealsearch()
+    displayWeeklyScheduleFromRealsearch(-1, ctx)
   })
   Logger.logSuccess('Command handler regisred')
 

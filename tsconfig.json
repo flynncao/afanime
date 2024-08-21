@@ -9,7 +9,8 @@
     "paths": {
       "#root/*": [
         "./src/*"
-      ]
+      ],
+      "@/*": ["./src/*"]
     },
     "strict": true,
     "noEmit": false,
