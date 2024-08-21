@@ -1,6 +1,7 @@
 import { conversations } from '@grammyjs/conversations'
 import { session } from 'grammy'
 import timestamp from './timestamp.js'
+import authorization from './authorization.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 import type { SessionData } from '#root/types/index.js'
@@ -19,6 +20,7 @@ export default function registerCriticalMiddlewares() {
   const middlewares = [
     session({ initial }),
     timestamp,
+    authorization,
     conversations(),
   ]
   for (const item of middlewares) {

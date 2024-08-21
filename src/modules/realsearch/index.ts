@@ -1,8 +1,11 @@
 import moment from 'moment'
+import { Context } from 'grammy'
 import { useFetchSchedule } from '#root/api/realsearch.js'
+import { isAdminChatID } from '@/modules/user/index.js'
 import BotLogger from '#root/bot/logger.js'
+import type { AnimeContext } from '#root/types/index.js'
 
-export default function displayWeeklyScheduleFromRealsearch(weekday = -1) {
+export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: AnimeContext) {
   useFetchSchedule().then((res) => {
     const timetable: string[][] = [[], [], [], [], [], [], []]
     const replaceCharAt = (str: string, index: number, char: string) => {
@@ -13,10 +16,8 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1) {
       strArray[index] = char
       return strArray.join('')
     }
-
     res.data.forEach((item: any) => {
       const date: moment.Moment = moment.unix(item.date)
-      console.log('date.format', date.format('HH:mm'))
       const housouTime: string = replaceCharAt(date.format('HH:mm'), 4, '0')
       const housouWeekday: number = date.day()
       const mainName = item.name
@@ -41,8 +42,12 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1) {
         message += `${item}\n`
       })
     }
-
-    BotLogger.sendServerMessage(message)
+    if (ctx && ctx.message && !isAdminChatID(ctx.message.from.id)) {
+      ctx.reply(message)
+    }
+    else {
+      BotLogger.sendServerMessage(message)
+    }
   }).catch((error) => {
     console.log('=>(command-handler.ts:125) error', error)
   })
