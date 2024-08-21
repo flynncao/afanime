@@ -1,8 +1,6 @@
-import { threadQueries } from '#root/constants/index.js'
-import type { AnimeContext, AnimeData, AnimeThread, IAnime } from '#root/types/index.js'
+import type { IAnime } from '#root/types/index.js'
 import { readAnimes } from '#root/models/Anime.js'
 import Logger from '#root/utils/logger.js'
-
 
 interface IATRelation {
   threadID: number
@@ -24,7 +22,6 @@ export class ATRelation {
     return ATRelation.Instance
   }
 
-
   public getRelations() {
     return this.relations
   }
@@ -36,14 +33,14 @@ export class ATRelation {
       title,
     })
   }
-	
-	public updateTitle(animeID: number, title: string) {
-		const relations = this.relations
-		const matched = relations.find((relation: IATRelation) => relation.id === animeID)
-		if (relations.length === 0 || !matched)
-			return
-		matched.title = title
-	}
+
+  public updateTitle(animeID: number, title: string) {
+    const relations = this.relations
+    const matched = relations.find((relation: IATRelation) => relation.id === animeID)
+    if (relations.length === 0 || !matched)
+      return
+    matched.title = title
+  }
 
   public getAnimeIDFromThreadID(threadID: number): number {
     const relations = this.relations
@@ -61,16 +58,14 @@ export class ATRelation {
     return matched.title
   }
 
-	public getThreadIDAndTitleFromID(animeID: number): { threadID: number, title: string } {
-		const relations = this.relations
-		const matched = relations.find((relation: IATRelation) => relation.id === animeID)
-		if (relations.length === 0 || !matched)
-			return { threadID: 0, title: '' }
-		else
-			return { threadID: matched.threadID, title: matched.title }
-	}
-
-
+  public getThreadIDAndTitleFromID(animeID: number): { threadID: number, title: string } {
+    const relations = this.relations
+    const matched = relations.find((relation: IATRelation) => relation.id === animeID)
+    if (relations.length === 0 || !matched)
+      return { threadID: 0, title: '' }
+    else
+      return { threadID: matched.threadID, title: matched.title }
+  }
 
   public async initRelations() {
     const res = await readAnimes().catch((err) => {

@@ -14,7 +14,7 @@ export default async function responseTime(
   const before = Instant.now().toEpochMilli()
   await next()
   const after = Instant.now().toEpochMilli()
-Logger.logDebug(`Response time: ${after - before} ms`)
+  Logger.logDebug(`Response time: ${after - before} ms`)
   if (store.menus['anime-dashboard'].update)
     store.menus['anime-dashboard'].update()
 }

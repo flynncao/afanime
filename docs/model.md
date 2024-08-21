@@ -1,10 +1,11 @@
-# Model &  Class Explanation
+# Model & Class Explanation
 
 ## Model
 
 ### Anime
-(be aware that NUM always start with 1)
-* current_episode: the latest episode NUM appears in your Telegram channel(pushed video)
-* eps: the start NUM of the Anime, 1 by default(  may set to 13 if current anime is the season 2 or part 2 from a  series)
-* total_episode: episode count of current season, provided by Bangumi(may contain special shows)
-* name_phantom: additional info seprarted by `,` to match anime title when grabbing video info from NEP library, by default allows both CN name and JP name of desired anime, example: `孤独摇滚,ぼっち・ざ・ろっく！`(change it to match more titles in case of abnormal naming convention)
+
+* current_episode: 在Telegram频道中已推送的最大集数，可能是`15`集，默认标记为`0`集。
+* eps: 自行设置，默认为`1`，起始集数，例如“【押しの子】2期”  从第`12`集开始
+* total_episode: 由Bangumi提供，本季总数目（count），例如“【押しの子】2期”  为`13`个
+* last_episode: NEP仓库查询串结果中出现的最大集数
+* name_phantom: 目前作为存储动画全匹配串使用

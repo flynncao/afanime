@@ -5,7 +5,6 @@ function parse(str: string, ...args: any) {
   return str.replace(/%s/g, () => args[i++])
 }
 
-
 export default class Logger {
   static logSuccess = (message: string, ...args: any[]): void => {
     console.log(chalk.green.italic(`✅ ${parse(message, ...args)}`))
@@ -33,7 +32,7 @@ export default class Logger {
     )
   }
 
-	static logInfo = (message: string, ...args: any[]): void => {
-		console.log(chalk.blue(`ℹ️ ${parse(message, args)}`))
-	}
+  static logInfo = (message: string, ...args: any[]): void => {
+    console.log(chalk.blue(`ℹ️ ${parse(message, args)}`))
+  }
 }

@@ -2,11 +2,9 @@
 
 [English Version](./README_en.md)
 
-
 一个自动转发动画仓库的消息至你自己的Telegram频道&话题的机器人，由 Bangumi & [Real Search](https://search.acgn.es/)提供支持。
 
-
-## 命令 
+## 命令
 
 * `/start` 显示欢迎信息
 * `/about` 显示机器人信息
@@ -18,8 +16,6 @@
 ## 预览
 
 立即加入我的[Telegram频道](https://t.me/gochumonwa)查看效果！
-
-
 
 ## 特性
 
@@ -39,6 +35,3 @@
 <https://github.com/grammyjs/grammY>
 
 <https://github.com/ShoroukAziz/notion-potion>
-
-
-
