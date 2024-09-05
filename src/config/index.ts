@@ -28,6 +28,7 @@ function calculateValue() {
   }
   value.botToken = botToken
   value.groupChatID = groupChatID
+  value.mongodbURL = mongodbURL
   if (botName)
     value.botName = botName
   if (translatorBlacklist)
