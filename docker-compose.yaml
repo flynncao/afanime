@@ -6,6 +6,11 @@ services:
       - ./data/db:/data/db
     networks:
       - node-network
+    ports: 
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: flynncao
+      MONGO_INITDB_ROOT_PASSWORD: pizzagasuki
     
   mongo_seed:
     image: mongo
@@ -16,9 +21,9 @@ services:
     command: >
       bash -c "
       sleep 5 &&
-      if ! mongo --host mongodb --eval 'db.getMongo().getDBNames().indexOf(\"afanime\") >= 0 && db.getSiblingDB(\"afanime\").getCollectionNames().indexOf(\"animes\") >= 0' | grep 'true'; then
+      if ! mongo --host mongodb --username flynncao --password pizzagasuki --authenticationDatabase admin --eval 'db.getMongo().getDBNames().indexOf(\"afanime\") >= 0 && db.getSiblingDB(\"afanime\").getCollectionNames().indexOf(\"animes\") >= 0' | grep 'true'; then
         echo 'Database or collection does not exist, proceeding with import.' &&
-        mongoimport --host mongodb --db afanime --collection animes --file /mongo-seed/animes.json --jsonArray;
+        mongoimport --host mongodb --username flynncao --password pizzagasuki --authenticationDatabase admin --db afanime --collection animes --file /mongo-seed/animes.json --jsonArray;
       else
         echo 'Database or collection already exists, skipping import.';
       fi
@@ -36,7 +41,7 @@ services:
        BOT_TOKEN: "6810093389:AAF6WaoEj4omA5nb6X8oqxsC2A_yXl57ZSA"
        BOT_NAME: "智乃ww"
        GROUP_CHAT_ID: "-1002026229088"
-       MONGO_DB_URL: "mongodb://mongodb:27017/afanime"
+       MONGO_DB_URL: "mongodb://flynncao:pizzagasuki@mongodb:27017/afanime?authSource=admin"
        ADMIN_CHAT_IDS: "5766880721"
     networks:
       - node-network

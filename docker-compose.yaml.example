@@ -1,0 +1,51 @@
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    volumes:
+      - ./data/db:/data/db
+    networks:
+      - node-network
+    ports: 
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 12345
+    
+  mongo_seed:
+    image: mongo
+    links: 
+      - mongodb
+    volumes:
+      - ./mongo-seed:/mongo-seed
+    command: >
+      bash -c "
+      sleep 5 &&
+      if ! mongo --host mongodb --username root --password 12345 --authenticationDatabase admin --eval 'db.getMongo().getDBNames().indexOf(\"afanime\") >= 0 && db.getSiblingDB(\"afanime\").getCollectionNames().indexOf(\"animes\") >= 0' | grep 'true'; then
+        echo 'Database or collection does not exist, proceeding with import.' &&
+        mongoimport --host mongodb --username root --password 12345 --authenticationDatabase admin --db afanime --collection animes --file /mongo-seed/animes.json --jsonArray;
+      else
+        echo 'Database or collection already exists, skipping import.';
+      fi
+      "
+    networks:
+      - node-network
+
+
+  afanime:
+    image: flynncao/afanime:v1.1.4
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+       BOT_TOKEN: "1234455:abcdABCD"
+       BOT_NAME: "Tony"
+       GROUP_CHAT_ID: "-1233333"
+       MONGO_DB_URL: "mongodb://@mongodb:27017/afanime"
+       ADMIN_CHAT_IDS: "3000080721"
+    networks:
+      - node-network
+       
+networks:
+  node-network:
+    driver: bridge

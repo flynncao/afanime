@@ -139,3 +139,4 @@ output
 # Docker volumes
 data/
 mongo-seed/
+docker-compose.yaml
