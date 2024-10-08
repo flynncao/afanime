@@ -16,7 +16,6 @@ export const commandList: Command[] = [
   { command: 'schedule', description: '显示本周动画放送时间表' },
 ]
 
-// TODO: Consider mobilizing OpenAI to generate anime girl messages
 export const welcomeMessages: string[] = [
   '你好！',
   'こんにちは！',

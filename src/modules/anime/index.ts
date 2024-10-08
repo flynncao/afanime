@@ -135,7 +135,7 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
           subject.episodes[dbEpisodeIndex].pushed = true
         }
 
-        if (subject.isValidBroadEpisodeNum(episodeNum) && episodeNum > subject.maxInNEP && episodeNum < subject.maxInBangumi) {
+        if (subject.isValidBroadEpisodeNum(episodeNum) && episodeNum >= subject.maxInNEP && episodeNum <= subject.maxInBangumi) {
           subject.maxInNEP = episodeNum
         }
       }

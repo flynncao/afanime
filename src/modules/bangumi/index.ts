@@ -23,11 +23,14 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         }
       }
       for (const key in subjectInfo) {
-        if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps')
+        if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps' && key !== 'total_episodes')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
       if (!updatedAnime.name_phantom) {
         updatedAnime.name_phantom = `${subjectInfo.name_cn}`
+      }
+      if (!updatedAnime.total_episodes) {
+        updatedAnime.total_episodes = subjectInfo.eps // 避免sp剧集
       }
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
