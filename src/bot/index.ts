@@ -11,8 +11,6 @@ import { createAllMenus } from '#root/middlewares/menu.js'
 import registerCriticalMiddlewares from '#root/middlewares/index.js'
 import { initCrons } from '#root/modules/crons/index.js'
 
-const userChatID = process.env.USER_CHAT_ID!
-
 export async function init() {
   Logger.logSuccess('Bot started')
   const bot = db.bot

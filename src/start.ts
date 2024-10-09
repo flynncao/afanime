@@ -8,9 +8,10 @@ import db from './databases/store.js'
 import { init } from './bot/index.js'
 import type { AnimeContext } from './types/index.js'
 import { connectMongodb } from './utils/mongodb.js'
+import { config } from '@/config/index.js'
 import throttlerConfig from '#root/config/throttler.js'
 
-const botToken = process.env.BOT_TOKEN!
+const botToken = config.botToken
 
 const throttler = apiThrottler(throttlerConfig)
 
