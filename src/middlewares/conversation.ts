@@ -7,6 +7,7 @@ import { createNewAnime } from '#root/models/Anime.js'
 import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import type { AniConversationContext } from '#root/classes/grammy/CustomConversation.js'
 import { AniConversationBuilder } from '#root/classes/grammy/CustomConversation.js'
+import { updateMultipleCronQuick } from '#root/models/Cron.js'
 /**
  * CONVERSATIONS
  */
@@ -195,24 +196,42 @@ async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: 
   const cronRegex = /^((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?((2[0-3]|1\d|\d))(([,\-/])(2[0-3]|1\d|\d))*|\*)\s+((\*\/)?([1-9]|[12]\d|3[01])(([,\-/])([1-9]|[12]\d|3[01]))*|\*)\s+((\*\/)?([1-9]|1[0-2])(([,\-/])([1-9]|1[0-2]))*|\*|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\s+((\*\/)?[0-6](([,\-/])[0-6])*|\*|(sun|mon|tue|wed|thu|fri|sat))\s*$|@(annually|yearly|monthly|weekly|daily|hourly|reboot)$/
   const testCron = (input: string) => cronRegex.test(input)
   const userCrons: string[] = []
+  ctx.reply('输入[Cron格式](https://crontab.cronhub.io/)的表达式来规定以下拉取频率，输入/exit退出', {
+    parse_mode: 'MarkdownV2',
+  })
   await new AniConversationBuilder().addContext(conversation, ctx).addStep('updateAnimeLibraryEpisodesInfo', testCron, {
-    hint: '请输入cron表达式来修改动画的日推频率',
-    error: '日推输入有误，请重新输入',
+    hint: '正在修改：动画仓库拉取频率，默认为每天8时，即\`0 0 8 * * *\`',
+    error: 'cron格式输入有误，请重新输入',
   }, ({ context, conversation }: AniConversationContext, data: string) => {
     userCrons.push(data)
   }).addStep(
     'updateAnimeLibraryMetaInfo',
     testCron,
     {
-      hint: '请输入cron表达式来修改动画的周拉取频率',
-      error: '周拉取cron输入有误，请重新输入',
+      hint: '正在修改：动画元信息拉取频率，默认为每天0时，即\`0 0 0 * * *\`',
+      error: 'cron格式输入有误，请重新输入。',
     },
     ({ context, conversation }: AniConversationContext, data: string) => {
-      userCrons.push(data)
+      if (data !== '/exit') {
+        userCrons.push(data)
+      }
     },
   ).build().start()
   // output
-  await ctx.reply(`日推cron: ${userCrons[0]}\n周拉取cron: ${userCrons[1]}`)
+  if (userCrons.length === 0) {
+    return ctx.reply('拉取频率将保持不变。')
+  }
+  else {
+    await ctx.reply(`日推cron: ${userCrons[0]}\n周拉取cron: ${userCrons[1]}，修改中...`)
+    updateMultipleCronQuick(['updateAnimeLibraryEpisodesInfo', 'updateAnimeLibraryMetaInfo'], userCrons).then(() => {
+      return ctx.reply('修改成功，应用修改中...无需重启服务！')
+      store.cronInstance.forEach((job) => {
+        job.restart()
+      })
+    }).catch((err) => {
+      return ctx.reply('修改失败', err)
+    })
+  }
 }
 
 const conversations = [

@@ -35,16 +35,19 @@ class AniConversation {
         continue
       const res = await this.processInput(message)
       running = !res.done
+      if (res.message) {
+        await this.gCtx.context.reply(res.message)
+      }
     } while (running)
   }
 
   async processHinter() {
     const currentStep = this.steps[this.currentStepIndex]
     if (currentStep.prompts.hint) {
-      await this.gCtx.context.reply(currentStep.prompts.hint)
+      await this.gCtx.context.reply(currentStep.prompts.hint, { parse_mode: 'MarkdownV2' })
     }
     else {
-      await this.gCtx.context.reply(`Please enter ${this.steps[this.currentStepIndex].parameter}'s value as required:`)
+      await this.gCtx.context.reply(`请输入要修改${this.steps[this.currentStepIndex].parameter}的值:`, { parse_mode: 'MarkdownV2' })
     }
   }
 
@@ -55,9 +58,9 @@ class AniConversation {
     }
   }
 
-  async processInput(userInput: string): Promise<{ done: boolean, message: string }> {
+  async processInput(userInput: string): Promise<{ done: boolean, message: string | null }> {
     if (userInput === '/exit') {
-      return { done: true, message: 'Conversation exited.' }
+      return { done: true, message: '退出成功' }
     }
     const currentStep = this.steps[this.currentStepIndex]
     // validate input
@@ -66,11 +69,12 @@ class AniConversation {
       await this.processAsyncConsequence()
       this.currentStepIndex++
       if (this.currentStepIndex >= this.steps.length) {
-        return { done: true, message: 'All inputs received.' }
+        return { done: true, message: '所有步骤均已完成' }
       }
       else {
-        return { done: false, message: `Please enter ${this.steps[this.currentStepIndex].parameter}:` }
+        return { done: false, message: null }
       }
+      // Extra-hint is not needed
     }
     else {
       return { done: false, message: currentStep.prompts.error }

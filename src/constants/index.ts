@@ -14,6 +14,7 @@ export const commandList: Command[] = [
   { command: 'menu', description: '显示当前频道绑定动画的菜单' },
   { command: 'getid', description: '获取当前频道ID，请先打开群组的频道并且创建频道！' },
   { command: 'schedule', description: '显示本周动画放送时间表' },
+  { command: 'cron', description: '通过cron表达式设定定时任务的频率' },
 ]
 
 export const welcomeMessages: string[] = [
