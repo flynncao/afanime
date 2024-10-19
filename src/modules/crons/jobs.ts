@@ -22,7 +22,7 @@ interface IAnimeJob {
   enabled: boolean
 }
 
-class AnimeJob extends CronJob {
+export class AnimeJob extends CronJob {
   name: string
   schedule: string
   handler: () => void
@@ -46,12 +46,17 @@ class AnimeJob extends CronJob {
     this.instance.stop()
   }
 
+  restart() {
+    this.instance.stop()
+    this.instance.start()
+  }
+
   setName(name: string) {
     this.name = name
   }
 
   setTime(time: CronTime) {
-    super.setTime(time)
+    this.instance.setTime(time)
   }
 
   setEnabled(enabled: boolean) {
@@ -92,8 +97,13 @@ export function updateAnimeLibraryMetaInfo(ctx?: AnimeContext) {
   optionalMessenger(`现在是${formattedDate}！拉取动画元信息中～`, undefined, {}).then(() => {
     readAnimes().then(async (res) => {
       let success = 0
-      const total = res.length
+      let total = res.length
       for (const anime of res) {
+        if (anime.status === 2 || anime.status === 3) {
+          // skip completed or archived anime
+          total--
+          continue
+        }
         const actions = (await fetchAndUpdateAnimeMetaInfo(anime.id)).split('#')
         if (actions[0] === 'error') {
           BotLogger.sendServerMessageAsync(`❗${actions[1]}`, undefined, true)

@@ -2,6 +2,7 @@ import type { Timer as ITimer } from 'easytimer.js'
 import type { Bot } from 'grammy'
 import type { ZonedDateTime } from '@js-joda/core'
 import { ATRelation } from '../bot/thread.js'
+import type { AnimeJob } from '../modules/crons/jobs.js'
 import type { AnimeContext } from '#root/types/index.js'
 import type { IATRelationInstance } from '#root/bot/thread.js'
 
@@ -26,6 +27,7 @@ interface SharedDB {
   botContextMessage: string | null
   AT: IATRelationInstance
   cronStatus: CRON_JOB_STATUS
+  cronInstance: AnimeJob | AnimeJob[] | null
 }
 
 const db: SharedDB = {
@@ -44,6 +46,7 @@ const db: SharedDB = {
   },
   AT: ATRelation.getInstance(),
   cronStatus: 0,
+  cronInstance: null,
 }
 
 export default db
