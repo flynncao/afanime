@@ -85,9 +85,7 @@ export interface IAnime {
 
 export interface IRating {
   rank: number
-
   total: number
-
   score: number
 }
 
@@ -98,4 +96,9 @@ export interface IImage {
   large: string
   medium: string
   common: string
+}
+
+export interface RealSearchAPI {
+  uri: string
+  token: string
 }

@@ -68,13 +68,13 @@ export class AniEpi {
     const anime = this.parent.getAnimeInstance()
     let phantomNameStr = anime.name_phantom ? anime.name_phantom : anime.name_cn
     if (!phantomNameStr.includes('|') && phantomNameStr.includes(',')) {
-      phantomNameStr = phantomNameStr.replaceAll(',', '|');
+      phantomNameStr = phantomNameStr.replaceAll(',', '|')
     }
     function containsAllSubstrings(text: string, pattern: string): boolean {
-      const patternComponents = pattern.split('|').map(part => part.trim());
-      const normalizedText = normalizedAnimeTitle(text);
-      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component));
-      return normalizedPatternComponents.every(component => normalizedText.includes(component));
+      const patternComponents = pattern.split('|').map(part => part.trim())
+      const normalizedText = normalizedAnimeTitle(text)
+      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component))
+      return normalizedPatternComponents.every(component => normalizedText.includes(component))
     }
     if (!anime)
       return false
