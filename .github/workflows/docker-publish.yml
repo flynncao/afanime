@@ -2,6 +2,13 @@ name: ci
 
 on:
   push:
+    branches:
+      - main  # Trigger only on pushes to the main branch
+    paths-ignore:
+      - '**/*'  # Ignore all paths by default
+  pull_request:
+    branches:
+      - main  # Trigger only on pull requests merged into the main branch
 
 jobs:
   docker:
