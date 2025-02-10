@@ -1,6 +1,4 @@
 import 'dotenv/config'
-import { env } from 'node:process'
-import Utilities from '../utils/index.js'
 
 const envs = process.env
 const values: Config = {
@@ -41,7 +39,7 @@ function calculateValue() {
     groupChatID: 'GROUP_CHAT_ID',
     mongodbURL: 'MONGO_DB_URL',
     botName: 'BOT_NAME',
-    translatorBlacklist: 'GROUP_BLACKLIST',
+    translatorBlacklist: 'TRANSLATOR_BLACK_LIST',
     adminChatIDs: 'ADMIN_CHAT_IDS',
     commandWhiteList: 'COMMAND_WHITE_LIST',
     proxyAddress: 'PROXY_ADDRESS',
@@ -78,10 +76,7 @@ function calculateValue() {
     throw new Error(`Missing required environment variables: ${missingEnvs.join(', ')}`)
   }
 
-  console.log('Configuration loaded successfully:', values)
   return values
 }
-
-calculateValue()
 
 export const config: Config = calculateValue()
