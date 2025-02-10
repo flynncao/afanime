@@ -14,15 +14,12 @@ import throttlerConfig from '#root/config/throttler.js'
 
 const botToken = config.botToken
 
-console.log('botToken grabed', botToken)
-
 const throttler = apiThrottler(throttlerConfig)
 
 const socksAgent = new SocksProxyAgent(config.proxyAddress || 'socks://127.0.0.1:7890')
 
 try {
   if (!db.bot) {
-    console.log('botToken', botToken)
     db.bot = new Bot<AnimeContext>(botToken, {
       client: {
         baseFetchConfig: {
@@ -36,9 +33,9 @@ try {
   db.bot.api.config.use(autoRetry())
   await init()
   run(db.bot)
-  setTimeout(() => {
-    Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
-  }, 3000)
+  // setTimeout(() => {
+  //   Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
+  // }, 3000)
 }
 catch (error: any) {
   Logger.logError(error)
