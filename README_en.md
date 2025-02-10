@@ -23,8 +23,3 @@ A bot that automatically forward Anime library messages to your telegram channel
 ### v2
 
 * [ ]  In-chat texting & operations to sync comments or ratings to Bangumi.
-
-## Thanks to
-
-<https://github.com/grammyjs/grammY>
-<https://github.com/ShoroukAziz/notion-potion>
