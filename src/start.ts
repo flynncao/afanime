@@ -3,6 +3,7 @@ import 'dotenv/config'
 import { run } from '@grammyjs/runner'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
 import { autoRetry } from '@grammyjs/auto-retry'
+import { SocksProxyAgent } from 'socks-proxy-agent'
 import Logger from './utils/logger.js'
 import db from './databases/store.js'
 import { init } from './bot/index.js'
@@ -15,17 +16,26 @@ const botToken = config.botToken
 
 const throttler = apiThrottler(throttlerConfig)
 
+const socksAgent = new SocksProxyAgent(config.proxyAddress || 'socks://127.0.0.1:7890')
+
 try {
-  if (!db.bot)
-    db.bot = new Bot<AnimeContext>(botToken)
+  if (!db.bot) {
+    db.bot = new Bot<AnimeContext>(botToken, {
+      client: {
+        baseFetchConfig: {
+          agent: socksAgent,
+        },
+      },
+    })
+  }
   await connectMongodb()
   db.bot.api.config.use(throttler)
   db.bot.api.config.use(autoRetry())
   await init()
   run(db.bot)
-  setTimeout(() => {
-    Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
-  }, 3000)
+  // setTimeout(() => {
+  //   Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
+  // }, 3000)
 }
 catch (error: any) {
   Logger.logError(error)

@@ -108,7 +108,7 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
         }
       }
       catch (error) {
-        console.log('error in fetchAndUpdateAnimeEpisodesInfo:', error)
+        Logger.logError(`Error in fetchAndUpdateAnimeEpisodesInfo: ${error}`)
       }
     })()
   })
@@ -127,7 +127,7 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
         title: item.text,
         link: item.link,
       }, subject)
-      console.log(`All Valid-${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
+      // console.log(`All Valid-${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
       if (aniEpisodeEntity.isAllInfoValid()) {
         const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
         if (subject.isValidDBEpisodeIndex(dbEpisodeIndex)) {
@@ -143,7 +143,7 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
 
     const current_episode = subject.getAnimeInstance().current_episode
     const startEpiNum = subject.getAnimeInstance().eps!
-    console.log('subject.maxInNEP ', subject.maxInNEP)
+    // console.log('subject.maxInNEP ', subject.maxInNEP)
     if (current_episode === subject.maxInNEP) {
       return 1
     }

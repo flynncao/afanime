@@ -1,10 +1,10 @@
 import type { AniSub } from './AniSub.js'
 import Logger from '#root/utils/logger.js'
 import { normalizedAnimeTitle } from '#root/utils/string.js'
+import { config } from '@/config/index.js'
 
-const blacklist = [
-  'Up to 21°C',
-]
+const blacklist = config.translatorBlacklist
+
 interface RSEpiInfo {
   num: number
   title: string
@@ -68,19 +68,19 @@ export class AniEpi {
     const anime = this.parent.getAnimeInstance()
     let phantomNameStr = anime.name_phantom ? anime.name_phantom : anime.name_cn
     if (!phantomNameStr.includes('|') && phantomNameStr.includes(',')) {
-      phantomNameStr = phantomNameStr.replaceAll(',', '|');
+      phantomNameStr = phantomNameStr.replaceAll(',', '|')
     }
     function containsAllSubstrings(text: string, pattern: string): boolean {
-      const patternComponents = pattern.split('|').map(part => part.trim());
-      const normalizedText = normalizedAnimeTitle(text);
-      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component));
-      return normalizedPatternComponents.every(component => normalizedText.includes(component));
+      const patternComponents = pattern.split('|').map(part => part.trim())
+      const normalizedText = normalizedAnimeTitle(text)
+      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component))
+      return normalizedPatternComponents.every(component => normalizedText.includes(component))
     }
     if (!anime)
       return false
     let isValidTitle = false
     isValidTitle = containsAllSubstrings(this.title, phantomNameStr)
-    if (blacklist.some(substring => this.title.includes(substring))) {
+    if (blacklist && blacklist.some(substring => this.title.includes(substring))) {
       isValidTitle = false
     }
     if (this.title) {

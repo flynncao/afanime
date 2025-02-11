@@ -110,9 +110,9 @@ export default function registerCommandHandler() {
 
   bot.command('relation', async (ctx) => {
     // TODO(feat): Development purpose only
-    if (store.AT) {
-      console.log('AT', store.AT.getRelations())
-    }
+    // if (store.AT) {
+    //   console.log('AT', store.AT.getRelations())
+    // }
   })
 
   bot.command('schedule', async (ctx: AnimeContext) => {

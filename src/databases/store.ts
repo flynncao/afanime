@@ -3,7 +3,7 @@ import type { Bot } from 'grammy'
 import type { ZonedDateTime } from '@js-joda/core'
 import { ATRelation } from '../bot/thread.js'
 import type { AnimeJob } from '../modules/crons/jobs.js'
-import type { AnimeContext } from '#root/types/index.js'
+import type { AnimeContext, RealSearchAPI } from '#root/types/index.js'
 import type { IATRelationInstance } from '#root/bot/thread.js'
 
 enum CRON_JOB_STATUS {
@@ -28,6 +28,8 @@ interface SharedDB {
   AT: IATRelationInstance
   cronStatus: CRON_JOB_STATUS
   cronInstance: AnimeJob | AnimeJob[] | null
+  realSearchAPI: RealSearchAPI
+  proxyAddress: string | null
 }
 
 const db: SharedDB = {
@@ -47,6 +49,11 @@ const db: SharedDB = {
   AT: ATRelation.getInstance(),
   cronStatus: 0,
   cronInstance: null,
+  realSearchAPI: {
+    uri: '',
+    token: '',
+  },
+  proxyAddress: null,
 }
 
 export default db

@@ -1,13 +1,12 @@
-name: ci
+name: Docker Publish
 
 on:
   push:
-    branches:
-      - main  # Trigger only on pushes to the main branch
+    branches: [main]
   pull_request:
-    branches:
-      - main  # Trigger only on pull requests merged into the main branch
-
+    types: [closed]
+    branches: [main]
+    
 jobs:
   docker:
     runs-on: ubuntu-latest

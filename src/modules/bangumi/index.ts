@@ -5,6 +5,7 @@ import { STATUS } from '#root/types/index.js'
 import type { IAnime } from '#root/types/index.js'
 import Logger from '#root/utils/logger.js'
 import type { BangumiSubjectInfoResponseData } from '#root/types/response.js'
+import { isEmpty } from '#root/utils/index.js'
 
 export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime> {
   return new Promise((resolve, reject) => {
@@ -15,7 +16,8 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         store.AT.updateTitle(animeID, subjectInfo.name_cn)
       }
       updatedAnime.query = updatedAnime.query === '1' ? subjectInfo.name_cn : updatedAnime.query
-      const needUpdateBangumiEpisodeInfo = (updatedAnime.episodes?.length === 0 || updatedAnime.episodes?.at(-1)?.name === '')
+      const emptyEpisodeList = isEmpty(updatedAnime.episodes)
+      const needUpdateBangumiEpisodeInfo = (emptyEpisodeList || updatedAnime.episodes?.at(-1)?.name === '')
       if (store.clock && subjectInfo.date) {
         const timeDistancebyDay = LocalDate.parse(subjectInfo.date).until(store.clock.now(), ChronoUnit.DAYS)
         if (updatedAnime.status !== STATUS.COMPLETED) {
@@ -26,6 +28,9 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps' && key !== 'total_episodes')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
+      if (!updatedAnime.name_cn) {
+        updatedAnime.name_cn = `${subjectInfo.name}`
+      }
       if (!updatedAnime.name_phantom) {
         updatedAnime.name_phantom = `${subjectInfo.name_cn}`
       }
@@ -35,14 +40,14 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
           // TODO: OOP design pattern: Encapsulation
-          Logger.logInfo('useFetchBangumiEpisodesInfo->res', res)
-          if (Array.isArray(res) && updatedAnime.episodes) {
-            if (updatedAnime.episodes.length === 0) {
+          Logger.logInfo('local episode without link videos>res', res)
+          if (Array.isArray(res)) {
+            if (emptyEpisodeList) {
               updatedAnime.episodes = res
             }
             else {
               const localEpisodes: any = res
-              for (const item of updatedAnime.episodes) {
+              for (const item of updatedAnime.episodes!) {
                 if (item.name === '') {
                   const newItem = localEpisodes.find((episode: any) => episode.id === item.id)
                   if (newItem) {
@@ -52,8 +57,8 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
                 }
               }
             }
-            resolve(updatedAnime)
           }
+          resolve(updatedAnime)
         }).catch((err) => {
           Logger.logError(`useFetchBangumiEpisodesInfo err: ${err}`)
           resolve(updatedAnime)
