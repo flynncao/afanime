@@ -23,5 +23,6 @@ jobs:
         uses: anothrNick/github-tag-action@v1 # Don't use @master or @v1 unless you're happy to test the latest version
         env:
           GITHUB_TOKEN: ${{ secrets.AFANIME_GITHUB_TAG_BUMP_TOKEN }} # if you don't want to set write permissions use a PAT token
+          DEFAULT_BUMP: patch
           WITH_V: true
           PRERELEASE: false
