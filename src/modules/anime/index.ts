@@ -143,7 +143,7 @@ function dealNEPResult(nepResult: any, subject: AniSub): number {
 
     const current_episode = subject.getAnimeInstance().current_episode
     const startEpiNum = subject.getAnimeInstance().eps!
-    console.log('subject.maxInNEP ', subject.maxInNEP)
+    // console.log('subject.maxInNEP ', subject.maxInNEP)
     if (current_episode === subject.maxInNEP) {
       return 1
     }
