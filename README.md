@@ -29,9 +29,3 @@
 ### v2
 
 * [ ]  通过Telegram聊天完成在Bangumi中评分，标记，评论动画的工作。
-
-## 鸣谢
-
-<https://github.com/grammyjs/grammY>
-
-<https://github.com/ShoroukAziz/notion-potion>
