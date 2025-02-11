@@ -23,7 +23,8 @@ COPY ./package.json /app/
 # lazy install Chromium to avoid cache miss, only install production dependencies to minimize the image size
 RUN \
     set -ex && \
-    corepack enable pnpm && \
+    corepack disabled pnpm && \
+		npm install -g pnpm@latest && \
     pnpm install --frozen-lockfile && \
     pnpm rb
 
