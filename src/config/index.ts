@@ -27,7 +27,7 @@ export interface Config {
     uri: string
     token: string
   }
-  proxyAddress: string
+  proxyAddress?: string
 }
 
 function calculateValue() {

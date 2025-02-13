@@ -16,7 +16,7 @@ const botToken = config.botToken
 
 const throttler = apiThrottler(throttlerConfig)
 
-const socksAgent = new SocksProxyAgent(config.proxyAddress || 'socks://127.0.0.1:7890')
+const socksAgent = config.proxyAddress ? new SocksProxyAgent(config.proxyAddress!) : false
 
 try {
   if (!db.bot) {
