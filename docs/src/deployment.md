@@ -40,7 +40,6 @@ title: afanime - 部署流程
 另外还有一步很重要，需要去刚刚“Manage Group” 的”Members”里找到你刚刚邀请的bot, 赋予它管理员权限。（不然bot无法发消息）
 
 > 没有管理员权限的bot无法在群组发送消息 也就无法推送了XD
-> 
 
 ![image.png](/img/deployment/image%207.png)
 
@@ -61,16 +60,20 @@ git clone https://github.com/flynncao/afanime.git
 把`.env.example`改名为`.env`，各项环境变量的功能如下：
 
 ```dotenv
-BOT_TOKEN="1234455:abcdABCD" #bot token，上一步获取到的 
-BOT_NAME="Tony" # bot名称 
+BOT_TOKEN="1234455:abcdABCD" #bot token，上一步获取到的
+BOT_NAME="Tony" # bot名称
 GROUP_CHAT_ID="-1233333" # 用于bot推送的channel id
 MONGO_DB_URL="mongodb://root:12345@mongodb:27017/afanime?authSource=admin" # 本地mongodb连接串
 TRANSLATOR_BLACK_LIST="Up to 21°C" # 字幕组黑名单
-ADMIN_CHAT_IDS="5166880313" # 管理user id，多个用逗号隔开，可用于执行各种管理员命令 
+ADMIN_CHAT_IDS="5166880313" # 管理user id，多个用逗号隔开，可用于执行各种管理员命令
 REAL_SEARCH_URI="https://open-search.acgn.es" # RealSearch的公开api endpoint
 REAL_SEARCH_TOKEN="abc:zrKMfVYiwgxNawdawaadawdawdaad" # RealSearch给开发者的个人token
 PROXY_ADDRESS="socks://127.0.0.1:7897" # 如果你的开发/部署环境在中国大陆且代理支持socks，可以通过这里来建立bot实例
 ```
+
+> [!IMPORTANT]
+> RealSearch的public api目前仍在内测，token暂未公开。你或许可以通过联系[作者本人](mailto:quick.joy8246@fastmail.com)索取一个。
+
 然后使用 `pnpm i`安装完依赖之后使用`pnpm run start`启动即可。
 
 如果你需要更持久的应用程序，可以尝试使用`pm2`等node程序管理工具。
@@ -95,7 +98,7 @@ https://www.docker.com/products/docker-desktop/
 - 可选（远程访问），如果你只是在本机使用且没有公网ip什么的，可以把 `services->mongodb->ports` 端口暴露字段注释掉
 
 ```yaml
- services:
+services:
   mongodb:
     image: mongo
     restart: always
@@ -103,19 +106,23 @@ https://www.docker.com/products/docker-desktop/
       - ./data/db:/data/db
     networks:
       - node-network
-    #ports: 
-      #- "27017:27017"
+    # ports:
+    # - "27017:27017"
 ```
 
 - afanime的字段配置
 
 ```yaml
-    environment:
-       BOT_TOKEN: "1234455:abcdABCD" # 填入申请bot时候保留的bot token
-       BOT_NAME: "Tony" # 随便起名字 
-       GROUP_CHAT_ID: "-1233333" 
-       MONGO_DB_URL: "mongodb://root:12345@mongodb:27017/afanime?authSource=admin" #这 里不用修改，如果你改掉了mongodb里的username和password，除了在这里修改之外还需要把mongo-seed下的--username root --password 12345参数也改掉
-       ADMIN_CHAT_IDS: "3000080721" #填 入你或者其他管理员的chatid， 多个id以逗号隔开
+environment:
+  BOT_TOKEN: '1234455:abcdABCD'
+  BOT_NAME: Tony
+  GROUP_CHAT_ID: '-1233333'
+  MONGO_DB_URL: 'mongodb://root:12345@mongodb:27017/afanime?authSource=admin'
+  ADMIN_CHAT_IDS: '5166880313'
+  REAL_SEARCH_URI: 'https://open-search.acgn.es'
+  REAL_SEARCH_TOKEN: 'abc:zrKMfVYiwgxNawdawaadawdawdaad'
+  TRANSLATOR_BLACK_LIST: Up to 21°C
+  PROXY_ADDRESS: ''
 ```
 
 - 关于你或者其他管理员的chat id 如何取得的问题，有很多方法。最简单的方法：关注这个机器人https://t.me/getmyid_bot 然后输入 `/start` 命令回车就可以看到自己的**chatid**了
@@ -164,19 +171,17 @@ https://www.docker.com/products/docker-desktop/
 
 完成这些后就可以回到机器人的聊天框（🚨 推荐番剧管理操作都通过私聊进行！），输入或者选择 `/create` 命令，然后根据提示把上文的 `animeid` 和 `themeid` 填入，在“查询串”的问题上直接填入 1 使用中文名称即可，后面的 “匹配串”才是重头戏。
 
-
 ## 模糊查询
 
 > 为了提高一丢丢精准度也可以使用信息更丰富的**ANi | BLEACH 死神 千年血戰篇-相剋譚- - 1080P | Baha | WEB-DL | AAC AVC | CHT** 这样的标题作为 检索。详情可以直接复制 NEP仓库的标题或在[realsearch](https://search.acgn.es/?cid=0&word=BLEACH+%E6%AD%BB%E7%A5%9E+%E5%8D%83%E5%B9%B4%E8%A1%80%E6%88%B0%E7%AF%87-%E7%9B%B8%E5%89%8B%E8%AD%9A-&sort=time&file_suffix=)里检索（记得去掉剧集号）。
-> 
-> 
+>
+>
 > ![image.png](/img/deployment/image%2017.png)
-> 
+>
 
 ![image.png](/img/deployment/image%2018.png)
 
 > 这一步完成后，在刚才创建的话题中输入 `/info` 就可以看到简略拉取的番剧信息了。
-
 
 继续回到bot聊天框输入 `/dashboard` 命令可以看到番剧已经被加载到了。
 
@@ -198,9 +203,9 @@ https://www.docker.com/products/docker-desktop/
 
 **ANi | BLEACH 死神 千年血戰篇-相剋譚 |  1080P | CHT**
 
-**ANi | BLEACH 死神 千年血戰篇-相剋譚 |  1080P | WEB-DL  | CHT** 
+**ANi | BLEACH 死神 千年血戰篇-相剋譚 |  1080P | WEB-DL  | CHT**
 
-**ANi | BLEACH 死神 千年血戰篇-相剋譚 |  1080P | Baha | WEB-DL | AAC AVC | CHT** 
+**ANi | BLEACH 死神 千年血戰篇-相剋譚 |  1080P | Baha | WEB-DL | AAC AVC | CHT**
 
 **得宗字幕組×拾月出雲 |  擅長逃跑的少主 | 1080p | 繁**
 
@@ -216,7 +221,7 @@ https://www.docker.com/products/docker-desktop/
 
 ## 开始享受推送
 
-完成上述所有配置后，就可以开始美美地等机器人推送了！ 
+完成上述所有配置后，就可以开始美美地等机器人推送了！
 
 你也可以点击 `/dashboard` 出现菜单里的【执行日常番剧放送任务】立即来一次推送。当然，点击番剧名进入独立番剧管理面板单个推送也没问题。
 
@@ -263,4 +268,3 @@ https://www.docker.com/products/docker-desktop/
 |  | /cron | 通过cron表达式设定定时任务的频率 | √ |
 |  | /info | 仅限在频道话题（topic）中使用，查看当前动画的元信息 |  |
 |  | /getid | 仅限在频道话题（topic）中使用，查看当前频道话题的ID |  |
-
