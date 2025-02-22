@@ -1,4 +1,4 @@
-<img src="https://github.com/user-attachments/assets/1cfe75f8-c76c-42ed-9c25-5c341eaa337f" align="left" width="65" /> <h1>Afanime</h1>
+<img src="https://cfr2-img.flynncao.uk/202502222317454.jpg" align="left" width="65" /> <h1>Afanime</h1>
 
 一个自动转发动画仓库的消息至你自己的Telegram频道&话题的机器人，由 Bangumi & [Real Search](https://search.acgn.es/)提供支持。
 
