@@ -224,10 +224,13 @@ async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: 
   else {
     await ctx.reply(`日推cron: ${userCrons[0]}\n周拉取cron: ${userCrons[1]}，修改中...`)
     updateMultipleCronQuick(['updateAnimeLibraryEpisodesInfo', 'updateAnimeLibraryMetaInfo'], userCrons).then(() => {
-      return ctx.reply('修改成功，应用修改中...无需重启服务！')
-      store.cronInstance.forEach((job) => {
-        job.restart()
-      })
+      ctx.reply('修改成功！请手动重启服务！')
+      // https://github.com/node-cron/node-cron/issues/388 Not working
+      // if (store.cronInstance) {
+      //   store.cronInstance.forEach((job) => {
+      //     job.restart()
+      //   })
+      // }
     }).catch((err) => {
       return ctx.reply('修改失败', err)
     })
