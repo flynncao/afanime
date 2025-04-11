@@ -16,15 +16,35 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       strArray[index] = char
       return strArray.join('')
     }
-    res.data.forEach((item: any) => {
-      const date: moment.Moment = moment.unix(item.date)
-      const housouTime: string = replaceCharAt(date.format('HH:mm'), 4, '0')
-      const housouWeekday: number = date.day()
-      const mainName = item.name
-      const enName = item.name_en
+    const escapeMarkdownV2 = (text: string) => {
+      return text.replace(/([_*[\]()~`>#+=\-|{}.!])/g, '\\$1')
+    }
+    res.data.sort(
+      (a, b) => {
+        // compare based on their daily schedule like 00:00 > 13:00, not actual date
+        const aDate = moment.unix(a.date_start).format('HH:mm')
+        const bDate = moment.unix(b.date_start).format('HH:mm')
+        if (aDate < bDate) {
+          return -1
+        }
+        else {
+          return 1
+        }
+      },
+    ).forEach((item: any) => {
+      const housouDate = moment.unix(item.date_end)
+      const housouTime: string = replaceCharAt(housouDate.format('HH:mm'), 4, '0')
+      const housouWeekday: number = housouDate.day()
+      const cnName = item.name_cn
+      // const jpName = item.name
+      const status = item.status
       if (weekday !== -1 && weekday !== housouWeekday)
         return
-      timetable[housouWeekday].push(`${housouTime} | ${mainName} | ${enName}`)
+      const name = escapeMarkdownV2(cnName)
+      const isSuspended = status === 'suspended'
+      const isNew = status === 'new'
+      const title = `${isSuspended ? '~' : ''}${housouTime} \\- **${name}**${isSuspended ? '~' : ''} ${isNew ? '🆕' : ''}`
+      timetable[housouWeekday].push(title)
     })
     const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
     let message = ''
@@ -46,7 +66,9 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       ctx.reply(message)
     }
     else {
-      BotLogger.sendServerMessage(message)
+      BotLogger.sendServerMessage(message, {
+        parse_mode: 'MarkdownV2',
+      })
     }
   }).catch((error) => {
     console.log('=>(command-handler.ts:125) error', error)
