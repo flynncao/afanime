@@ -35,7 +35,7 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         updatedAnime.name_phantom = `${subjectInfo.name_cn}`
       }
       if (!updatedAnime.total_episodes) {
-        updatedAnime.total_episodes = subjectInfo.eps // 避免sp剧集
+        updatedAnime.total_episodes = subjectInfo.eps === 0 ? subjectInfo.total_episodes : Math.min(subjectInfo.eps, subjectInfo.total_episodes)
       }
       if (needUpdateBangumiEpisodeInfo) {
         useFetchBangumiEpisodesInfo(animeID).then((res: any) => {
