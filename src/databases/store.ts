@@ -27,7 +27,7 @@ interface SharedDB {
   botContextMessage: string | null
   AT: IATRelationInstance
   cronStatus: CRON_JOB_STATUS
-  cronInstance: AnimeJob | AnimeJob[] | null
+  cronInstance: AnimeJob[] | null
   realSearchAPI: RealSearchAPI
   proxyAddress: string | null
 }
