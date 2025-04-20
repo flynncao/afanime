@@ -5,6 +5,9 @@ title: afanime - 部署流程
 
 # Telegram初始化（必须）
 
+> [!IMPORTANT]
+> RealSearch的public api目前仍在内测，token暂未公开。你或许可以通过联系[作者本人](mailto:quick.joy8246@fastmail.com)索取一个。
+
 ## 1. 认领Telegram Bot
 
 你需要首先关注这个官方的[Bot Father账号](https://t.me/BotFather)，用来帮助管理已有的机器人）。点击菜单或者输入`/newbot`并回车
@@ -70,9 +73,6 @@ REAL_SEARCH_URI="https://open-search.acgn.es" # RealSearch的公开api endpoint
 REAL_SEARCH_TOKEN="abc:zrKMfVYiwgxNawdawaadawdawdaad" # RealSearch给开发者的个人token
 PROXY_ADDRESS="socks://127.0.0.1:7897" # 如果你的开发/部署环境在中国大陆且代理支持socks，可以通过这里来建立bot实例
 ```
-
-> [!IMPORTANT]
-> RealSearch的public api目前仍在内测，token暂未公开。你或许可以通过联系[作者本人](mailto:quick.joy8246@fastmail.com)索取一个。
 
 然后使用 `pnpm i`安装完依赖之后使用`pnpm run start`启动即可。
 
@@ -140,6 +140,10 @@ environment:
 🚨 注：如果出现这样的提示，请检查是不是你的docker引擎没启动（可以在docker desktop左下角检查健康度或者安装失败等问题）
 
 ![image.png](/img/deployment/image%2011.png)
+
+🚨 注：如果docker镜像拉取失败，可以使用`docker login --username 你的用户名`登录（需要注册Docker Hub账号）后再重试
+
+![](https://cfr2-img.flynncao.uk/202504210010312.png)
 
 #  bot初配置
 
