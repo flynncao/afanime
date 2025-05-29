@@ -62,6 +62,7 @@ afanime会优先筛选本次推送*需要*的集数，具体为：
 * total_episode: 由Bangumi提供，本季总数目（count），<del>例如“【押しの子】2期”  为`13`个</del> 例如“【押しの子】2期”  为`12`个，去掉SP剧集
 * last_episode: NEP仓库查询串结果中出现的最大集数
 * name_phantom: 目前作为存储动画全匹配串使用
+* status: 0 - 未开播，1 - 已开播，2 - 已完结，3 - 已归档
 
 ## Class
 
@@ -72,5 +73,3 @@ afanime会优先筛选本次推送*需要*的集数，具体为：
 * maxInBangumi: 如从12集开始，一共为12集，则最大为24，这个信息抓取自eps字段的count而非total_episodes，因为后者也包含了SP剧集。
 
 > 例如：https://api.bgm.tv/v0/subjects/404809；
-
-
