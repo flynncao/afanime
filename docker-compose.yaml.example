@@ -8,7 +8,7 @@ services:
       - node-network
     ports: 
       - "27017:27017"
-    healthcheck:  
+    healthcheck:
       test: mongosh --eval "db.adminCommand('ping')" --quiet
       interval: 5s
       timeout: 5s
@@ -19,36 +19,34 @@ services:
     
   mongo_seed:
     image: mongo
-    links: 
-      - mongodb
-    volumes:
-      - ./mongo-seed:/mongo-seed
-    command: >
-      bash -c "
-      sleep 5 &&
-      if ! mongo --host mongodb --username root --password 12345 --authenticationDatabase admin --eval 'db.getMongo().getDBNames().indexOf(\"afanime\") >= 0 && db.getSiblingDB(\"afanime\").getCollectionNames().indexOf(\"animes\") >= 0' | grep 'true'; then
-        echo 'Database or collection does not exist, proceeding with import.' &&
-        mongoimport --host mongodb --username root --password 12345 --authenticationDatabase admin --db afanime --collection animes --file /mongo-seed/animes.json --jsonArray;
-      else
-        echo 'Database or collection already exists, skipping import.';
-      fi
-      "
-    networks:
-      - node-network
-
-
-  afanime:
-    image: flynncao/afanime:v1.1.4
-    restart: always
+    restart: no
     depends_on:
       mongodb:
         condition: service_healthy
+    volumes:
+      - ./mongo-seed:/mongo-seed
+    entrypoint: ["bash", "/mongo-seed/seed.sh"] # please refer to https://gist.github.com/flynncao/b0ca9036106d46b03524d7b77d94a79f/
+    networks:
+      - node-network
+
+  afanime:
+    image: flynncao/afanime:latest
+    restart: always
+    depends_on:  
+      mongodb:  
+        condition: service_healthy  
+      mongo_seed:  
+        condition: service_completed_successfully
     environment:
-       BOT_TOKEN: "1234455:abcdABCD"
-       BOT_NAME: "Tony"
-       GROUP_CHAT_ID: "-1233333"
-       MONGO_DB_URL: "mongodb://@mongodb:27017/afanime"
-       ADMIN_CHAT_IDS: "3000080721"
+      BOT_TOKEN: '1234455:abcdABCD'
+      BOT_NAME: Tony
+      GROUP_CHAT_ID: '-1233333'
+      MONGO_DB_URL: 'mongodb://root:12345@mongodb:27017/afanime?authSource=admin'
+      ADMIN_CHAT_IDS: '5166880313'
+      REAL_SEARCH_URI: 'https://open-search.acgn.es'
+      REAL_SEARCH_TOKEN: 'abc:zrKMfVYiwgxNawdawaadawdawdaad'
+      TRANSLATOR_BLACK_LIST: Up to 21°C
+      PROXY_ADDRESS: ''
     networks:
       - node-network
        
