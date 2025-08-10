@@ -19,7 +19,10 @@
     "dev": "tsup --watch --onSuccess \"node dist/start.js\"",
     "build": "tsup",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@grammyjs/auto-retry": "^2.0.2",
@@ -54,6 +57,7 @@
     "lint-staged": "14.0.1",
     "nodemon": "^3.1.9",
     "tsup": "^8.3.6",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitepress": "^1.6.3"
   }
 }

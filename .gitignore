@@ -140,3 +140,7 @@ output
 data/
 mongo-seed/
 docker-compose.yaml
+
+# Vitepress
+**/.vitepress/dist
+**/.vitepress/cache

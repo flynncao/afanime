@@ -1,6 +1,9 @@
-# 核心机制
+---
+outline: deep
+title: afanime - 开发流程
+---
 
-[toc]
+# 注意事项
 
 注意：这里出现的所有数字都是**集数**而不是index下标，在afanime中下标几乎都不可见。
 
@@ -29,7 +32,7 @@ afanime会优先筛选本次推送*需要*的集数，具体为：
 有以下条件会导致所谓的Ani题目不匹配：
 
 * 不合理的题目 -isValidTitle：和“动画匹配串”不完全匹配
-* 不合理的集数 -isValidEpiNum： 请看##合理的集数
+* 不合理的集数 -isValidEpiNum： 请看[合理的集数](/development#合理的集数)
 * 不合理的链接 - isValid：检查链接是否有效（目前只判空）
 
 ## 动画匹配串
@@ -46,4 +49,28 @@ afanime会优先筛选本次推送*需要*的集数，具体为：
 
 ## 处理突发状况
 
-* 服务器炸裂->错过拉取重要meta信息->：目前以提高日推和周拉的频率为主
+* 服务器炸裂->错过拉取重要meta信息->：请尝试提高日推和周拉的频率为主
+
+# Model & Class解释
+
+## Model
+
+### Anime
+
+* current_episode: 在Telegram频道中已推送的最大集数，可能是`15`集，默认标记为`0`集。
+* eps: 自行设置，默认为`1`，起始集数，例如“【押しの子】2期”  从第`12`集开始
+* total_episode: 由Bangumi提供，本季总数目（count），<del>例如“【押しの子】2期”  为`13`个</del> 例如“【押しの子】2期”  为`12`个，去掉SP剧集
+* last_episode: NEP仓库查询串结果中出现的最大集数
+* name_phantom: 目前作为存储动画全匹配串使用
+
+## Class
+
+### AniSub
+
+描述：为番剧自身提供服务。
+
+* maxInBangumi: 如从12集开始，一共为12集，则最大为24，这个信息抓取自eps字段的count而非total_episodes，因为后者也包含了SP剧集。
+
+> 例如：https://api.bgm.tv/v0/subjects/404809；
+
+
