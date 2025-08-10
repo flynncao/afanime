@@ -19,8 +19,8 @@ export function extractEpisodeNumber(inputString: string) {
   if (rawNum.includes('END'))
     return Number(rawNum.slice(0, rawNum.indexOf('END')))
 
-  else if (rawNum.includes('v2'))
-    return Number(rawNum.slice(0, rawNum.indexOf('v2')))
+  else if (rawNum.match(/v\d+/))
+    return Number(rawNum.slice(0, rawNum.indexOf('v')))
 
   else
     return Number(rawNum)
@@ -31,6 +31,8 @@ export function objToString(obj: any) {
 }
 
 export function normalizedAnimeTitle(inputString: string): string {
-  const reg = /[\s【】!！·・、「」|.-]/g;
+  /* eslint-disable regexp/no-dupe-characters-character-class */
+  /* eslint-disable regexp/no-obscure-range */
+  const reg = /[\s【】!！・「」.。-（）/\\［］『』×☆★♪]/g
   return inputString.replace(reg, '')
 }
