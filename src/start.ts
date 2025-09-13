@@ -12,13 +12,11 @@ import { connectMongodb } from './utils/mongodb.js'
 import { config } from '@/config/index.js'
 import throttlerConfig from '#root/config/throttler.js'
 
-const botToken = config.botToken
+function setupBot() {
+  const botToken = config.botToken
+  const throttler = apiThrottler(throttlerConfig)
+  const socksAgent = config.proxyAddress ? new SocksProxyAgent(config.proxyAddress!) : false
 
-const throttler = apiThrottler(throttlerConfig)
-
-const socksAgent = config.proxyAddress ? new SocksProxyAgent(config.proxyAddress!) : false
-
-try {
   if (!db.bot) {
     db.bot = new Bot<AnimeContext>(botToken, {
       client: {
@@ -28,15 +26,25 @@ try {
       },
     })
   }
-  await connectMongodb()
+
   db.bot.api.config.use(throttler)
   db.bot.api.config.use(autoRetry())
-  await init()
-  run(db.bot)
-  // setTimeout(() => {
-  //   Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
-  // }, 3000)
+
+  return db.bot
 }
-catch (error: any) {
-  Logger.logError(error)
+
+async function startBot() {
+  try {
+    const bot = setupBot()
+    await connectMongodb()
+    await init()
+    run(bot)
+    Logger.logInfo('Bot started successfully')
+  }
+  catch (error) {
+    Logger.logError('Failed to start bot:', error)
+  }
 }
+
+// Start the bot
+startBot()
