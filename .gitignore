@@ -132,9 +132,17 @@ output
 .yarn/install-state.gz
 .pnp.*
 
-# VSCode 
-
+# IDEs and editors 
 .vscode/*
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.code-workspace
+# MacOS files
+.DS_Store
 
 # Docker volumes
 data/
