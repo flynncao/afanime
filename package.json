@@ -55,7 +55,7 @@
     "eslint": "8.57.1",
     "husky": "8.0.3",
     "lint-staged": "14.0.1",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.11",
     "tsup": "^8.3.6",
     "typescript": "^5.7.2",
     "vitepress": "^1.6.3"
