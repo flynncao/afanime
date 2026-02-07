@@ -58,6 +58,6 @@
     "nodemon": "^3.1.9",
     "tsup": "^8.3.6",
     "typescript": "^5.7.2",
-    "vitepress": "^1.6.3"
+    "vitepress": "^1.6.4"
   }
 }
