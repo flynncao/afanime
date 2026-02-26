@@ -11,5 +11,6 @@ export default defineConfig((options) => {
     outDir: 'dist',
     format: ['esm', 'cjs'],
     minify: !options.watch,
+    exclude: ['src/test/**/*', '**/*.test.ts', '**/*.spec.ts'],
   }
 })
