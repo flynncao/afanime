@@ -7,7 +7,7 @@ import { createNewAnime } from '#root/models/Anime.js'
 import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import type { AniConversationContext } from '#root/classes/grammy/CustomConversation.js'
 import { AniConversationBuilder } from '#root/classes/grammy/CustomConversation.js'
-import { updateMultipleCronQuick } from '#root/models/Cron.js'
+import { buildDailyCron, buildIntervalCron, isValidCron, parseCronToState } from '../utils/cron-utils.js'
 /**
  * CONVERSATIONS
  */
@@ -191,25 +191,27 @@ async function updateAnimeStartEpisodeConversation(conversation: AnimeConversati
 }
 
 async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: AnimeContext) {
-  // https://stackoverflow.com/questions/14203122/create-a-regular-expression-for-cron-statement
-  // eslint-disable-next-line  regexp/no-unused-capturing-group
-  const cronRegex = /^((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?([0-5]?\d)(([,\-/])([0-5]?\d))*|\*)\s+((\*\/)?((2[0-3]|1\d|\d))(([,\-/])(2[0-3]|1\d|\d))*|\*)\s+((\*\/)?([1-9]|[12]\d|3[01])(([,\-/])([1-9]|[12]\d|3[01]))*|\*)\s+((\*\/)?([1-9]|1[0-2])(([,\-/])([1-9]|1[0-2]))*|\*|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\s+((\*\/)?[0-6](([,\-/])[0-6])*|\*|(sun|mon|tue|wed|thu|fri|sat))\s*$|@(annually|yearly|monthly|weekly|daily|hourly|reboot)$/
-  const testCron = (input: string) => cronRegex.test(input)
+  const testCron = (input: string) => {
+    if (input.includes('?')) {
+      return false
+    }
+    return isValidCron(input)
+  }
   const userCrons: string[] = []
-  ctx.reply('输入[Cron格式](https://crontab.cronhub.io/)的表达式来规定以下拉取频率，输入/exit退出', {
+  ctx.reply('输入[Cron格式](https://crontab.cronhub.io/)的表达式来规定以下拉取频率，不支持 `?` 语法 (请用 `*` 代替)，输入/exit退出', {
     parse_mode: 'MarkdownV2',
   })
   await new AniConversationBuilder().addContext(conversation, ctx).addStep('updateAnimeLibraryEpisodesInfo', testCron, {
-    hint: '正在修改：动画仓库拉取频率，默认为每天8时，即\`0 0 8 * * *\`',
-    error: 'cron格式输入有误，请重新输入',
+    hint: '正在修改：动画仓库拉取频率，默认为每天8时，即\`0 8 * * *\` (或旧版的 \`0 0 8 * * *\`)',
+    error: 'cron格式输入有误 (注意不支持 `?`，请使用 `*`)，请重新输入',
   }, ({ context, conversation }: AniConversationContext, data: string) => {
     userCrons.push(data)
   }).addStep(
     'updateAnimeLibraryMetaInfo',
     testCron,
     {
-      hint: '正在修改：动画元信息拉取频率，默认为每天0时，即\`0 0 0 * * *\`',
-      error: 'cron格式输入有误，请重新输入。',
+      hint: '正在修改：动画元信息拉取频率，默认为每天0时，即\`0 0 * * *\` (或旧版的 \`0 0 0 * * *\`)',
+      error: 'cron格式输入有误 (注意不支持 `?`，请使用 `*`)，请重新输入。',
     },
     ({ context, conversation }: AniConversationContext, data: string) => {
       if (data !== '/exit') {

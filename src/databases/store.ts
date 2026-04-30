@@ -6,6 +6,8 @@ import type { AnimeJob } from '../modules/crons/jobs.js'
 import type { AnimeContext, RealSearchAPI } from '#root/types/index.js'
 import type { IATRelationInstance } from '#root/bot/thread.js'
 
+import type { ParsedCronState } from '../utils/cron-utils.js'
+
 enum CRON_JOB_STATUS {
   IDLE = 0,
   PUSHING = 1,
@@ -30,6 +32,8 @@ interface SharedDB {
   cronInstance: AnimeJob[] | null
   realSearchAPI: RealSearchAPI
   proxyAddress: string | null
+  operatingCronState: ParsedCronState | null
+  operatingCronKey: string | null
 }
 
 const db: SharedDB = {
@@ -54,6 +58,8 @@ const db: SharedDB = {
     token: '',
   },
   proxyAddress: null,
+  operatingCronState: null,
+  operatingCronKey: null,
 }
 
 export default db

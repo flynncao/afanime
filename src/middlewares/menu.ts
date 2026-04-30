@@ -9,7 +9,10 @@ import { STATUS } from '#root/types/index.js'
 import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { deleteAnime, readAnimes, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { handleAnimeResolve } from '#root/modules/anime/event.js'
-import * as animeJobs from '#root/modules/crons/jobs.js'
+import { buildDailyCron, buildIntervalCron, parseCronToState } from '../utils/cron-utils.js'
+import { readSingleCron, updateSingleCronQuick } from '#root/models/Cron.js'
+import type { ParsedCronState } from '../utils/cron-utils.js'
+import { CronTime } from 'cron'
 
 interface MenuButton {
   text: string
@@ -180,6 +183,13 @@ export async function createAllMenus(): Promise<string | Error> {
     }
 
     store.menus = globalMenuObj
+    // Register cron-settings-menu
+    const cronMenu = initCronSettingsMenu()
+    if (!(cronMenu instanceof Error)) {
+      globalMenuObj['cron-settings'] = cronMenu
+      store.bot?.use(cronMenu)
+    }
+
     Logger.logSuccess('All menus initialized')
     resolve('success')
   }
@@ -232,7 +242,128 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
         animeJobs.updateAnimeLibraryMetaInfo(ctx)
         ctx.answerCallbackQuery('执行成功')
       },
+    ).row().text(
+      () => '⏰ 调整任务频率',
+      async (ctx) => {
+        await ctx.reply('请选择要调整的任务：', {
+          reply_markup: new Menu<AnimeContext>('cron-task-selector')
+            .text('日推频率 (Episodes)', async (ctx) => {
+              store.operatingCronKey = 'updateAnimeLibraryEpisodesInfo'
+              const cron = await readSingleCron(store.operatingCronKey)
+              store.operatingCronState = parseCronToState(cron?.value || '0 0 8 * * *')
+              await ctx.deleteMessage()
+              await ctx.reply(`正在设置：日推频率 (updateAnimeLibraryEpisodesInfo)\n当前：\`${cron?.value || '0 0 8 * * *'}\``, { reply_markup: store.menus['cron-settings'], parse_mode: 'MarkdownV2' })
+            })
+            .row()
+            .text('周拉取频率 (Meta)', async (ctx) => {
+              store.operatingCronKey = 'updateAnimeLibraryMetaInfo'
+              const cron = await readSingleCron(store.operatingCronKey)
+              store.operatingCronState = parseCronToState(cron?.value || '0 0 0 * * 1')
+              await ctx.deleteMessage()
+              await ctx.reply(`正在设置：周拉取频率 (updateAnimeLibraryMetaInfo)\n当前：\`${cron?.value || '0 0 0 * * 1'}\``, { reply_markup: store.menus['cron-settings'], parse_mode: 'MarkdownV2' })
+            })
+            .row()
+            .text('取消', ctx => ctx.deleteMessage()),
+        })
+      },
     ).row().text('取消', ctx => ctx.deleteMessage())
+  }
+  catch (error: any) {
+    return error
+  }
+}
+
+export function initCronSettingsMenu(): ProducedMenu<AnimeContext> | Error {
+  try {
+    return new Menu<AnimeContext>('cron-settings', { autoAnswer: true })
+      .text(
+        (ctx) => {
+          const state = store.operatingCronState
+          if (!state)
+            return '加载中...'
+          if (state.mode === 'daily')
+            return `📅 模式: 每日定时 (${String(state.hour).padStart(2, '0')}:${String(state.minute).padStart(2, '0')})`
+          if (state.mode === 'interval')
+            return `⏳ 模式: 间隔 (每${state.intervalHours}小时)`
+          return `✍️ 模式: 自定义 (${state.raw})`
+        },
+        (ctx) => ctx.answerCallbackQuery('当前配置'),
+      )
+      .row()
+      .text('➖ 小时', (ctx) => {
+        const state = store.operatingCronState
+        if (state?.mode === 'daily') {
+          state.hour = (state.hour - 1 + 24) % 24
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+        else if (state?.mode === 'interval') {
+          state.intervalHours = Math.max(1, state.intervalHours - 1)
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+      })
+      .text('➕ 小时', (ctx) => {
+        const state = store.operatingCronState
+        if (state?.mode === 'daily') {
+          state.hour = (state.hour + 1) % 24
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+        else if (state?.mode === 'interval') {
+          state.intervalHours = Math.min(23, state.intervalHours + 1)
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+      })
+      .row()
+      .text('➖ 分钟', (ctx) => {
+        const state = store.operatingCronState
+        if (state?.mode === 'daily') {
+          state.minute = (state.minute - 5 + 60) % 60
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+      })
+      .text('➕ 分钟', (ctx) => {
+        const state = store.operatingCronState
+        if (state?.mode === 'daily') {
+          state.minute = (state.minute + 5) % 60
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+      })
+      .row()
+      .text('🔄 切换模式', (ctx) => {
+        const state = store.operatingCronState
+        if (state) {
+          if (state.mode === 'daily') {
+            store.operatingCronState = { mode: 'interval', intervalHours: 12 }
+          }
+          else {
+            store.operatingCronState = { mode: 'daily', hour: 8, minute: 0 }
+          }
+          ctx.editMessageReplyMarkup(store.menus['cron-settings'].reply_markup)
+        }
+      })
+      .row()
+      .text('✍️ 高级模式', async (ctx) => {
+        await ctx.deleteMessage()
+        await ctx.conversation.enter('updateAnimeUpdateFrequency')
+      })
+      .row()
+      .text('✅ 保存', async (ctx) => {
+        const state = store.operatingCronState
+        const key = store.operatingCronKey
+        if (state && key) {
+          let cronStr = ''
+          if (state.mode === 'daily')
+            cronStr = buildDailyCron(state.hour, state.minute)
+          else if (state.mode === 'interval')
+            cronStr = buildIntervalCron(state.intervalHours)
+          else
+            cronStr = state.raw
+
+          await updateSingleCronQuick(key, cronStr)
+          await ctx.reply(`✅ 已更新 ${key} 为 \`${cronStr}\`\n请手动重启服务生效！`, { parse_mode: 'MarkdownV2' })
+          await ctx.deleteMessage()
+        }
+      })
+      .text('❌ 取消', ctx => ctx.deleteMessage())
   }
   catch (error: any) {
     return error

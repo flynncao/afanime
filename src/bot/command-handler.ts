@@ -121,6 +121,8 @@ export default function registerCommandHandler() {
   Logger.logSuccess('Command handler regisred')
 
   bot.command('cron', async (ctx) => {
-    await ctx.conversation.enter('updateAnimeUpdateFrequency')
+    await ctx.reply('请选择要调整的任务：', {
+      reply_markup: store.menus['cron-task-selector'],
+    })
   })
 }
