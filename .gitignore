@@ -132,9 +132,10 @@ output
 .yarn/install-state.gz
 .pnp.*
 
-# VSCode 
+# IDEs
 
 .vscode/*
+.idea/*
 
 # Docker volumes
 data/
@@ -144,3 +145,14 @@ docker-compose.yaml
 # Vitepress
 **/.vitepress/dist
 **/.vitepress/cache
+
+# AI Agents
+.agents
+.claude
+.openspec
+openspec/
+.github
+.codex
+
+
+
