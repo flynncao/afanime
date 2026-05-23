@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildDailyCron, buildIntervalCron, isValidCron, parseCronToState } from '../../utils/cron-utils.js'
+import { buildDailyCron, buildIntervalCron, isValidCron, parseCronToState } from '../../../utils/cron-utils.js'
 
-describe('Cron Utils', () => {
+describe('cron utils', () => {
   describe('isValidCron', () => {
     it('should validate 5-field cron', () => {
       expect(isValidCron('0 8 * * *')).toBe(true)
@@ -18,6 +18,14 @@ describe('Cron Utils', () => {
 
     it('should invalidate Quartz syntax with ?', () => {
       expect(isValidCron('0 0 */12 ? * *')).toBe(false)
+    })
+
+    it('should invalidate empty string', () => {
+      expect(isValidCron('')).toBe(false)
+    })
+
+    it('should invalidate non-cron string', () => {
+      expect(isValidCron('hello world!')).toBe(false)
     })
   })
 

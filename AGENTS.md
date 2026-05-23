@@ -38,6 +38,7 @@ This is `afanime`, a TypeScript-based Telegram Bot built with the `grammy` frame
 - **Imports:** Uses `.js` extensions for internal imports in `.ts` files, necessary for the ESM configuration. Path aliases (`#root/*` and `@/*`) both map to `src/`.
 - **Testing Style:** Heavy use of `vi.mock` for global/external dependencies defined in `src/test/setup.ts`. Mocks are cleared automatically `afterEach`. White-box testing is common (e.g., casting instances to `any` to test private methods).
 - **Linting:** Uses `@antfu/eslint-config`. `no-console` and `no-unused-vars` are explicitly turned off.
+- **Telegram Parse Modes:** Always prefer `MarkdownV2` when using `parse_mode`. Use `HTML` only when `MarkdownV2` is clearly a worse fit for the specific message.
 
 ## RULES & PERMISSION CONTROLS (ALL AGENTS MUST OBEY)
 - **Primary Source of Truth:** `AGENTS.md` is the central knowledge base. `CLAUDE.md` explicitly defers to it.
@@ -45,12 +46,19 @@ This is `afanime`, a TypeScript-based Telegram Bot built with the `grammy` frame
 - **Testing Constraints:** NEVER ignore failing tests. Fix them or intentionally update tests. NEVER remove tests unless the code is removed. NEVER use `.skip()` permanently.
 - **Build Quality:** Ensure that no console warnings or unused variables break the build logic unless explicitly permitted by the local config (`no-console` and `no-unused-vars` are off).
 - **Environment:** Use ESM imports with `.js` extensions for internal imports in `.ts` files.
+- **Telegram Formatting Review Required:** Before adding or changing any Telegram text that uses `parse_mode`, or any displayed menu text/buttons that may be sent with formatted output, check the relevant Telegram Bot API formatting sections first. Use Context7 when available in the current setup.
+- **Required Telegram Bot API References:** Review these sections before changing formatted Telegram text:
+  - `MarkdownV2`: https://core.telegram.org/bots/api#markdownv2-style
+  - `HTML`: https://core.telegram.org/bots/api#html-style
+  - `Markdown` legacy: https://core.telegram.org/bots/api#markdown-style
+- **Escaping Discipline:** Do not guess escaping rules for Telegram output. Validate the exact syntax required by the selected parse mode, especially for inline code, links, parentheses, brackets, punctuation, and user-controlled text.
 
 ## ANTI-PATTERNS (THIS PROJECT)
 - **DO NOT commit code without running tests:** `pnpm test:run && pnpm run build` is a strict pre-commit requirement.
 - **NEVER ignore failing tests:** Fix them or intentionally update tests.
 - **NEVER remove tests** unless the tested code is completely removed.
 - **NEVER use `.skip()` permanently:** Only allowed temporarily for debugging.
+- **DO NOT add new `HTML` or legacy `Markdown` parse-mode text by default:** prefer `MarkdownV2` unless there is a concrete formatting reason not to.
 
 ## UNIQUE STYLES
 - **Hybrid Store:** `src/databases/store.ts` acts as a global singleton container for the Bot instance, which is unconventional compared to context passing.

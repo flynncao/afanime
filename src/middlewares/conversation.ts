@@ -7,7 +7,8 @@ import { createNewAnime } from '#root/models/Anime.js'
 import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
 import type { AniConversationContext } from '#root/classes/grammy/CustomConversation.js'
 import { AniConversationBuilder } from '#root/classes/grammy/CustomConversation.js'
-import { buildDailyCron, buildIntervalCron, isValidCron, parseCronToState } from '../utils/cron-utils.js'
+import { isValidCron } from '#root/utils/cron-utils.js'
+import { updateMultipleCronQuick } from '#root/models/Cron.js'
 /**
  * CONVERSATIONS
  */
@@ -98,7 +99,9 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
   const name_cn = ' '
   await ctx.reply('现在输入动画仓库的查询串,输入1表示使用默认中文名搜索，你可以稍后使用dashboard命令进入子菜单并中修改这个查询串，具体来源：[Real Search](https://search.acgn.es/)：', {
     parse_mode: 'MarkdownV2',
-    disable_web_page_preview: true,
+    link_preview_options: {
+      is_disabled: true,
+    },
   })
   const typedInfo2 = await conversation.waitFor(':text')
   let query = typedInfo2.update.message?.text
@@ -198,20 +201,20 @@ async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: 
     return isValidCron(input)
   }
   const userCrons: string[] = []
-  ctx.reply('输入[Cron格式](https://crontab.cronhub.io/)的表达式来规定以下拉取频率，不支持 `?` 语法 (请用 `*` 代替)，输入/exit退出', {
+  ctx.reply('输入[Cron格式](https://crontab.cronhub.io/)的表达式来规定以下拉取频率，输入/exit退出', {
     parse_mode: 'MarkdownV2',
   })
   await new AniConversationBuilder().addContext(conversation, ctx).addStep('updateAnimeLibraryEpisodesInfo', testCron, {
-    hint: '正在修改：动画仓库拉取频率，默认为每天8时，即\`0 8 * * *\` (或旧版的 \`0 0 8 * * *\`)',
-    error: 'cron格式输入有误 (注意不支持 `?`，请使用 `*`)，请重新输入',
+    hint: '正在修改：动画仓库拉取频率，默认为每天8时，即`0 8 * * *` \\(或旧版的 `0 0 8 * * *`\\)',
+    error: 'cron格式输入有误 \\(注意不支持 `?`，请使用 `*`\\)，请重新输入',
   }, ({ context, conversation }: AniConversationContext, data: string) => {
     userCrons.push(data)
   }).addStep(
     'updateAnimeLibraryMetaInfo',
     testCron,
     {
-      hint: '正在修改：动画元信息拉取频率，默认为每天0时，即\`0 0 * * *\` (或旧版的 \`0 0 0 * * *\`)',
-      error: 'cron格式输入有误 (注意不支持 `?`，请使用 `*`)，请重新输入。',
+      hint: '正在修改：动画元信息拉取频率，默认为每天0时，即`0 0 * * *`，或旧版的 `0 0 0 * * *`',
+      error: 'cron格式输入有误，请重新输入。',
     },
     ({ context, conversation }: AniConversationContext, data: string) => {
       if (data !== '/exit') {
@@ -233,7 +236,7 @@ async function updateAnimeUpdateFrequency(conversation: AnimeConversation, ctx: 
       //     job.restart()
       //   })
       // }
-    }).catch((err) => {
+    }).catch((err: any) => {
       return ctx.reply('修改失败', err)
     })
   }
