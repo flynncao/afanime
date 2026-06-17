@@ -34,6 +34,17 @@ export class ATRelation {
     })
   }
 
+  /**
+   * Remove the in-memory relation for an anime. Used as a compensating
+   *  action when a DB creation is rolled back (issue #42). Returns true if a
+   *  relation was removed.
+   */
+  public removeOne(animeID: number): boolean {
+    const before = this.relations.length
+    this.relations = this.relations.filter(relation => relation.id !== animeID)
+    return this.relations.length < before
+  }
+
   public updateTitle(animeID: number, title: string) {
     const relations = this.relations
     const matched = relations.find((relation: IATRelation) => relation.id === animeID)
