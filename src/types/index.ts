@@ -9,6 +9,12 @@ export interface SessionData {
   activeAnimeCount: number
   animes?: AnimeData[]
   message?: string
+  /**
+   * Per-session target anime for menu/conversation operations (replaces the
+   *  racy global `store.operatingAnimeID`). Set when a user taps an anime in
+   *  the dashboard menu; read by action-menu callbacks and edit conversations.
+   */
+  operatingAnimeID?: number
 }
 export type AnimeContext = Context & SessionFlavor<SessionData> & ConversationFlavor
 

@@ -20,7 +20,6 @@ interface SharedDB {
   userChatID: string | null
   menus: any
   clock: typeof ZonedDateTime | null
-  operatingAnimeID: number | null
   dashboardVisibility: DASHBOARD_VISIBILITY
   pushCenter: { list: any[], threadID: number | null }
   dashboardFingerprint: string
@@ -38,7 +37,6 @@ const db: SharedDB = {
   userChatID: null,
   menus: null,
   clock: null,
-  operatingAnimeID: null,
   dashboardVisibility: DASHBOARD_VISIBILITY.AIRED,
   dashboardFingerprint: 'default',
   botContextMessage: '',

@@ -27,6 +27,19 @@ export interface IMyMenu {
   registerInBot: () => void
 }
 
+/**
+ * Returns the per-session operating anime ID, or replies an error and returns
+ * `undefined` when none is set. Replaces the racy global `store.operatingAnimeID`.
+ */
+async function requireOperatingID(ctx: AnimeContext): Promise<number | undefined> {
+  const id = ctx.session.operatingAnimeID
+  if (!id) {
+    await ctx.reply('找不到操作中的动画ID，请重试！')
+    return undefined
+  }
+  return id
+}
+
 export class ProducedMenu<C extends Context = Context> extends Menu<C> {
   constructor(menuIdentifier: string) {
     super(menuIdentifier)
@@ -77,45 +90,41 @@ const menuList: MenuList[] = [
     identifier: 'anime-action',
     buttons: [
       { text: '拉取bangumi剧集信息(周常)', callback: async (ctx: AnimeContext) => {
-        if (!store.operatingAnimeID)
-          return ctx.reply('找不到操作中的动画ID，请重试！')
-        const msg = await fetchAndUpdateAnimeMetaInfo(store.operatingAnimeID)
+        const id = await requireOperatingID(ctx)
+        if (!id)
+          return
+        const msg = await fetchAndUpdateAnimeMetaInfo(id)
         return await ctx.reply(msg)
       }, newLine: true },
       {
         text: '从NEP仓库拉取动画并推送(日常)',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID) {
-            // TODO: fix: consider store animeID and other useful information in context instead of memory.
-            return ctx.reply('找不到操作中的动画ID，请重试！')
-          }
-
-          else {
-            const res = await fetchAndUpdateAnimeEpisodesInfo(store.operatingAnimeID)
-            if (typeof res === 'string')
-              handleAnimeResolve(res, ctx)
-
-            else
-              return ctx.reply('更新失败')
-          }
+          const id = await requireOperatingID(ctx)
+          if (!id)
+            return
+          const res = await fetchAndUpdateAnimeEpisodesInfo(id)
+          if (typeof res === 'string')
+            handleAnimeResolve(res, ctx)
+          else
+            return ctx.reply('更新失败')
         },
         newLine: true,
       },
       { text: '调整动画查询字符串', callback: async (ctx: AnimeContext) => {
-        if (!store.operatingAnimeID)
-          return ctx.reply('找不到操作中的动画ID，请重试！')
+        if (!(await requireOperatingID(ctx)))
+          return
         await ctx.conversation.enter('updateAnimeQueryConversation')
       }, newLine: true },
       { text: '调整推送完的最新集', callback: async (ctx: AnimeContext) => {
-        if (!store.operatingAnimeID)
-          return ctx.reply('找不到操作中的动画ID，请重试！')
+        if (!(await requireOperatingID(ctx)))
+          return
         await ctx.conversation.enter('updateCurrentEpisodeConversation')
       }, newLine: true },
       {
         text: '调整动画名匹配串',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
+          if (!(await requireOperatingID(ctx)))
+            return
           await ctx.conversation.enter('updateAnimeNamePhantomConversation')
         },
         newLine: true,
@@ -123,8 +132,8 @@ const menuList: MenuList[] = [
       {
         text: '[特殊]动画开始的集数（默认为1）',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
+          if (!(await requireOperatingID(ctx)))
+            return
           await ctx.conversation.enter('updateAnimeStartEpisodeConversation')
         },
         newLine: true,
@@ -132,9 +141,10 @@ const menuList: MenuList[] = [
       {
         text: '✅标记为完成',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
-          await updateSingleAnimeQuick(store.operatingAnimeID, { status: STATUS.COMPLETED }).then((res) => {
+          const id = await requireOperatingID(ctx)
+          if (!id)
+            return
+          await updateSingleAnimeQuick(id, { status: STATUS.COMPLETED }).then(() => {
             ctx.reply('标记成功！')
           })
         },
@@ -143,9 +153,10 @@ const menuList: MenuList[] = [
       {
         text: '❌删除动画',
         callback: async (ctx: AnimeContext) => {
-          if (!store.operatingAnimeID)
-            return ctx.reply('找不到操作中的动画ID，请重试！')
-          await deleteAnime(store.operatingAnimeID).then((res) => {
+          const id = await requireOperatingID(ctx)
+          if (!id)
+            return
+          await deleteAnime(id).then(() => {
             ctx.reply('删除完成')
           })
         },
@@ -207,7 +218,7 @@ export function initAnimeDashboardMenu(): ProducedMenu<AnimeContext> | Error {
       for (const item of res) {
         if (store.dashboardVisibility === 0 || (store.dashboardVisibility === 1 && item.status === STATUS.AIRED)) {
           range.text(`${item.name_cn}  (${item.current_episode < item.eps ? '~' : item.current_episode}/${item.total_episodes + item.eps - 1}) ${statusLabelArr[item.status]}`, (ctx) => {
-            store.operatingAnimeID = item.id
+            ctx.session.operatingAnimeID = item.id
             return ctx.reply(`${item.name_cn} :第${item.current_episode}集已推送`, { reply_markup: store.menus['anime-action'] })
           }).row()
         }
