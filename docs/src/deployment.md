@@ -66,13 +66,9 @@ GROUP_CHAT_ID="-1233333" # 用于bot推送的channel id
 MONGO_DB_URL="mongodb://root:12345@mongodb:27017/afanime?authSource=admin" # 本地mongodb连接串
 TRANSLATOR_BLACK_LIST="Up to 21°C" # 字幕组黑名单
 ADMIN_CHAT_IDS="5166880313" # 管理user id，多个用逗号隔开，可用于执行各种管理员命令
-REAL_SEARCH_URI="https://open-search.acgn.es" # RealSearch的公开api endpoint
-REAL_SEARCH_TOKEN="abc:zrKMfVYiwgxNawdawaadawdawdaad" # RealSearch给开发者的个人token
+REAL_SEARCH_URI="https://search.acgn.es" # RealSearch的公开api endpoint
 PROXY_ADDRESS="socks://127.0.0.1:7897" # 如果你的开发/部署环境在中国大陆且代理支持socks，可以通过这里来建立bot实例
 ```
-
-> [!IMPORTANT]
-> RealSearch的public api目前仍在内测，token暂未公开。你或许可以通过联系[作者本人](mailto:quick.joy8246@fastmail.com)索取一个。
 
 然后使用 `pnpm i`安装完依赖之后使用`pnpm run start`启动即可。
 
@@ -119,8 +115,7 @@ environment:
   GROUP_CHAT_ID: '-1233333'
   MONGO_DB_URL: 'mongodb://root:12345@mongodb:27017/afanime?authSource=admin'
   ADMIN_CHAT_IDS: '5166880313'
-  REAL_SEARCH_URI: 'https://open-search.acgn.es'
-  REAL_SEARCH_TOKEN: 'abc:zrKMfVYiwgxNawdawaadawdawdaad'
+  REAL_SEARCH_URI: 'https://search.acgn.es'
   TRANSLATOR_BLACK_LIST: Up to 21°C
   PROXY_ADDRESS: ''
 ```

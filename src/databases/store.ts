@@ -51,7 +51,6 @@ const db: SharedDB = {
   cronInstance: null,
   realSearchAPI: {
     uri: '',
-    token: '',
   },
   proxyAddress: null,
 }
