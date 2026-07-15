@@ -100,5 +100,4 @@ export interface IImage {
 
 export interface RealSearchAPI {
   uri: string
-  token: string
 }

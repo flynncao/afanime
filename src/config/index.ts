@@ -11,7 +11,6 @@ const values: Config = {
   commandWhiteList: [],
   realSearchAPI: {
     uri: '',
-    token: '',
   },
   proxyAddress: '',
 }
@@ -25,13 +24,12 @@ export interface Config {
   commandWhiteList?: string[]
   realSearchAPI: {
     uri: string
-    token: string
   }
   proxyAddress?: string
 }
 
 function calculateValue() {
-  const requiredEnvKeys = ['BOT_TOKEN', 'GROUP_CHAT_ID', 'MONGO_DB_URL', 'REAL_SEARCH_TOKEN', 'REAL_SEARCH_URI'] as const
+  const requiredEnvKeys = ['BOT_TOKEN', 'GROUP_CHAT_ID', 'MONGO_DB_URL', 'REAL_SEARCH_URI'] as const
 
   // Type-safe environment mapping
   const envMapping = {
@@ -60,15 +58,10 @@ function calculateValue() {
   values.proxyAddress = envs[envMapping.proxyAddress] ?? values.proxyAddress
 
   // Handle realSearchAPI separately for better structure
-  values.realSearchAPI = envs.REAL_SEARCH_TOKEN
-    ? {
-        uri: envs.REAL_SEARCH_URI ?? '',
-        token: envs.REAL_SEARCH_TOKEN,
-      }
-    : {
-        uri: '',
-        token: '',
-      }
+  // Normalize URI by stripping trailing slashes to avoid double slashes when building request URLs
+  values.realSearchAPI = {
+    uri: (envs.REAL_SEARCH_URI ?? '').replace(/\/+$/, ''),
+  }
 
   // Validate required environment variables
   const missingEnvs = requiredEnvKeys.filter(key => !envs[key])
