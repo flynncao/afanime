@@ -24,7 +24,7 @@ COPY ./package.json /app/
 RUN \
     set -ex && \
     corepack disable pnpm && \
-		npm install -g pnpm@latest && \
+		npm install -g pnpm@10.15.1 && \
     pnpm install --frozen-lockfile && \
     pnpm rb
 
@@ -71,4 +71,3 @@ RUN \
 COPY --from=docker-minifier /app /app
 
 CMD ["npm", "run", "start"]
-
