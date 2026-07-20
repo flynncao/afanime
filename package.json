@@ -1,7 +1,7 @@
 {
   "name": "afanime-tg-bot",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.5",
   "private": true,
   "description": "Auto forward anime episodes from NEP ani library.",
   "author": "Flynn Cao",
