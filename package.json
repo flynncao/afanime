@@ -42,7 +42,7 @@
     "grammy": "^1.33.0",
     "moment": "^2.30.1",
     "mongodb": "~6.3.0",
-    "mongoose": "^8.9.1",
+    "mongoose": "^8.9.5",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
     "socks-proxy-agent": "^8.0.5"
