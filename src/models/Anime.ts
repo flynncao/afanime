@@ -116,16 +116,18 @@ export async function readSingleAnime(animeID: number): Promise<any> {
   return AnimeModel.findOne({ id: animeID })
 }
 
-export async function updateSingleAnimeQuick(animeID: number, anime: any, successMessage: string = '更新成功'): Promise<any> {
-  return new Promise((resolve, reject) => {
-    AnimeModel.updateOne({
-      id: animeID,
-    }, anime).then((res) => {
-      resolve(successMessage)
-    }).catch((err) => {
-      reject(err)
-    })
-  })
+export async function getAnimeByThreadID(threadID: number): Promise<Anime | null> {
+  return AnimeModel.findOne({ threadID })
+}
+
+export async function getAnimeTitle(animeID: number): Promise<string> {
+  const anime = await AnimeModel.findOne({ id: animeID })
+  return anime?.name_cn ?? ''
+}
+
+export async function updateSingleAnimeQuick(animeID: number, anime: any, successMessage: string = '更新成功'): Promise<string> {
+  await AnimeModel.updateOne({ id: animeID }, anime)
+  return successMessage
 }
 
 export async function updateCurrentEpisode(id: number, current_episode: number) {

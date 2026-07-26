@@ -1,76 +1,70 @@
-import type { AniSub } from '#root/classes/AniSub.js'
-import { AniEpi } from '#root/classes/AniEpi.js'
-import Logger from '#root/utils/logger.js'
-import { extractEpisodeNumber } from './episode.js'
+import type { IAnime } from '#root/types/index.js'
+import { extractEpisodeNumber, titleMatches } from './episode.js'
 
-export const RECONCILE = {
-  ERROR: 0,
-  UP_TO_DATE: 1,
-  PARTIAL: 2,
-  PUSH: 3,
-} as const
+export interface NepFeedItem {
+  text: string
+  link: string
+}
 
-export type ReconcileCode = typeof RECONCILE[keyof typeof RECONCILE]
+export interface PushItem {
+  link: string
+  pushEpisodeNum: number
+  bangumiID: number
+}
+
+export interface ReconcileResult {
+  /** 'advanced' means the local record is stale and needs a DB write */
+  status: 'up-to-date' | 'advanced'
+  /** newly available episodes to push, oldest first (may be empty even when advanced) */
+  pushList: PushItem[]
+  /** highest episode number available in the NEP library */
+  maxInNEP: number
+  /** highest episode number that will have been pushed after this run */
+  pushedMaxNum: number
+}
 
 /**
- * Reconcile the NEP feed result against the local episode list: marks
- * episodes with video links, advances maxInNEP/pushedMaxNum on `subject`,
- * and fills the subject's push list with newly available episodes.
+ * Reconcile the NEP feed against the local episode list. Mutates
+ * `anime.episodes` (fills videoLink/pushed) and returns what changed.
+ * Pure logic — no I/O; callers persist and push.
  */
-export function dealNEPResult(nepResult: any, subject: AniSub): ReconcileCode {
-  try {
-    for (let i = (nepResult.data.length - 1); i >= 0; i--) {
-      const item = nepResult.data[i]
-      const episodeNum = extractEpisodeNumber(item.text)
-      if (!episodeNum)
-        continue
-      const aniEpisodeEntity = new AniEpi({
-        num: episodeNum,
-        title: item.text,
-        link: item.link,
-      }, subject)
-      if (aniEpisodeEntity.isAllInfoValid()) {
-        const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
-        if (subject.isValidDBEpisodeIndex(dbEpisodeIndex)) {
-          subject.episodes[dbEpisodeIndex].videoLink = item.link
-          subject.episodes[dbEpisodeIndex].pushed = true
-        }
+export function reconcile(anime: IAnime, nepItems: NepFeedItem[], blacklist: string[] = []): ReconcileResult {
+  const episodes = anime.episodes ?? []
+  const epStart = anime.eps ?? 1
+  const maxInBangumi = epStart + anime.total_episodes - 1
+  const pattern = anime.name_phantom ? anime.name_phantom : anime.name_cn
+  let maxInNEP = Math.max(episodes.filter(episode => episode.videoLink).length, anime.current_episode)
+  let pushedMaxNum = anime.current_episode
 
-        if (subject.isValidBroadEpisodeNum(episodeNum) && episodeNum >= subject.maxInNEP && episodeNum <= subject.maxInBangumi) {
-          subject.maxInNEP = episodeNum
-        }
-      }
-    }
+  // oldest feed entries first
+  for (let i = nepItems.length - 1; i >= 0; i--) {
+    const item = nepItems[i]
+    const episodeNum = extractEpisodeNumber(item.text)
+    if (!episodeNum)
+      continue
+    const episode = episodes[episodeNum - epStart]
+    const isValid = Boolean(episode?.name || episode?.name_cn)
+      && episodeNum >= epStart && episodeNum <= maxInBangumi
+      && Boolean(item.link)
+      && titleMatches(item.text, pattern, blacklist)
+    if (!isValid)
+      continue
+    episode.videoLink = item.link
+    episode.pushed = true
+    if (episodeNum >= maxInNEP)
+      maxInNEP = episodeNum
+  }
 
-    const current_episode = subject.getAnimeInstance().current_episode
-    const startEpiNum = subject.getAnimeInstance().eps!
-    if (current_episode === subject.maxInNEP) {
-      return RECONCILE.UP_TO_DATE
-    }
-    else {
-      for (let i = subject.pushedMaxNum + 1; i <= subject.maxInNEP; i++) {
-        if (subject.isValidDBEpisodeIndex(i - startEpiNum)) {
-          const pushedLink = subject.episodes[i - startEpiNum].videoLink
-          if (pushedLink) {
-            subject.addToPushList(
-              {
-                link: pushedLink,
-                pushEpisodeNum: i,
-                bangumiID: subject.episodes[i - startEpiNum].id,
-              },
-            )
-            if (i > subject.pushedMaxNum)
-              subject.pushedMaxNum = i
-          }
-        }
-      }
+  if (anime.current_episode === maxInNEP)
+    return { status: 'up-to-date', pushList: [], maxInNEP, pushedMaxNum }
 
-      Logger.logInfo(`current pushList: ${JSON.stringify(subject.getPushList())}`)
-      return subject.isPushListConsisitent() ? RECONCILE.PUSH : RECONCILE.PARTIAL
+  const pushList: PushItem[] = []
+  for (let episodeNum = pushedMaxNum + 1; episodeNum <= maxInNEP; episodeNum++) {
+    const episode = episodes[episodeNum - epStart]
+    if (episode?.videoLink) {
+      pushList.push({ link: episode.videoLink, pushEpisodeNum: episodeNum, bangumiID: episode.id })
+      pushedMaxNum = episodeNum
     }
   }
-  catch (error) {
-    Logger.logError(`Error in dealNEPResult: ${error}`)
-    return RECONCILE.ERROR
-  }
+  return { status: 'advanced', pushList, maxInNEP, pushedMaxNum }
 }

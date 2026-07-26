@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios'
-import type { IEpisode } from '#root/types/response.js'
+import type { IEpisode } from '#root/types/index.js'
 import type { BangumiSubject } from './schemas.js'
 import { makeClient, toApiError, withRetry } from './http.js'
 import { BangumiEpisodeListSchema, BangumiSubjectSchema } from './schemas.js'

@@ -3,12 +3,12 @@ import type {
   ConversationFlavor,
 } from '@grammyjs/conversations'
 import type { Context, SessionFlavor } from 'grammy'
-import type { BangumiSubjectInfoResponseData } from './response.js'
 
 export interface SessionData {
-  activeAnimeCount: number
-  animes?: AnimeData[]
-  message?: string
+  /** anime currently being operated on via the dashboard menus (per chat) */
+  operatingAnimeID?: number
+  /** dashboard filter: show all animes instead of only airing ones */
+  dashboardShowAll?: boolean
 }
 export type AnimeContext = Context & SessionFlavor<SessionData> & ConversationFlavor
 
@@ -17,21 +17,6 @@ export type AnimeConversation = Conversation<AnimeContext>
 export interface Command {
   command: string
   description: string
-}
-
-export interface AnimeThread {
-  bangumiID: number
-  title: string
-  threadID: number
-  debut: string
-  query: string
-}
-
-export interface AnimeData extends AnimeThread {
-  imageURL?: string
-  lastEpisode?: number
-  totalEpisodes?: number
-  metaInfo?: BangumiSubjectInfoResponseData | null
 }
 
 export enum STATUS {
@@ -70,7 +55,7 @@ export interface IAnime {
 
   /** Additional Information */
   rating?: IRating
-  episodes?: any[]
+  episodes?: IEpisode[]
   name_phantom?: string
 
   /** Required: False */
@@ -98,6 +83,10 @@ export interface IImage {
   common: string
 }
 
-export interface RealSearchAPI {
-  uri: string
+export interface IEpisode {
+  id: number
+  name: string
+  name_cn: string
+  videoLink: string
+  pushed: boolean
 }

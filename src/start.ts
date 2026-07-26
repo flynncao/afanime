@@ -1,42 +1,28 @@
-import type { AnimeContext } from './types/index.js'
-import { autoRetry } from '@grammyjs/auto-retry'
 import { run } from '@grammyjs/runner'
-import { apiThrottler } from '@grammyjs/transformer-throttler'
-import { Bot } from 'grammy'
-import { SocksProxyAgent } from 'socks-proxy-agent'
-import { getConfig } from '#root/config/index.js'
-import throttlerConfig from '#root/config/throttler.js'
-import { init } from './bot/index.js'
-import db from './databases/store.js'
+import { createBot } from './bot/bot.js'
+import { createNotifier } from './bot/notifier.js'
+import { loadConfig } from './config/index.js'
+import { buildCommandList } from './constants/index.js'
+import { startJobs } from './jobs.js'
 import Logger from './utils/logger.js'
 import { connectMongodb } from './utils/mongodb.js'
 
-const config = getConfig()
-const botToken = config.botToken
-
-const throttler = apiThrottler(throttlerConfig)
-
-const socksAgent = config.proxyAddress ? new SocksProxyAgent(config.proxyAddress!) : false
+// Load .env if present; env vars may also come from the runtime (Docker, CI).
+try {
+  process.loadEnvFile()
+}
+catch {}
 
 try {
-  if (!db.bot) {
-    db.bot = new Bot<AnimeContext>(botToken, {
-      client: {
-        baseFetchConfig: {
-          agent: socksAgent,
-        },
-      },
-    })
-  }
+  const config = loadConfig()
   await connectMongodb()
-  db.bot.api.config.use(throttler)
-  db.bot.api.config.use(autoRetry())
-  await init()
-  run(db.bot)
-  // setTimeout(() => {
-  //   Logger.logInfo(`store.AT', ${JSON.stringify(db.AT)}`)
-  // }, 3000)
+  const bot = createBot(config)
+  await bot.api.setMyCommands(buildCommandList(config.botName))
+  run(bot)
+  Logger.logSuccess('Bot started')
+  await startJobs(createNotifier(bot.api, config.groupChatID))
 }
-catch (error: any) {
-  Logger.logError(error)
+catch (error) {
+  Logger.logError('Bot failed to start:', error)
+  process.exitCode = 1
 }

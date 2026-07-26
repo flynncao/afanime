@@ -1,8 +1,8 @@
+import type { Bot } from 'grammy'
 import type { AniConversationContext } from '#root/classes/grammy/CustomConversation.js'
 import type { AnimeContext, AnimeConversation } from '#root/types/index.js'
 import { createConversation } from '@grammyjs/conversations'
 import { AniConversationBuilder } from '#root/classes/grammy/CustomConversation.js'
-import store from '#root/databases/store.js'
 import { createNewAnime } from '#root/models/Anime.js'
 import { updateMultipleCronQuick } from '#root/models/Cron.js'
 import { updateAnimeMetaAndEpisodes } from '#root/modules/anime/index.js'
@@ -18,9 +18,10 @@ async function greeting(conversation: AnimeConversation, ctx: AnimeContext) {
 }
 
 async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-  if (!store.operatingAnimeID)
+  const animeID = ctx.session.operatingAnimeID
+  if (!animeID)
     return ctx.reply('animeID is null.')
-  const anime = await readSingleAnime(store.operatingAnimeID)
+  const anime = await readSingleAnime(animeID)
   if (!anime) {
     await ctx.reply('找不到动画信息')
     return
@@ -39,7 +40,7 @@ async function updateAnimeQueryConversation(conversation: AnimeConversation, ctx
     if (msg === '/exit')
       return ctx.reply('退出成功')
   } while (!msg)
-  await updateSingleAnimeQuick(store.operatingAnimeID, { query: msg }).then(() => {
+  await updateSingleAnimeQuick(animeID, { query: msg }).then(() => {
     return ctx.reply('更新成功')
   }).catch((err) => {
     return ctx.reply('更新失败', err)
@@ -55,7 +56,7 @@ async function updateCurrentEpisodeConversation(conversation: AnimeConversation,
     return !typedInfo || unwrapTypedMessageAsNumber(typedInfo) < 0 || !Number.isInteger(unwrapTypedMessageAsNumber(typedInfo))
   }
   // TODO: (refactor) Better error handling
-  const id = store.operatingAnimeID
+  const id = ctx.session.operatingAnimeID
   if (!id)
     return ctx.reply('animeID is null.')
   await ctx.reply('请输入频道内的显示的最新集数, 输入/exit退出')
@@ -116,7 +117,6 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
       query = ''
     await createNewAnime({ id, threadID, name_cn, query }).then(async (res) => {
       Logger.logSuccess(`创建成功: ${res} `)
-      store.AT.insertOne(id, threadID, name_cn)
       ctx.reply('创建成功, 拉取Bangumi主题信息中...')
       const msg = await updateAnimeMetaAndEpisodes(id)
       await ctx.reply(msg)
@@ -128,10 +128,10 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
 }
 
 async function updateAnimeNamePhantomConversation(conversation: AnimeConversation, ctx: AnimeContext) {
-  if (!store.operatingAnimeID) {
+  const operatingAnimeID = ctx.session.operatingAnimeID
+  if (!operatingAnimeID) {
     return ctx.reply('animeID is null.')
   }
-  const operatingAnimeID: number = store.operatingAnimeID
   const anime = await readSingleAnime(operatingAnimeID)
   if (!anime) {
     await ctx.reply('找不到动画信息')
@@ -165,7 +165,7 @@ async function updateAnimeStartEpisodeConversation(conversation: AnimeConversati
   function abnormalTypedMessage(typedInfo: any): boolean {
     return !typedInfo || unwrapTypedMessageAsNumber(typedInfo) < 0 || !Number.isInteger(unwrapTypedMessageAsNumber(typedInfo))
   }
-  const id = store.operatingAnimeID
+  const id = ctx.session.operatingAnimeID
   if (!id)
     return ctx.reply('animeID is null.')
   await ctx.reply('请输入此动画的开始集数，默认为1, 输入/exit退出')
@@ -246,10 +246,7 @@ const conversations = [
   updateAnimeStartEpisodeConversation,
   updateAnimeUpdateFrequency,
 ]
-export function createAllConversations() {
-  const { bot } = store
-  if (!bot)
-    return
+export function registerConversations(bot: Bot<AnimeContext>) {
   for (const conversation of conversations)
     bot.use(createConversation(conversation))
   Logger.logSuccess('All conversations initialized')

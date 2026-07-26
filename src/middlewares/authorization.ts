@@ -2,7 +2,7 @@ import type { Context, NextFunction } from 'grammy'
 import { getConfig } from '#root/config/index.js'
 
 /** Commands only admins (config.adminChatIDs) may run. */
-const restrictedCommands = ['dashboard', 'settings', 'info', 'create', 'dailytask', 'getid', 'meta', 'weeklytask', 'cron', 'relation']
+const restrictedCommands = ['dashboard', 'settings', 'info', 'create', 'dailytask', 'getid', 'meta', 'weeklytask', 'cron']
 export default async function authorization(
   ctx: Context,
   next: NextFunction,

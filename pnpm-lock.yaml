@@ -24,9 +24,6 @@ importers:
       '@grammyjs/runner':
         specifier: ^2.0.3
         version: 2.0.3(grammy@1.45.1)
-      '@grammyjs/transformer-throttler':
-        specifier: ^1.2.1
-        version: 1.2.1(grammy@1.45.1)
       '@js-joda/core':
         specifier: ^5.6.3
         version: 5.6.3
@@ -45,9 +42,6 @@ importers:
       grammy:
         specifier: ^1.45.1
         version: 1.45.1
-      moment:
-        specifier: ^2.30.1
-        version: 2.30.1
       mongodb:
         specifier: ~6.3.0
         version: 6.3.0(socks@2.8.3)
@@ -869,12 +863,6 @@ packages:
     peerDependencies:
       grammy: ^1.13.1
 
-  '@grammyjs/transformer-throttler@1.2.1':
-    resolution: {integrity: sha512-CpWB0F3rJdUiKsq7826QhQsxbZi4wqfz1ccKX+fr+AOC+o8K7ZvS+wqX0suSu1QCsyUq2MDpNiKhyL2ZOJUS4w==}
-    engines: {node: ^12.20.0 || >=14.13.1}
-    peerDependencies:
-      grammy: ^1.0.0
-
   '@grammyjs/types@4.0.0':
     resolution: {integrity: sha512-Z8lDLTvOlo12e5Vnly/vQh3JC9ppaitS1dGZ3w068gNitOd/y8tTSiib+Xm38aBGbtYGmUZwOc6afYrLs2CSTg==}
 
@@ -1677,9 +1665,6 @@ packages:
 
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
-
-  bottleneck@2.19.5:
-    resolution: {integrity: sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==}
 
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
@@ -2689,9 +2674,6 @@ packages:
 
   module-replacements@3.1.0:
     resolution: {integrity: sha512-MSTNGqlp2q0seRlrAA/FK3SUkGnmPeexeKWuCjeJ7HobD2RCjk4f8ry8lJ+nUQFDVBAHSdC4TdjyJSaocnR7Uw==}
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   mongodb-connection-string-url@3.0.1:
     resolution: {integrity: sha512-XqMGwRX0Lgn05TDB4PyG2h2kKO/FfWJyCzYQbIhXUxz7ETt0I/FqHjUeqj37irJ+Dl1ZtU82uYyj14u2XsZKfg==}
@@ -4072,11 +4054,6 @@ snapshots:
       abort-controller: 3.0.0
       grammy: 1.45.1
 
-  '@grammyjs/transformer-throttler@1.2.1(grammy@1.45.1)':
-    dependencies:
-      bottleneck: 2.19.5
-      grammy: 1.45.1
-
   '@grammyjs/types@4.0.0': {}
 
   '@humanfs/core@0.19.2':
@@ -4813,8 +4790,6 @@ snapshots:
   birpc@0.2.19: {}
 
   boolbase@1.0.0: {}
-
-  bottleneck@2.19.5: {}
 
   brace-expansion@2.0.1:
     dependencies:
@@ -6086,8 +6061,6 @@ snapshots:
       ufo: 1.6.4
 
   module-replacements@3.1.0: {}
-
-  moment@2.30.1: {}
 
   mongodb-connection-string-url@3.0.1:
     dependencies:
