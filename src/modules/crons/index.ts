@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { type AnimeJob, instantiateJobs } from './jobs.js'
+import { instantiateJobs } from './jobs.js'
 import db from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
 

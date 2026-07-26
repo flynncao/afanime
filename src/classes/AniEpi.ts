@@ -1,7 +1,7 @@
 import type { AniSub } from './AniSub.js'
 import Logger from '#root/utils/logger.js'
 import { normalizedAnimeTitle } from '#root/utils/string.js'
-import { config } from '@/config/index.js'
+import { config } from '#root/config/index.js'
 
 const blacklist = config.translatorBlacklist
 

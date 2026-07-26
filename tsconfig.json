@@ -6,12 +6,6 @@
     "rootDir": ".",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "paths": {
-      "#root/*": [
-        "./src/*"
-      ],
-      "@/*": ["./src/*"]
-    },
     "strict": true,
     "noEmit": false,
     "outDir": "build",

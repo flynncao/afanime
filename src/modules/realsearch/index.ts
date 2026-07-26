@@ -1,7 +1,6 @@
 import moment from 'moment'
-import { Context } from 'grammy'
 import { useFetchSchedule } from '#root/api/realsearch.js'
-import { isAdminChatID } from '@/modules/user/index.js'
+import { isAdminChatID } from '#root/modules/user/index.js'
 import BotLogger from '#root/bot/logger.js'
 import type { AnimeContext } from '#root/types/index.js'
 
@@ -20,7 +19,7 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       return text.replace(/([_*[\]()~`>#+=\-|{}.!])/g, '\\$1')
     }
     res.data.sort(
-      (a, b) => {
+      (a: any, b: any) => {
         // compare based on their daily schedule like 00:00 > 13:00, not actual date
         const aDate = moment.unix(a.date_start).format('HH:mm')
         const bDate = moment.unix(b.date_start).format('HH:mm')

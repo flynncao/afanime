@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-function parse(str: string, ...args: any) {
+function parse(str: string, ...args: any[]) {
   let i = 0
   return str.replace(/%s/g, () => args[i++])
 }
@@ -11,15 +11,15 @@ export default class Logger {
   }
 
   static logInput = (message: string, ...args: any[]): void => {
-    console.log(chalk.cyan.underline(`📩 ${parse(message, args)}`))
+    console.log(chalk.cyan.underline(`📩 ${parse(message, ...args)}`))
   }
 
   static logError = (message: string, ...args: any[]): void => {
-    console.error(chalk.red(message))
+    console.error(chalk.red(message), ...args)
   }
 
   static logProgress = (message: string, ...args: any[]): void => {
-    console.error(chalk.yellow(`🚧 ${parse(message, args)}...`))
+    console.error(chalk.yellow(`🚧 ${parse(message, ...args)}...`))
   }
 
   static logDebug = (message: string): void => {
@@ -33,6 +33,6 @@ export default class Logger {
   }
 
   static logInfo = (message: string, ...args: any[]): void => {
-    console.log(chalk.blue(`ℹ️ ${parse(message, args)}`))
+    console.log(chalk.blue(`ℹ️ ${parse(message, ...args)}`))
   }
 }

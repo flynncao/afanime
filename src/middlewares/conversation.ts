@@ -98,7 +98,7 @@ async function createNewConversation(conversation: AnimeConversation, ctx: Anime
   const name_cn = ' '
   await ctx.reply('现在输入动画仓库的查询串,输入1表示使用默认中文名搜索，你可以稍后使用dashboard命令进入子菜单并中修改这个查询串，具体来源：[Real Search](https://search.acgn.es/)：', {
     parse_mode: 'MarkdownV2',
-    disable_web_page_preview: true,
+    link_preview_options: { is_disabled: true },
   })
   const typedInfo2 = await conversation.waitFor(':text')
   let query = typedInfo2.update.message?.text

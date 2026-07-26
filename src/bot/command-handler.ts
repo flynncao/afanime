@@ -5,7 +5,6 @@ import type { AnimeContext, IAnime } from '#root/types/index.js'
 import { readSingleAnime } from '#root/models/Anime.js'
 import { objToString } from '#root/utils/string.js'
 import * as animeJobs from '#root/modules/crons/jobs.js'
-import { useFetchSchedule } from '#root/api/realsearch.js'
 import displayWeeklyScheduleFromRealsearch from '#root/modules/realsearch/index.js'
 import { config } from '#root/config/index.js'
 

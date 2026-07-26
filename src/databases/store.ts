@@ -1,4 +1,3 @@
-import type { Timer as ITimer } from 'easytimer.js'
 import type { Bot } from 'grammy'
 import type { ZonedDateTime } from '@js-joda/core'
 import { ATRelation } from '../bot/thread.js'
@@ -15,7 +14,6 @@ enum DASHBOARD_VISIBILITY {
   AIRED = 1,
 }
 interface SharedDB {
-  timer: ITimer | null
   bot: Bot<AnimeContext> | null
   userChatID: string | null
   menus: any
@@ -33,7 +31,6 @@ interface SharedDB {
 }
 
 const db: SharedDB = {
-  timer: null,
   bot: null,
   userChatID: null,
   menus: null,
