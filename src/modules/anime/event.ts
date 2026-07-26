@@ -1,7 +1,7 @@
-import BotLogger from '#root/bot/logger.js'
 import type { AnimeContext } from '#root/types/index.js'
-import Logger from '#root/utils/logger.js'
+import BotLogger from '#root/bot/logger.js'
 import store from '#root/databases/store.js'
+import Logger from '#root/utils/logger.js'
 
 export const AcronymMap = {
   UAEI: 'fetchAndUpdateAnimeEpisodesInfo',

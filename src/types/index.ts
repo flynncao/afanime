@@ -1,8 +1,8 @@
-import type { Context, SessionFlavor } from 'grammy'
 import type {
   Conversation,
   ConversationFlavor,
 } from '@grammyjs/conversations'
+import type { Context, SessionFlavor } from 'grammy'
 import type { BangumiSubjectInfoResponseData } from './response.js'
 
 export interface SessionData {

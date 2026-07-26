@@ -1,15 +1,15 @@
-import type { Context } from 'grammy'
 import type { MenuRange } from '@grammyjs/menu'
+import type { Context } from 'grammy'
+import type { AnimeContext } from '#root/types/index.js'
 import { Menu } from '@grammyjs/menu'
 import store from '#root/databases/store.js'
-import Logger from '#root/utils/logger.js'
-import type { AnimeContext } from '#root/types/index.js'
-import { STATUS } from '#root/types/index.js'
-
-import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import { deleteAnime, readAnimes, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { handleAnimeResolve } from '#root/modules/anime/event.js'
+
+import { fetchAndUpdateAnimeEpisodesInfo, fetchAndUpdateAnimeMetaInfo } from '#root/modules/anime/index.js'
 import * as animeJobs from '#root/modules/crons/jobs.js'
+import { STATUS } from '#root/types/index.js'
+import Logger from '#root/utils/logger.js'
 
 interface MenuButton {
   text: string

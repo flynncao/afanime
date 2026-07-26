@@ -1,9 +1,9 @@
 import type { AxiosError, AxiosInstance, AxiosResponse, CreateAxiosDefaults } from 'axios'
-import axios from 'axios'
-import type { BangumiSubjectInfoResponseData, IEpisode } from '#root/types/response.js'
-import Logger from '#root/utils/logger.js'
-import { updateSingleAnimeQuick } from '#root/models/Anime.js'
 import type { AnimeContext } from '#root/types/index.js'
+import type { BangumiSubjectInfoResponseData, IEpisode } from '#root/types/response.js'
+import axios from 'axios'
+import { updateSingleAnimeQuick } from '#root/models/Anime.js'
+import Logger from '#root/utils/logger.js'
 
 /**
  * AXIOS INSTANCES

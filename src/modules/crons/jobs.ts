@@ -1,16 +1,15 @@
-import { CronJob, CronTime } from 'cron'
-import 'dotenv/config'
-import moment from 'moment'
-import { executeAnimeEpisodeInfoTaskInOrder } from '../anime/task.js'
-import { fetchAndUpdateAnimeMetaInfo } from '../anime/index.js'
-import { handleAnimeResolve } from '../anime/event.js'
-import displayWeeklyScheduleFromRealsearch from '../realsearch/index.js'
-import BotLogger from '#root/bot/logger.js'
-
-import { readAnimes } from '#root/models/Anime.js'
 import type { AnimeContext } from '#root/types/index.js'
+import { CronJob, CronTime } from 'cron'
+import moment from 'moment'
+import BotLogger from '#root/bot/logger.js'
+import { readAnimes } from '#root/models/Anime.js'
 import { CronModel, readCrons } from '#root/models/Cron.js'
 import Logger from '#root/utils/logger.js'
+
+import { handleAnimeResolve } from '../anime/event.js'
+import { fetchAndUpdateAnimeMetaInfo } from '../anime/index.js'
+import { executeAnimeEpisodeInfoTaskInOrder } from '../anime/task.js'
+import displayWeeklyScheduleFromRealsearch from '../realsearch/index.js'
 
 const locale = 'Asia/Shanghai'
 

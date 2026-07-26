@@ -1,8 +1,8 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
+import type { IAnimeCritical } from '#root/types/index.js'
+import type { Episode } from './Episode.js'
 import type { Image } from './Image.js'
 import type { Rating } from './Rating.js'
-import type { Episode } from './Episode.js'
-import type { IAnimeCritical } from '#root/types/index.js'
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 import { STATUS } from '#root/types/index.js'
 
 /**

@@ -3,10 +3,40 @@ name: Docker Publish
 on:
   push:
     branches: [main]
+    tags: [v*]
+    paths:
+      - src/**
+      - Dockerfile
+      - .dockerignore
+      - package.json
+      - pnpm-lock.yaml
+      - tsconfig.json
+      - tsup.config.ts
+      - .github/workflows/docker-publish.yml
   workflow_dispatch:
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+
   docker:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,9 +50,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: flynncao/afanime
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+            type=ref,event=tag
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: flynncao/afanime:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

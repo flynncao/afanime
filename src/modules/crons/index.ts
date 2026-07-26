@@ -1,7 +1,6 @@
-import 'dotenv/config'
-import { instantiateJobs } from './jobs.js'
 import db from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
+import { instantiateJobs } from './jobs.js'
 
 export function initCrons() {
   try {
@@ -11,7 +10,8 @@ export function initCrons() {
         r.filter((item: any) => item.enabled).forEach((job: any) => job.start())
         Logger.logSuccess('Crons initialized')
         db.cronInstance = r
-      }).catch((e) => {
+      })
+      .catch((e) => {
         throw e
       })
   }

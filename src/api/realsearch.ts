@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosResponse } from 'axios'
-import axios from 'axios'
 import type { TelegramMessageResponse } from '../types/response.js'
+import axios from 'axios'
 import { config } from '#root/config/index.js'
 
 const realSearchAPI = config.realSearchAPI
@@ -31,7 +31,8 @@ export async function useFetchSchedule(): Promise<any> {
       .then((response: AxiosResponse<TelegramMessageResponse>) => {
         const { data } = response
         resolve(data)
-      }).catch((error: AxiosError) => {
+      })
+      .catch((error: AxiosError) => {
         reject(error)
       })
   })

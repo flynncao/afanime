@@ -1,11 +1,11 @@
+import type { IAnime } from '#root/types/index.js'
+import type { BangumiSubjectInfoResponseData } from '#root/types/response.js'
 import { ChronoUnit, LocalDate } from '@js-joda/core'
 import { useFetchBangumiEpisodesInfo, useFetchBangumiSubjectInfo } from '#root/api/bangumi.js'
 import store from '#root/databases/store.js'
 import { STATUS } from '#root/types/index.js'
-import type { IAnime } from '#root/types/index.js'
-import Logger from '#root/utils/logger.js'
-import type { BangumiSubjectInfoResponseData } from '#root/types/response.js'
 import { isEmpty } from '#root/utils/index.js'
+import Logger from '#root/utils/logger.js'
 
 export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime> {
   return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export function fetchBangumiSubjectInfoFromID(animeData: IAnime): Promise<IAnime
         }
       }
       for (const key in subjectInfo) {
-        if (Object.prototype.hasOwnProperty.call(subjectInfo, key) && key !== 'eps' && key !== 'total_episodes')
+        if (Object.hasOwn(subjectInfo, key) && key !== 'eps' && key !== 'total_episodes')
           (updatedAnime as any)[key] = (subjectInfo as any)[key]
       }
       if (!updatedAnime.name_cn) {

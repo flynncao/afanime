@@ -19,7 +19,7 @@ export function extractEpisodeNumber(inputString: string) {
   if (rawNum.includes('END'))
     return Number(rawNum.slice(0, rawNum.indexOf('END')))
 
-  else if (rawNum.match(/v\d+/))
+  else if (/v\d+/.test(rawNum))
     return Number(rawNum.slice(0, rawNum.indexOf('v')))
 
   else

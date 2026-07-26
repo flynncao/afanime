@@ -1,8 +1,8 @@
+import type { AnimeContext } from '#root/types/index.js'
 import moment from 'moment'
 import { useFetchSchedule } from '#root/api/realsearch.js'
-import { isAdminChatID } from '#root/modules/user/index.js'
 import BotLogger from '#root/bot/logger.js'
-import type { AnimeContext } from '#root/types/index.js'
+import { isAdminChatID } from '#root/modules/user/index.js'
 
 export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: AnimeContext) {
   useFetchSchedule().then((res) => {

@@ -1,4 +1,8 @@
-import 'dotenv/config'
+// Load .env if present; env vars may also come from the runtime (Docker, CI).
+try {
+  process.loadEnvFile()
+}
+catch {}
 
 const envs = process.env
 const values: Config = {

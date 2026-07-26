@@ -1,15 +1,14 @@
-import { GrammyError, HttpError } from 'grammy'
-import 'dotenv/config'
 import { ZonedDateTime } from '@js-joda/core'
-import db from '../databases/store.js'
+import { GrammyError, HttpError } from 'grammy'
+import { createAllConversations } from '#root/middlewares/conversation.js'
+import registerCriticalMiddlewares from '#root/middlewares/index.js'
+import { createAllMenus } from '#root/middlewares/menu.js'
+import { initCrons } from '#root/modules/crons/index.js'
+import Logger from '#root/utils/logger.js'
 import { commandList } from '../constants/index.js'
+import db from '../databases/store.js'
 import registerCommandHandler from './command-handler.js'
 import BotLogger from './logger.js'
-import Logger from '#root/utils/logger.js'
-import { createAllConversations } from '#root/middlewares/conversation.js'
-import { createAllMenus } from '#root/middlewares/menu.js'
-import registerCriticalMiddlewares from '#root/middlewares/index.js'
-import { initCrons } from '#root/modules/crons/index.js'
 
 export async function init() {
   Logger.logSuccess('Bot started')

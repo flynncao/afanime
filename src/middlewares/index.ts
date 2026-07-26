@@ -1,10 +1,10 @@
+import type { SessionData } from '#root/types/index.js'
 import { conversations } from '@grammyjs/conversations'
 import { session } from 'grammy'
-import timestamp from './timestamp.js'
-import authorization from './authorization.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import type { SessionData } from '#root/types/index.js'
+import authorization from './authorization.js'
+import timestamp from './timestamp.js'
 
 function initial(): SessionData {
   return {

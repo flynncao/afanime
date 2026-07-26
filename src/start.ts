@@ -1,16 +1,15 @@
-import { Bot } from 'grammy'
-import 'dotenv/config'
+import type { AnimeContext } from './types/index.js'
+import { autoRetry } from '@grammyjs/auto-retry'
 import { run } from '@grammyjs/runner'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
-import { autoRetry } from '@grammyjs/auto-retry'
+import { Bot } from 'grammy'
 import { SocksProxyAgent } from 'socks-proxy-agent'
-import Logger from './utils/logger.js'
-import db from './databases/store.js'
-import { init } from './bot/index.js'
-import type { AnimeContext } from './types/index.js'
-import { connectMongodb } from './utils/mongodb.js'
 import { config } from '#root/config/index.js'
 import throttlerConfig from '#root/config/throttler.js'
+import { init } from './bot/index.js'
+import db from './databases/store.js'
+import Logger from './utils/logger.js'
+import { connectMongodb } from './utils/mongodb.js'
 
 const botToken = config.botToken
 

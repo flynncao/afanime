@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import Logger from './logger.js'
 import { config } from '#root/config/index.js'
+import Logger from './logger.js'
 
 const url = config.mongodbURL || 'mongodb://localhost:27017/afanime'
 

@@ -1,6 +1,6 @@
+import { config } from '#root/config/index.js'
 import store from '#root/databases/store.js'
 import Logger from '#root/utils/logger.js'
-import { config } from '#root/config/index.js'
 
 const { groupChatID } = config
 

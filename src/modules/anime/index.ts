@@ -1,13 +1,15 @@
-import { fetchBangumiSubjectInfoFromID } from '../bangumi/index.js'
-import { extractEpisodeNumber } from '#root/utils/string.js'
-import { AnimeModel, readSingleAnime, updateSingleAnimeQuick } from '#root/models/Anime.js'
-import { type IAnime, STATUS } from '#root/types/index.js'
-import Logger from '#root/utils/logger.js'
-import { type possibleResult, useFetchNEP } from '#root/api/realsearch.js'
-
-import store from '#root/databases/store.js'
-import { AniSub } from '#root/classes/AniSub.js'
+import type { possibleResult } from '#root/api/realsearch.js'
+import type { IAnime } from '#root/types/index.js'
+import { useFetchNEP } from '#root/api/realsearch.js'
 import { AniEpi } from '#root/classes/AniEpi.js'
+import { AniSub } from '#root/classes/AniSub.js'
+import store from '#root/databases/store.js'
+import { AnimeModel, readSingleAnime, updateSingleAnimeQuick } from '#root/models/Anime.js'
+import { STATUS } from '#root/types/index.js'
+
+import Logger from '#root/utils/logger.js'
+import { extractEpisodeNumber } from '#root/utils/string.js'
+import { fetchBangumiSubjectInfoFromID } from '../bangumi/index.js'
 
 export async function getLocalAnimeDataByID(animeID: number): Promise<any> {
   return new Promise((resolve, reject) => {
