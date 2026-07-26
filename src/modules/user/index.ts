@@ -1,5 +1,6 @@
-import { config } from '#root/config/index.js'
+import { getConfig } from '#root/config/index.js'
 
 export function isAdminChatID(senderId: number): boolean {
-  return !!(config.adminChatIDs && config.adminChatIDs.includes(senderId.toString()))
+  const { adminChatIDs } = getConfig()
+  return adminChatIDs.includes(senderId.toString())
 }

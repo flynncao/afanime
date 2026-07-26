@@ -1,9 +1,7 @@
 import type { AniSub } from './AniSub.js'
-import { config } from '#root/config/index.js'
+import { getConfig } from '#root/config/index.js'
+import { titleMatches } from '#root/core/episode.js'
 import Logger from '#root/utils/logger.js'
-import { normalizedAnimeTitle } from '#root/utils/string.js'
-
-const blacklist = config.translatorBlacklist
 
 interface RSEpiInfo {
   num: number
@@ -66,27 +64,12 @@ export class AniEpi {
 
   private isValidTitle(): boolean {
     const anime = this.parent.getAnimeInstance()
-    let phantomNameStr = anime.name_phantom ? anime.name_phantom : anime.name_cn
-    if (!phantomNameStr.includes('|') && phantomNameStr.includes(',')) {
-      phantomNameStr = phantomNameStr.replaceAll(',', '|')
-    }
-    function containsAllSubstrings(text: string, pattern: string): boolean {
-      const patternComponents = pattern.split('|').map(part => part.trim())
-      const normalizedText = normalizedAnimeTitle(text)
-      const normalizedPatternComponents = patternComponents.map(component => normalizedAnimeTitle(component))
-      return normalizedPatternComponents.every(component => normalizedText.includes(component))
-    }
     if (!anime)
       return false
-    let isValidTitle = false
-    isValidTitle = containsAllSubstrings(this.title, phantomNameStr)
-    if (blacklist && blacklist.some(substring => this.title.includes(substring))) {
-      isValidTitle = false
-    }
-    if (this.title) {
-      if (!isValidTitle)
-        Logger.logError('isValidTitle Error', this.num, this.title, this.link)
-    }
+    const phantomNameStr = anime.name_phantom ? anime.name_phantom : anime.name_cn
+    const isValidTitle = titleMatches(this.title, phantomNameStr, getConfig().translatorBlacklist)
+    if (this.title && !isValidTitle)
+      Logger.logError('isValidTitle Error', this.num, this.title, this.link)
     return isValidTitle
   }
 

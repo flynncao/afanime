@@ -1,14 +1,13 @@
 import type { possibleResult } from '#root/api/realsearch.js'
 import type { IAnime } from '#root/types/index.js'
 import { useFetchNEP } from '#root/api/realsearch.js'
-import { AniEpi } from '#root/classes/AniEpi.js'
 import { AniSub } from '#root/classes/AniSub.js'
+import { dealNEPResult, RECONCILE } from '#root/core/reconcile.js'
 import store from '#root/databases/store.js'
 import { AnimeModel, readSingleAnime, updateSingleAnimeQuick } from '#root/models/Anime.js'
 import { STATUS } from '#root/types/index.js'
 
 import Logger from '#root/utils/logger.js'
-import { extractEpisodeNumber } from '#root/utils/string.js'
 import { fetchBangumiSubjectInfoFromID } from '../bangumi/index.js'
 
 export async function getLocalAnimeDataByID(animeID: number): Promise<any> {
@@ -83,15 +82,15 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
           return
         }
         const dealtCode = dealNEPResult(nepResult, aniSubjectEntity)
-        if (dealtCode === 0) {
+        if (dealtCode === RECONCILE.ERROR) {
           reject(new Error('Error in dealNEPResult'))
           return
         }
-        if (dealtCode === 1) {
+        if (dealtCode === RECONCILE.UP_TO_DATE) {
           resolve(`UAEI#no-need-update#${id}`)
           return
         }
-        if (dealtCode === 3 || 2) {
+        if (dealtCode === RECONCILE.PARTIAL || dealtCode === RECONCILE.PUSH) {
           const dbRes = await updateSingleAnimeQuick(animeID, { episodes, current_episode: aniSubjectEntity.pushedMaxNum, last_episode: aniSubjectEntity.maxInNEP, status: (aniSubjectEntity.maxInNEP - anime.eps! + 1 === anime.total_episodes ? STATUS.COMPLETED : STATUS.AIRED) })
           if (dbRes) {
             Logger.logSuccess(`更新成功: ${dbRes}`)
@@ -114,65 +113,4 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
       }
     })()
   })
-}
-
-function dealNEPResult(nepResult: any, subject: AniSub): number {
-  // 0 - error; 1 - no need update; 2 - not complete ; 3- update
-  try {
-    for (let i = (nepResult.data.length - 1); i >= 0; i--) {
-      const item = nepResult.data[i]
-      const episodeNum = extractEpisodeNumber(item.text)
-      if (!episodeNum)
-        continue
-      const aniEpisodeEntity = new AniEpi({
-        num: episodeNum,
-        title: item.text,
-        link: item.link,
-      }, subject)
-      // console.log(`All Valid-${aniEpisodeEntity.isAllInfoValid()}-Episode ${episodeNum} - ${item.text} - ${item.link}`)
-      if (aniEpisodeEntity.isAllInfoValid()) {
-        const dbEpisodeIndex = episodeNum - subject.getAnimeInstance().eps!
-        if (subject.isValidDBEpisodeIndex(dbEpisodeIndex)) {
-          subject.episodes[dbEpisodeIndex].videoLink = item.link
-          subject.episodes[dbEpisodeIndex].pushed = true
-        }
-
-        if (subject.isValidBroadEpisodeNum(episodeNum) && episodeNum >= subject.maxInNEP && episodeNum <= subject.maxInBangumi) {
-          subject.maxInNEP = episodeNum
-        }
-      }
-    }
-
-    const current_episode = subject.getAnimeInstance().current_episode
-    const startEpiNum = subject.getAnimeInstance().eps!
-    // console.log('subject.maxInNEP ', subject.maxInNEP)
-    if (current_episode === subject.maxInNEP) {
-      return 1
-    }
-    else {
-      for (let i = subject.pushedMaxNum + 1; i <= subject.maxInNEP; i++) {
-        if (subject.isValidDBEpisodeIndex(i - startEpiNum)) {
-          const pushedLink = subject.episodes[i - startEpiNum].videoLink
-          if (pushedLink) {
-            subject.addToPushList(
-              {
-                link: pushedLink,
-                pushEpisodeNum: i,
-                bangumiID: subject.episodes[i - startEpiNum!].id,
-              },
-            )
-            if (i > subject.pushedMaxNum && pushedLink)
-              subject.pushedMaxNum = i
-          }
-        }
-      }
-
-      Logger.logInfo(`current pushList: ${JSON.stringify(subject.getPushList())}`)
-      return subject.isPushListConsisitent() ? 3 : 2
-    }
-  }
-  catch (error) {
-    Logger.logError(`Error in dealNEPResult: ${error}`)
-    return 0
-  }
 }

@@ -109,11 +109,12 @@ export async function useFetchBangumiEpisodesInfo(id: number, ctx?: AnimeContext
       limit: 100,
       offset: 0,
     }).then((res: any): any => {
-      if (res?.data?.data?.length === 0)
+      if (!res?.data?.data || res.data.data.length === 0) {
         reject(new Error('没有找到剧集信息，是否是未开播番剧？'))
-
+        return
+      }
       const localEpisodes: IEpisode[] = []
-      for (const item of res?.data?.data) {
+      for (const item of res.data.data) {
         localEpisodes.push({
           id: item.id,
           name: item.name,

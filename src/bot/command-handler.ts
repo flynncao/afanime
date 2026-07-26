@@ -1,5 +1,5 @@
 import type { AnimeContext, IAnime } from '#root/types/index.js'
-import { config } from '#root/config/index.js'
+import { getConfig } from '#root/config/index.js'
 import { welcomeMessages } from '#root/constants/index.js'
 import store from '#root/databases/store.js'
 import { readSingleAnime } from '#root/models/Anime.js'
@@ -10,7 +10,7 @@ import { objToString } from '#root/utils/string.js'
 
 export default function registerCommandHandler() {
   const { bot, menus } = store
-  if (config.botToken === '' || bot === null || menus === null) {
+  if (getConfig().botToken === '' || bot === null || menus === null) {
     Logger.logError('registerCommandHandler: env, bot or menus is null')
     return
   }

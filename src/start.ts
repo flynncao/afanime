@@ -4,13 +4,14 @@ import { run } from '@grammyjs/runner'
 import { apiThrottler } from '@grammyjs/transformer-throttler'
 import { Bot } from 'grammy'
 import { SocksProxyAgent } from 'socks-proxy-agent'
-import { config } from '#root/config/index.js'
+import { getConfig } from '#root/config/index.js'
 import throttlerConfig from '#root/config/throttler.js'
 import { init } from './bot/index.js'
 import db from './databases/store.js'
 import Logger from './utils/logger.js'
 import { connectMongodb } from './utils/mongodb.js'
 
+const config = getConfig()
 const botToken = config.botToken
 
 const throttler = apiThrottler(throttlerConfig)

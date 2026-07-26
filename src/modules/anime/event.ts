@@ -67,7 +67,7 @@ export function handleAnimeResolve(str: string, ctx?: AnimeContext): Promise<boo
   const callbackFn: string = actions[1]
   const currentAnimeID: number = Number.parseInt(actions[2])
   Logger.logProgress(`[handleResolve] callerFn: ${callerFn}, callbackFn: ${callbackFn}, opertaingAnimeID: ${currentAnimeID}`)
-  const cb = handlers[callerFn][callbackFn]
+  const cb = handlers[callerFn]?.[callbackFn]
   if (typeof cb !== 'function') {
     throw new TypeError(`[handleResolve] callback function ${callbackFn} not found!`)
   }

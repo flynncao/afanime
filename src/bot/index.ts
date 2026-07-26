@@ -1,11 +1,12 @@
 import { ZonedDateTime } from '@js-joda/core'
 import { GrammyError, HttpError } from 'grammy'
+import { getConfig } from '#root/config/index.js'
 import { createAllConversations } from '#root/middlewares/conversation.js'
 import registerCriticalMiddlewares from '#root/middlewares/index.js'
 import { createAllMenus } from '#root/middlewares/menu.js'
 import { initCrons } from '#root/modules/crons/index.js'
 import Logger from '#root/utils/logger.js'
-import { commandList } from '../constants/index.js'
+import { buildCommandList } from '../constants/index.js'
 import db from '../databases/store.js'
 import registerCommandHandler from './command-handler.js'
 import BotLogger from './logger.js'
@@ -23,7 +24,7 @@ export async function init() {
     createAllConversations()
     await createAllMenus()
     registerCommandHandler()
-    await bot.api.setMyCommands(commandList).catch((err) => {
+    await bot.api.setMyCommands(buildCommandList(getConfig().botName)).catch((err) => {
       Logger.logError(err)
     })
     if (!db.clock) {

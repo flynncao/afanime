@@ -2,7 +2,7 @@
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
-  ignores: ['.commandcode/**', 'docs/**', 'README.md'],
+  ignores: ['.commandcode/**', 'docs/**', 'README.md', 'tests/fixtures/**'],
 }, {
   rules: {
     'global': 'off',
