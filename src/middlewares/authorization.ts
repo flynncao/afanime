@@ -1,7 +1,8 @@
 import type { Context, NextFunction } from 'grammy'
-import { config } from '@/config/index.js'
-/** Measures the response time of the bot, and logs it to `console` */
-const restrictedCommands = ['dashboard', 'settings', 'info', 'create', 'dailytask', 'getid', 'meta', 'dailytask', 'weeklytask', 'cron', 'relation']
+import { getConfig } from '#root/config/index.js'
+
+/** Commands only admins (config.adminChatIDs) may run. */
+const restrictedCommands = ['dashboard', 'settings', 'info', 'create', 'dailytask', 'getid', 'meta', 'weeklytask', 'cron']
 export default async function authorization(
   ctx: Context,
   next: NextFunction,
@@ -11,7 +12,8 @@ export default async function authorization(
     const senderId = ctx.message.from?.id
     const message = ctx.message.text
     if (message && restrictedCommands.includes(`${message.trim().replace('/', '')}`)) {
-      if (config.adminChatIDs && !config.adminChatIDs.includes(senderId.toString())) {
+      const { adminChatIDs } = getConfig()
+      if (adminChatIDs.length > 0 && !adminChatIDs.includes(senderId.toString())) {
         isAuthorized = false
       }
     }

@@ -1,13 +1,13 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 export class Cron {
-  @prop({ required: true })
+  @prop({ required: true, type: () => String })
   public key!: string
 
-  @prop({ required: true })
+  @prop({ required: true, type: () => String })
   public value!: string
 
-  @prop({ required: false, default: false })
+  @prop({ required: false, default: false, type: () => Boolean })
   public enabled!: boolean
 }
 

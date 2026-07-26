@@ -72,5 +72,3 @@ afanime会优先筛选本次推送*需要*的集数，具体为：
 * maxInBangumi: 如从12集开始，一共为12集，则最大为24，这个信息抓取自eps字段的count而非total_episodes，因为后者也包含了SP剧集。
 
 > 例如：https://api.bgm.tv/v0/subjects/404809；
-
-

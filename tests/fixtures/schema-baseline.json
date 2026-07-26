@@ -1,0 +1,220 @@
+{
+  "Anime": {
+    "id": {
+      "instance": "Number",
+      "required": true,
+      "unique": true,
+      "index": true,
+      "enum": null
+    },
+    "name_cn": {
+      "instance": "String",
+      "required": true,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "query": {
+      "instance": "String",
+      "required": true,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "threadID": {
+      "instance": "Number",
+      "required": true,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "images": {
+      "instance": "Mixed",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": null,
+      "enum": null
+    },
+    "summary": {
+      "instance": "String",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": "",
+      "enum": null
+    },
+    "name": {
+      "instance": "String",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": "",
+      "enum": null
+    },
+    "platform": {
+      "instance": "String",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": "TV",
+      "enum": null
+    },
+    "total_episodes": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": 0,
+      "enum": null
+    },
+    "current_episode": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": 0,
+      "enum": null
+    },
+    "last_episode": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": 0,
+      "enum": null
+    },
+    "status": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": 3,
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "eps": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": 1,
+      "enum": null
+    },
+    "rating": {
+      "instance": "Mixed",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": null,
+      "enum": null
+    },
+    "episodes": {
+      "instance": "Array",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": null,
+      "enum": null
+    },
+    "name_phantom": {
+      "instance": "String",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": "",
+      "enum": null
+    },
+    "date": {
+      "instance": "String",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "active": {
+      "instance": "Boolean",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "volumes": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "locked": {
+      "instance": "Boolean",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "nsfw": {
+      "instance": "Boolean",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "_id": {
+      "instance": "ObjectId",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "__v": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    }
+  },
+  "Cron": {
+    "key": {
+      "instance": "String",
+      "required": true,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "value": {
+      "instance": "String",
+      "required": true,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "enabled": {
+      "instance": "Boolean",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "default": false,
+      "enum": null
+    },
+    "_id": {
+      "instance": "ObjectId",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    },
+    "__v": {
+      "instance": "Number",
+      "required": false,
+      "unique": false,
+      "index": false,
+      "enum": null
+    }
+  }
+}

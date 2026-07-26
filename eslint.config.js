@@ -2,6 +2,7 @@
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
+  ignores: ['.commandcode/**', 'docs/**', 'README.md', 'tests/fixtures/**'],
 }, {
   rules: {
     'global': 'off',
@@ -9,5 +10,11 @@ export default antfu({
     'node/prefer-global/process': 'off',
     'no-unused-vars': 'off',
     'unused-imports/no-unused-vars': 'off',
+  },
+}, {
+  // the app entry point intentionally awaits startup at top level
+  files: ['src/start.ts'],
+  rules: {
+    'antfu/no-top-level-await': 'off',
   },
 })

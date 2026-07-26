@@ -1,12 +1,16 @@
-import moment from 'moment'
-import { Context } from 'grammy'
-import { useFetchSchedule } from '#root/api/realsearch.js'
-import { isAdminChatID } from '@/modules/user/index.js'
-import BotLogger from '#root/bot/logger.js'
+import type { Notifier } from '#root/bot/notifier.js'
 import type { AnimeContext } from '#root/types/index.js'
+import { getSchedule } from '#root/api/realsearch.js'
+import { isAdminChatID } from '#root/modules/user/index.js'
+import Logger from '#root/utils/logger.js'
 
-export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: AnimeContext) {
-  useFetchSchedule().then((res) => {
+/** HH:mm in the process timezone (TZ=Asia/Shanghai in the container) */
+function formatTime(unixSeconds: number): string {
+  return new Date(unixSeconds * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+export default function displayWeeklyScheduleFromRealsearch(weekday: number, notifier: Notifier, ctx?: AnimeContext) {
+  getSchedule().then((res) => {
     const timetable: string[][] = [[], [], [], [], [], [], []]
     const replaceCharAt = (str: string, index: number, char: string) => {
       if (index < 0 || index >= str.length) {
@@ -20,21 +24,12 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       return text.replace(/([_*[\]()~`>#+=\-|{}.!])/g, '\\$1')
     }
     res.data.sort(
-      (a, b) => {
-        // compare based on their daily schedule like 00:00 > 13:00, not actual date
-        const aDate = moment.unix(a.date_start).format('HH:mm')
-        const bDate = moment.unix(b.date_start).format('HH:mm')
-        if (aDate < bDate) {
-          return -1
-        }
-        else {
-          return 1
-        }
-      },
-    ).forEach((item: any) => {
-      const housouDate = moment.unix(item.date_end)
-      const housouTime: string = replaceCharAt(housouDate.format('HH:mm'), 4, '0')
-      const housouWeekday: number = housouDate.day()
+      // compare based on their daily schedule like 00:00 > 13:00, not actual date
+      (a, b) => formatTime(a.date_start) < formatTime(b.date_start) ? -1 : 1,
+    ).forEach((item) => {
+      const housouDate = new Date((item.date_end ?? 0) * 1000)
+      const housouTime: string = replaceCharAt(formatTime(item.date_end ?? 0), 4, '0')
+      const housouWeekday: number = housouDate.getDay()
       const cnName = item.name_cn
       // const jpName = item.name
       const status = item.status
@@ -66,11 +61,11 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       ctx.reply(message)
     }
     else {
-      BotLogger.sendServerMessage(message, {
+      notifier.send(message, {
         parse_mode: 'MarkdownV2',
       })
     }
   }).catch((error) => {
-    console.log('=>(command-handler.ts:125) error', error)
+    Logger.logError('displayWeeklyScheduleFromRealsearch failed:', error)
   })
 }
