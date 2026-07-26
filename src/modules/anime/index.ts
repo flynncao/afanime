@@ -1,6 +1,5 @@
-import type { possibleResult } from '#root/api/realsearch.js'
 import type { IAnime } from '#root/types/index.js'
-import { useFetchNEP } from '#root/api/realsearch.js'
+import { searchNep } from '#root/api/realsearch.js'
 import { AniSub } from '#root/classes/AniSub.js'
 import { dealNEPResult, RECONCILE } from '#root/core/reconcile.js'
 import store from '#root/databases/store.js'
@@ -76,8 +75,8 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
         }
         const queryPageNo = 0
         const aniSubjectEntity = new AniSub(anime)
-        const nepResult: possibleResult = await useFetchNEP(query, queryPageNo)
-        if (!('data' in nepResult) || nepResult.data.length === 0) {
+        const nepResult = await searchNep(query, queryPageNo)
+        if (nepResult.data.length === 0) {
           reject(new Error('读取NEP仓库时发生错误！'))
           return
         }
@@ -110,6 +109,8 @@ export async function fetchAndUpdateAnimeEpisodesInfo(animeID: number): Promise<
       }
       catch (error) {
         Logger.logError(`Error in fetchAndUpdateAnimeEpisodesInfo: ${error}`)
+        // previously only logged, leaving the outer promise pending forever
+        reject(error instanceof Error ? error : new Error(String(error)))
       }
     })()
   })

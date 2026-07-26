@@ -1,6 +1,6 @@
 import type { LocalDate } from '@js-joda/core'
+import type { BangumiSubject } from '#root/api/schemas.js'
 import type { IAnime } from '#root/types/index.js'
-import type { BangumiSubjectInfoResponseData } from '#root/types/response.js'
 import { ChronoUnit, LocalDate as JodaLocalDate } from '@js-joda/core'
 import { STATUS } from '#root/types/index.js'
 
@@ -10,7 +10,7 @@ import { STATUS } from '#root/types/index.js'
  * mongoose strict mode to strip unknown fields such as tags/infobox).
  * Mutates and returns `anime`.
  */
-export function mergeSubjectIntoAnime(anime: IAnime, subjectInfo: BangumiSubjectInfoResponseData, today?: LocalDate): IAnime {
+export function mergeSubjectIntoAnime(anime: IAnime, subjectInfo: BangumiSubject, today?: LocalDate): IAnime {
   if (today && subjectInfo.date && anime.status !== STATUS.COMPLETED) {
     const timeDistanceByDay = JodaLocalDate.parse(subjectInfo.date).until(today, ChronoUnit.DAYS)
     anime.status = timeDistanceByDay >= 0 ? STATUS.AIRED : STATUS.UNAIRED
@@ -21,11 +21,11 @@ export function mergeSubjectIntoAnime(anime: IAnime, subjectInfo: BangumiSubject
 
   anime.name = subjectInfo.name
   anime.summary = subjectInfo.summary
-  anime.platform = subjectInfo.platform
-  anime.date = subjectInfo.date
-  anime.volumes = subjectInfo.volumes
-  anime.locked = subjectInfo.locked
-  anime.nsfw = subjectInfo.nsfw
+  anime.platform = subjectInfo.platform ?? anime.platform
+  anime.date = subjectInfo.date ?? anime.date
+  anime.volumes = subjectInfo.volumes ?? anime.volumes
+  anime.locked = subjectInfo.locked ?? anime.locked
+  anime.nsfw = subjectInfo.nsfw ?? anime.nsfw
   if (subjectInfo.images) {
     // the schema has no `grid` field, so only these four are persisted
     anime.images = {

@@ -42,7 +42,8 @@
     "moment": "^2.30.1",
     "mongodb": "~6.3.0",
     "mongoose": "^8.9.1",
-    "socks-proxy-agent": "^8.0.5"
+    "socks-proxy-agent": "^8.0.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.2.0",

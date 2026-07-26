@@ -1,11 +1,12 @@
 import type { AnimeContext } from '#root/types/index.js'
 import moment from 'moment'
-import { useFetchSchedule } from '#root/api/realsearch.js'
+import { getSchedule } from '#root/api/realsearch.js'
 import BotLogger from '#root/bot/logger.js'
 import { isAdminChatID } from '#root/modules/user/index.js'
+import Logger from '#root/utils/logger.js'
 
 export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: AnimeContext) {
-  useFetchSchedule().then((res) => {
+  getSchedule().then((res) => {
     const timetable: string[][] = [[], [], [], [], [], [], []]
     const replaceCharAt = (str: string, index: number, char: string) => {
       if (index < 0 || index >= str.length) {
@@ -19,7 +20,7 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       return text.replace(/([_*[\]()~`>#+=\-|{}.!])/g, '\\$1')
     }
     res.data.sort(
-      (a: any, b: any) => {
+      (a, b) => {
         // compare based on their daily schedule like 00:00 > 13:00, not actual date
         const aDate = moment.unix(a.date_start).format('HH:mm')
         const bDate = moment.unix(b.date_start).format('HH:mm')
@@ -30,8 +31,8 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
           return 1
         }
       },
-    ).forEach((item: any) => {
-      const housouDate = moment.unix(item.date_end)
+    ).forEach((item) => {
+      const housouDate = moment.unix(item.date_end!)
       const housouTime: string = replaceCharAt(housouDate.format('HH:mm'), 4, '0')
       const housouWeekday: number = housouDate.day()
       const cnName = item.name_cn
@@ -70,6 +71,6 @@ export default function displayWeeklyScheduleFromRealsearch(weekday = -1, ctx?: 
       })
     }
   }).catch((error) => {
-    console.log('=>(command-handler.ts:125) error', error)
+    Logger.logError('displayWeeklyScheduleFromRealsearch failed:', error)
   })
 }
