@@ -5,9 +5,9 @@ import { conversations } from '@grammyjs/conversations'
 import { Bot, GrammyError, HttpError, session } from 'grammy'
 import { SocksProxyAgent } from 'socks-proxy-agent'
 import authorization from '#root/middlewares/authorization.js'
-import { registerConversations } from '#root/middlewares/conversation.js'
 import Logger from '#root/utils/logger.js'
 import { createCommands } from './features/commands.js'
+import { registerConversations } from './features/conversations.js'
 import { animeActionMenu, animeDashboardMenu } from './features/dashboard.js'
 
 export function createBot(config: Config): Bot<AnimeContext> {

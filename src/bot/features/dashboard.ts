@@ -24,8 +24,8 @@ function withOperatingAnime(handler: (ctx: AnimeContext, animeID: number) => Pro
 }
 
 function enterConversation(name: string) {
-  return withOperatingAnime(async (ctx) => {
-    await ctx.conversation.enter(name)
+  return withOperatingAnime(async (ctx, animeID) => {
+    await ctx.conversation.enter(name, animeID)
   })
 }
 

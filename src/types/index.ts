@@ -10,9 +10,12 @@ export interface SessionData {
   /** dashboard filter: show all animes instead of only airing ones */
   dashboardShowAll?: boolean
 }
-export type AnimeContext = Context & SessionFlavor<SessionData> & ConversationFlavor
+/** Context outside conversations (has ctx.conversation.enter) */
+export type AnimeContext = ConversationFlavor<Context & SessionFlavor<SessionData>>
+/** Context inside conversation builder functions */
+export type AnimeConversationContext = Context
 
-export type AnimeConversation = Conversation<AnimeContext>
+export type AnimeConversation = Conversation<AnimeContext, AnimeConversationContext>
 
 export interface Command {
   command: string
