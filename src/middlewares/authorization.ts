@@ -10,8 +10,14 @@ export default async function authorization(
   if (ctx.message) {
     const senderId = ctx.message.from?.id
     const message = ctx.message.text
-    if (message && restrictedCommands.includes(`${message.trim().replace('/', '')}`)) {
-      if (config.adminChatIDs && !config.adminChatIDs.includes(senderId.toString())) {
+    // Special handling for user input starting with "/" so that restricted
+    // commands cannot be bypassed by appending arguments or a "@botname" suffix.
+    const rawCommand = message?.trim().split(/\s+/)[0] ?? ''
+    const commandName = rawCommand.startsWith('/')
+      ? rawCommand.replace(/^\/+/, '').replace(/@.*$/, '').toLowerCase()
+      : null
+    if (commandName && restrictedCommands.includes(commandName)) {
+      if (config.adminChatIDs && !config.adminChatIDs.includes(senderId?.toString())) {
         isAuthorized = false
       }
     }
