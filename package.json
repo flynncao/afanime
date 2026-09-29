@@ -53,7 +53,7 @@
     "@types/node": "^20.17.10",
     "concurrently": "^8.2.2",
     "eslint": "8.57.1",
-    "husky": "8.0.3",
+    "husky": "9.1.7",
     "lint-staged": "14.0.1",
     "nodemon": "^3.1.9",
     "tsup": "^8.3.6",
